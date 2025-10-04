@@ -1,10 +1,7 @@
 <template>
   <div id="app">
-    <nav>
-      <!-- Static navigation (always here) -->
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </nav>
+    <!-- Global NavBar Component -->
+    <Navbar></Navbar>
 
     <!-- Dynamic content (changes based on URL) -->
     <router-view></router-view>
@@ -12,7 +9,12 @@
 </template>
 
 <script>
+import Navbar from './components/navbar.vue'
+
 export default {
-  name: 'App'
+  name: 'App',
+  components:{
+    Navbar
+  }
 }
 </script>
