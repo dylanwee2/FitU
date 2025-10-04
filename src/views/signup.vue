@@ -1,5 +1,6 @@
 <template>
   <div class="container">
+    <h1>Sign Up</h1>
     <form>
       <!-- Text input -->
       <div class="mb-3">
@@ -35,9 +36,6 @@ export default {
 
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
-        setTimeout(() => {
-          console.log('Do something after user is signed in');
-        }, 10000);
 
         console.log('Signed up user:', userCredential.user);
         alert('Sign Up Successful.')
