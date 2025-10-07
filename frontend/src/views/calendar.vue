@@ -14,7 +14,8 @@ onMounted(async () => {
   if (calendarRef.value) {
     const calendar = new Calendar(calendarRef.value, {
       plugins: [dayGridPlugin],
-      initialView: 'dayGridMonth'
+      initialView: 'dayGridMonth',
+      editable: true
     })
     calendar.render()
   } else {
