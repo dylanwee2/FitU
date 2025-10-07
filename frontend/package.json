@@ -12,8 +12,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fullcalendar/core": "^6.1.19",
+    "@fullcalendar/daygrid": "^6.1.19",
     "bootstrap": "^5.3.8",
     "firebase": "^12.3.0",
+    "three": "^0.158.0",
     "vue": "^3.5.22",
     "vue-router": "^4.5.1"
   },

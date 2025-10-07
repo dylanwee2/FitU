@@ -4,6 +4,27 @@
     <p>Welcome, {{ username }}</p>
     <button class="btn btn-primary mb-4" @click.prevent="signout">Sign Out</button>
 
+    <!-- Workout Planner Toggle -->
+    <div class="mb-4">
+      <button 
+        class="btn btn-success btn-lg" 
+        @click="toggleWorkoutPlanner"
+      >
+        {{ showWorkoutPlanner ? 'Hide Workouts' : '🏋️ Show Workouts' }}
+      </button>
+    </div>
+
+    <!-- Workout Planner Component -->
+    <div v-if="showWorkoutPlanner">
+      <WorkoutPlanner 
+        :show-back-button="false"
+        :show-progress-tracker="true"
+        @workout-selected="onWorkoutSelected"
+        @exercise-selected="onExerciseSelected"
+        @workout-completed="onWorkoutCompleted"
+      />
+    </div>
+
     <!-- Plan Size -->
     <div class="mb-3">
       <label class="form-label">Number of Meals</label>
@@ -95,8 +116,12 @@
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import WorkoutPlanner from "../components/WorkoutPlanner.vue";
 
 export default {
+  components: {
+    WorkoutPlanner
+  },
   setup() {
     const router = useRouter();
     const auth = getAuth();
@@ -169,13 +194,48 @@ export default {
       }
     };
 
+    // Workout Planner state
+    const showWorkoutPlanner = ref(false);
+
+    const toggleWorkoutPlanner = () => {
+      showWorkoutPlanner.value = !showWorkoutPlanner.value;
+      console.log('Workout planner toggled:', showWorkoutPlanner.value);
+    };
+
+    const onWorkoutSelected = (workout) => {
+      console.log('Workout selected:', workout);
+    };
+
+    const onExerciseSelected = (exercise) => {
+      console.log('Exercise selected:', exercise);
+    };
+
+    const onWorkoutCompleted = (data) => {
+      console.log('Workout completed:', data);
+      // You can add additional logic here, like showing notifications
+    };
+
     onMounted(() => {
       onAuthStateChanged(auth, (user) => {
         username.value = user ? user.displayName : "";
       });
     });
 
-    return { plan, healthOptions, addExclude, removeExclude, submitPlan, formattedPlan, username, signout };
+    return { 
+      plan, 
+      healthOptions, 
+      addExclude, 
+      removeExclude, 
+      submitPlan, 
+      formattedPlan, 
+      username, 
+      signout,
+      showWorkoutPlanner,
+      toggleWorkoutPlanner,
+      onWorkoutSelected,
+      onExerciseSelected,
+      onWorkoutCompleted
+    };
   }
 };
 </script>
