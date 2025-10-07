@@ -19,9 +19,12 @@
     "@fullcalendar/list": "^6.1.19",
     "@fullcalendar/timegrid": "^6.1.19",
     "bootstrap": "^5.3.8",
+    "chart.js": "^4.5.0",
     "firebase": "^12.3.0",
+    "pinia": "^3.0.3",
     "three": "^0.158.0",
     "vue": "^3.5.22",
+    "vue-chartjs": "^5.3.2",
     "vue-router": "^4.5.1"
   },
   "devDependencies": {

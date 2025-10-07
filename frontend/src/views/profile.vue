@@ -23,9 +23,30 @@
       <div v-else class="row">
         <div class="col-lg-12">
           
+          <!-- Calorie Goal Card -->
+          <div class="card mb-4">
+            <div class="card-header text-white" style="background: var(--primary)">
+              <h5 class="mb-0">Calorie Goal</h5>
+            </div>
+            <div class="card-body">
+              <div class="row g-3 align-items-end">
+                <div class="col-sm-4">
+                  <label class="form-label">Daily Goal (kcal)</label>
+                  <input type="number" min="800" max="5000" step="10" class="form-control" v-model.number="goalInput" />
+                </div>
+                <div class="col-sm-3 d-grid">
+                  <button class="btn btn-primary" @click="saveCalorieGoal">Save</button>
+                </div>
+                <div class="col-sm-5">
+                  <small class="text-muted">This goal appears as read-only on Home.</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Personal Information Card -->
           <div class="card mb-4">
-            <div class="card-header">
+            <div class="card-header text-white" style="background: var(--primary)">
               <h5 class="mb-0"><i class="bi bi-person-circle me-2"></i>Personal Information</h5>
             </div>
             <div class="card-body">
@@ -138,7 +159,7 @@
 
           <!-- Health & Fitness Goals Card -->
           <div class="card mb-4">
-            <div class="card-header">
+            <div class="card-header text-white" style="background: var(--primary)">
               <h5 class="mb-0"><i class="bi bi-trophy me-2"></i>Health & Fitness Goals</h5>
             </div>
             <div class="card-body">
@@ -209,7 +230,7 @@
 
           <!-- Preferences & Integrations Card -->
           <div class="card mb-4">
-            <div class="card-header">
+            <div class="card-header text-white" style="background: var(--primary)">
               <h5 class="mb-0"><i class="bi bi-gear me-2"></i>Preferences & Integrations</h5>
             </div>
             <div class="card-body">
@@ -265,17 +286,17 @@
 
           <!-- Progress Overview Card -->
           <div class="card mb-4">
-            <div class="card-header">
+            <div class="card-header text-white" style="background: var(--primary)">
               <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Progress Overview</h5>
             </div>
             <div class="card-body">
-              <!-- Chart Placeholder -->
-              <div class="chart-placeholder mb-3">
-                <canvas id="calorieChart" ref="calorieChartRef"></canvas>
+              <!-- Weekly Calorie Chart -->
+              <div v-reveal class="chart-placeholder mb-3" style="min-height: 240px; height: 32vh; max-height: 380px;">
+                <canvas id="calorieChart" ref="calorieChartRef" style="width: 100%; height: 100%;"></canvas>
                 <p class="text-center text-muted mt-2">Weekly Calorie Intake</p>
               </div>
 
-              <!-- Workout Streak Progress -->
+              <!-- Workout Streak Display -->
               <div class="stat-card-full mb-3">
                 <div class="stat-header">
                   <h6>Workout Streak</h6>
@@ -285,7 +306,7 @@
                   <div 
                     class="progress-bar" 
                     role="progressbar" 
-                    :style="{ width: (workoutStreak / 12 * 100) + '%' }"
+                    :style="{ width: (workoutStreak / 12 * 100) + '%', background: 'var(--primary)' }"
                     :aria-valuenow="workoutStreak" 
                     aria-valuemin="0" 
                     aria-valuemax="12"
@@ -304,7 +325,7 @@
                   <div 
                     class="progress-bar" 
                     role="progressbar" 
-                    :style="{ width: timeBalance + '%' }"
+                    :style="{ width: timeBalance + '%', background: 'var(--primary)' }"
                     :aria-valuenow="timeBalance" 
                     aria-valuemin="0" 
                     aria-valuemax="100"
@@ -313,7 +334,6 @@
                 <small class="text-muted">Balance between academics and personal life</small>
               </div>
 
-              <!-- Info Alert -->
               <div class="alert alert-light mt-3">
                 <small><i class="bi bi-info-circle me-1"></i>Charts will display real data once you log activities</small>
               </div>
@@ -322,7 +342,7 @@
 
           <!-- Account Actions Card -->
           <div class="card mb-4">
-            <div class="card-header">
+            <div class="card-header text-white" style="background: var(--primary)">
               <h5 class="mb-0"><i class="bi bi-shield-check me-2"></i>Account Actions</h5>
             </div>
             <div class="card-body">
@@ -363,6 +383,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useUser } from '@/stores/user'
+import { useMeals } from '@/stores/meals'
+import Chart from 'chart.js/auto'
 import { getAuth, onAuthStateChanged, signOut, updateProfile } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -409,7 +432,28 @@ const preferences = ref({
 
 const workoutStreak = ref(4);
 const timeBalance = ref(65);
+
+// Calorie Goal Editor
+const user = useUser()
+const goalInput = ref(user.dailyGoal)
+async function saveCalorieGoal() {
+  const g = Number(goalInput.value)
+  if (!Number.isFinite(g) || g < 800 || g > 5000) {
+    errorMessage.value = 'Goal must be between 800 and 5000 kcal.'
+    return
+  }
+  try {
+    await user.setDailyGoal(g)
+    successMessage.value = 'Daily calorie goal saved.'
+  } catch (e) {
+    errorMessage.value = 'Failed to save goal.'
+  }
+}
 const calorieChartRef = ref(null);
+const chartInstance = ref(null);
+
+// Meals store for weekly calories (reuse Home data)
+const meals = useMeals();
 
 // Computed Properties
 const calculatedBMI = computed(() => {
@@ -430,11 +474,12 @@ const calculatedBMI = computed(() => {
 
 // Lifecycle Hooks
 onMounted(() => {
-  // Listen to auth state changes
-  onAuthStateChanged(auth, (user) => {
+  onAuthStateChanged(auth, async (user) => {
     if (user) {
       currentUser.value = user;
-      loadUserData(user.uid);
+      await loadUserData(user.uid);
+      await meals.init();
+      initializeCharts();
     } else {
       router.push('/login');
     }
@@ -713,8 +758,51 @@ async function deleteAccount() {
  * Initialize Chart.js (placeholder)
  */
 function initializeCharts() {
-  // TODO: Initialize Chart.js when ready
-  console.log('Charts initialized (placeholder)');
+  if (!calorieChartRef.value) return
+  const ctx = calorieChartRef.value.getContext('2d')
+  const series = meals.weekSeries(7)
+  const labels = series.map(s => formatLabel(s.date))
+  const values = series.map(s => s.consumed || 0)
+  const maxVal = Math.max(0, ...values)
+  const paddedMax = maxVal > 0 ? Math.ceil(maxVal * 1.2) : 100
+
+  if (chartInstance.value) {
+    chartInstance.value.destroy()
+  }
+
+  chartInstance.value = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Calories',
+        data: values,
+        backgroundColor: 'rgba(230, 57, 70, 0.8)'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          suggestedMin: 0,
+          suggestedMax: paddedMax,
+          ticks: { precision: 0 }
+        }
+      },
+      plugins: {
+        legend: { position: 'top' },
+        title: { display: true, text: 'Last 7 days' }
+      }
+    }
+  })
+}
+
+function formatLabel(ymd) {
+  const [y, m, d] = ymd.split('-').map(Number)
+  const date = new Date(y, m - 1, d)
+  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
 }
 </script>
 
@@ -863,7 +951,13 @@ function initializeCharts() {
 .progress-full .progress-bar {
   height: 100%;
   transition: width 0.6s ease;
-  background: linear-gradient(135deg, #e63946 0%, rgb(253, 222, 172) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  background: var(--primary);
 }
 
 .stat-card-full small {

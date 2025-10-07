@@ -5,8 +5,10 @@
 
     <!-- Main content area -->
     <main id="main" class="flex-grow-1" tabindex="-1">
-      <!-- Dynamic content (changes based on URL) -->
-      <router-view />
+      <!-- Route transitions -->
+      <transition name="route" mode="out-in">
+        <router-view />
+      </transition>
     </main>
 
     <!-- Global Footer Component -->
@@ -49,5 +51,16 @@ export default {
   flex: 1;
   display: flex;
   flex-direction: column;
+}
+
+/* Route transition animations */
+.route-enter-active,
+.route-leave-active {
+  transition: opacity .25s ease, transform .25s ease;
+}
+.route-enter-from,
+.route-leave-to {
+  opacity: 0;
+  transform: translateY(6px);
 }
 </style>

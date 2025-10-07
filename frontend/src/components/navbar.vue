@@ -10,7 +10,7 @@
       <a href="#main" class="visually-hidden-focusable">Skip to content</a>
       
       <!-- Brand -->
-      <router-link class="navbar-brand fw-bold u-text-primary" to="/">
+      <router-link class="navbar-brand fw-bold" to="/" style="color: var(--primary)">
         FitU
       </router-link>
 
@@ -42,13 +42,14 @@
           >
             <router-link 
               :to="link.href"
-              class="nav-link d-flex align-items-center u-link"
+              class="nav-link d-flex align-items-center"
+              style="color: var(--muted)"
               :class="{ 'active': isActiveRoute(link.href) }"
               :aria-current="isActiveRoute(link.href) ? 'page' : undefined"
               @click="closeMobileMenu"
             >
               <span v-if="link.icon" class="me-2">{{ link.icon }}</span>
-              {{ link.label }}
+              <span style="color: var(--primary)">{{ link.label }}</span>
             </router-link>
           </li>
         </ul>
@@ -72,9 +73,7 @@ export default {
     const mobileMenu = ref(null)
 
     // Check if current route matches the link
-    const isActiveRoute = (href) => {
-      return route.path === href
-    }
+    const isActiveRoute = (href) => route.path === href
 
     // Toggle mobile menu
     const toggleMobileMenu = () => {
@@ -252,4 +251,8 @@ export default {
 .navbar-toggler-icon {
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2830, 27, 22, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 }
+
+/* Micro-interactions */
+.nav-link { transition: transform .12s ease, color .2s ease, background-color .2s ease; }
+.nav-link:active { transform: translateY(1px) scale(0.99); }
 </style>

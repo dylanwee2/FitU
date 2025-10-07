@@ -14,16 +14,22 @@
 
         <!-- Center: Quick links -->
         <div class="col-md-4 mb-3">
-          <h6 class="fw-semibold mb-3 u-text">Quick Links</h6>
+          <h6 class="fw-semibold mb-3 u-text" style="color: var(--secondary)">Quick Links</h6>
           <ul class="list-unstyled">
             <li v-for="link in navigationLinks" :key="link.href" class="mb-2">
               <router-link 
                 :to="link.href" 
-                class="text-decoration-none u-link small"
+                class="text-decoration-none small"
+                style="color: var(--primary)"
                 @click="scrollToTop"
               >
                 <span v-if="link.icon" class="me-2">{{ link.icon }}</span>
                 {{ link.label }}
+              </router-link>
+            </li>
+            <li class="mb-2">
+              <router-link to="/profile" class="text-decoration-none small" @click="scrollToTop" style="color: var(--primary)">
+                👤 Profile
               </router-link>
             </li>
           </ul>
@@ -131,6 +137,8 @@ footer {
 
 footer a:hover {
   color: var(--primary) !important;
+  transform: translateY(-1px);
+  transition: transform .12s ease, color .2s ease;
 }
 
 footer a:focus {

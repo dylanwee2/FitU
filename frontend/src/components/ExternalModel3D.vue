@@ -30,6 +30,13 @@
           Auto Rotate
         </label>
       </div>
+      <div class="d-inline-flex flex-wrap gap-2 ms-2">
+        <button class="btn btn-sm btn-primary" @click="focusOnSection('chest')">Chest</button>
+        <button class="btn btn-sm btn-primary" @click="focusOnSection('back')">Back</button>
+        <button class="btn btn-sm btn-primary" @click="focusOnSection('arm')">Arms</button>
+        <button class="btn btn-sm btn-primary" @click="focusOnSection('leg')">Legs</button>
+        <button class="btn btn-sm btn-primary" @click="focusOnSection('core')">Core</button>
+      </div>
     </div>
     
     <div 
@@ -120,6 +127,8 @@ export default {
     let scene, camera, renderer, controls
     let humanModel, muscleGroups = {}
     let animationId, raycaster, mouse
+    let mixer = null, animations = []
+    let clock = null
     let selectedMuscle = ref('')
 
     // Initialize Three.js scene
@@ -151,6 +160,7 @@ export default {
           alpha: true
         })
         renderer.setSize(modelContainer.value.clientWidth, props.height)
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
         renderer.shadowMap.enabled = true
         renderer.shadowMap.type = THREE.PCFSoftShadowMap
         renderer.setClearColor(0x1a1a1a, 1)
@@ -175,16 +185,18 @@ export default {
         renderer.domElement.addEventListener('click', onMouseClick, false)
 
         // Lighting setup
-        const ambientLight = new THREE.AmbientLight(0x404040, 0.4)
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.6)
         scene.add(ambientLight)
 
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8)
-        directionalLight.position.set(5, 5, 5)
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0)
+        directionalLight.position.set(6, 8, 6)
         directionalLight.castShadow = true
+        directionalLight.shadow.mapSize.width = 2048
+        directionalLight.shadow.mapSize.height = 2048
         scene.add(directionalLight)
 
-        const fillLight = new THREE.DirectionalLight(0xffffff, 0.3)
-        fillLight.position.set(-5, 0, -5)
+        const fillLight = new THREE.DirectionalLight(0xffffff, 0.5)
+        fillLight.position.set(-6, 2, -6)
         scene.add(fillLight)
 
         // Load the initial model
@@ -195,6 +207,9 @@ export default {
 
         // Handle window resize
         window.addEventListener('resize', onWindowResize)
+        
+        // Clock for animations
+        clock = new THREE.Clock()
 
       } catch (error) {
         console.error('Error initializing Three.js:', error)
@@ -241,6 +256,13 @@ export default {
           props.modelPath,
           (gltf) => {
             humanModel = gltf.scene
+            animations = gltf.animations || []
+            if (animations.length) {
+              mixer = new THREE.AnimationMixer(humanModel)
+              const clip = animations[0]
+              const action = mixer.clipAction(clip)
+              action.play()
+            }
             
             // Calculate bounding box to center the model
             const box = new THREE.Box3().setFromObject(humanModel)
@@ -265,7 +287,7 @@ export default {
                 // Improve material properties for better rendering
                 if (child.material) {
                   child.material.transparent = true
-                  child.material.opacity = 0.9
+                  child.material.opacity = 0.95
                   
                   // Add some emissive properties for better visibility
                   if (child.material.emissive) {
@@ -384,6 +406,11 @@ export default {
       if (controls) {
         controls.update()
       }
+
+      if (mixer && clock) {
+        const delta = clock.getDelta()
+        mixer.update(delta)
+      }
       
       if (renderer && scene && camera) {
         renderer.render(scene, camera)
@@ -471,6 +498,33 @@ export default {
     const toggleSkeleton = () => {
       showSkeleton.value = !showSkeleton.value
       // Implementation depends on your model structure
+    }
+
+    // Focus on a specific body section name (e.g., 'Chest', 'Back', 'Legs')
+    const focusOnSection = async (sectionName) => {
+      if (!humanModel) return
+      const THREE = await import('three')
+      const box = new THREE.Box3()
+      let found = false
+      humanModel.traverse((child) => {
+        if (child.isMesh && child.name.toLowerCase().includes(sectionName.toLowerCase())) {
+          box.expandByObject(child)
+          found = true
+        }
+      })
+      if (!found) return
+      const size = box.getSize(new THREE.Vector3())
+      const center = box.getCenter(new THREE.Vector3())
+      controls.target.copy(center)
+      const maxDim = Math.max(size.x, size.y, size.z)
+      const fov = THREE.MathUtils.degToRad(camera.fov)
+      const distance = (maxDim / 2) / Math.tan(fov / 2)
+      const newPos = center.clone().add(new THREE.Vector3(0, 0, 1).multiplyScalar(distance * 1.3))
+      camera.position.lerp(newPos, 0.85)
+      camera.near = Math.max(0.01, distance - maxDim * 2)
+      camera.far = distance + maxDim * 2
+      camera.updateProjectionMatrix()
+      controls.update()
     }
 
     // Highlight a single muscle group (for click interaction)
@@ -613,7 +667,8 @@ export default {
       toggleWireframe,
       toggleSkeleton,
       loadModel,
-      switchModel
+      switchModel,
+      focusOnSection
     }
   }
 }
