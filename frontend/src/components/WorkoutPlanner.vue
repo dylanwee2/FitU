@@ -72,7 +72,7 @@
                   </div>
                 </div>
                 <button class="btn btn-sm btn-outline-primary" @click.stop="viewExerciseDetails(exercise)">
-                  View Details
+                  💬 View & Discuss
                 </button>
               </div>
             </div>
@@ -430,7 +430,14 @@ export default {
     }
 
     const viewExerciseDetails = (exercise) => {
-      selectedExercise.value = exercise
+      console.log('=== VIEW EXERCISE DETAILS ===')
+      console.log('Exercise clicked:', exercise)
+      console.log('Exercise ID:', exercise.id)
+      console.log('Exercise name:', exercise.name)
+      console.log('Navigating to:', `/exercise/${exercise.id}`)
+      
+      // Navigate to exercise detail page with discussion forum
+      router.push(`/exercise/${exercise.id}`)
     }
 
     const closeExerciseDetails = () => {
