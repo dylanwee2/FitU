@@ -29,7 +29,8 @@
 <script>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { app } from "../firebase";
+import { app, db } from "../firebase";
+import { collection, addDoc } from "firebase/firestore"; 
 import { getAuth, createUserWithEmailAndPassword, updateProfile} from "firebase/auth";
 
 export default {
@@ -47,6 +48,14 @@ export default {
         const userCredential = await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
         const user = auth.currentUser;
         updateProfile(user, {displayName: nameInput.value})
+
+
+        const docRef = await addDoc(collection(db, "users"), {
+          email: emailInput.value,
+          name: nameInput.value,
+          password: passwordInput.value,
+        });
+
         router.push('/login');
       } catch (error) {
         console.error(error.code, error.message);
