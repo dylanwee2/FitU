@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 
 import geminiRoute from "./routes/geminiRoute.js";
+import recipeRoutes from "./routes/recipeRoute.js";
 
 dotenv.config();
 
@@ -11,6 +12,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/gemini", geminiRoute);
+app.use("/api/recipes", recipeRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

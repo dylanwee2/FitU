@@ -10,6 +10,11 @@ export const navigationLinks = [
     icon: '🏠'
   },
   {
+    label: 'Recipes',
+    href: '/recipes',
+    icon: '🍽️'
+  },
+  {
     label: 'Sign Up',
     href: '/signup',
     icon: '📝'
