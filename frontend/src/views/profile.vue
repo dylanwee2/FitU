@@ -6,35 +6,41 @@
       <!-- Success/Error Messages -->
       <div v-if="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
         {{ successMessage }}
-        <button type="button" class="btn-close" @click="successMessage = ''"></button>
+        <button type="button" class="btn-close" @click="successMessage = ''">×</button>
       </div>
       <div v-if="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
         {{ errorMessage }}
-        <button type="button" class="btn-close" @click="errorMessage = ''"></button>
+        <button type="button" class="btn-close" @click="errorMessage = ''">×</button>
       </div>
 
-      <div class="row">
-        <!-- Left Column: Personal Info & Goals -->
+      <!-- Loading State -->
+      <div v-if="isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+
+      <div v-else class="row">
         <div class="col-lg-12">
           
           <!-- Personal Information Card -->
           <div class="card mb-4">
-            <div class="card-header bg-success text-white">
+            <div class="card-header">
               <h5 class="mb-0"><i class="bi bi-person-circle me-2"></i>Personal Information</h5>
             </div>
             <div class="card-body">
               <form @submit.prevent="saveProfile">
-                <div class="row mb-3">
-                  <div class="col-md-12 text-center mb-3">
-                    <!-- Profile Picture Upload -->
+                <!-- Profile Picture -->
+                <div class="row mb-4">
+                  <div class="col-12 text-center">
                     <div class="profile-picture-wrapper">
                       <img 
                         :src="profileData.photoURL || defaultAvatar" 
                         alt="Profile Picture" 
                         class="profile-picture"
                       >
-                      <div class="mt-2">
-                        <label for="photoUpload" class="btn btn-sm btn-outline-primary">
+                      <div class="mt-3">
+                        <label for="photoUpload" class="btn btn-change-photo">
                           <i class="bi bi-camera me-1"></i>Change Photo
                         </label>
                         <input 
@@ -45,10 +51,12 @@
                           class="d-none"
                         >
                       </div>
+                      <small class="text-muted d-block mt-2">Max size: 2MB</small>
                     </div>
                   </div>
                 </div>
 
+                <!-- Name and Email -->
                 <div class="row">
                   <div class="col-md-6 mb-3">
                     <label for="fullName" class="form-label">Full Name *</label>
@@ -61,18 +69,18 @@
                     >
                   </div>
                   <div class="col-md-6 mb-3">
-                    <label for="email" class="form-label">Email</label>
+                    <label for="email" class="form-label">Email *</label>
                     <input 
                       type="email" 
                       class="form-control" 
                       id="email" 
                       v-model="profileData.email" 
-                      disabled
+                      required
                     >
-                    <small class="text-muted">Email cannot be changed</small>
                   </div>
                 </div>
 
+                <!-- Personal Details -->
                 <div class="row">
                   <div class="col-md-3 mb-3">
                     <label for="gender" class="form-label">Gender</label>
@@ -120,7 +128,7 @@
                   </div>
                 </div>
 
-                <!-- BMI Display (calculated) -->
+                <!-- BMI Display -->
                 <div v-if="calculatedBMI" class="alert alert-info">
                   <strong>BMI:</strong> {{ calculatedBMI.value }} - {{ calculatedBMI.category }}
                 </div>
@@ -130,80 +138,78 @@
 
           <!-- Health & Fitness Goals Card -->
           <div class="card mb-4">
-            <div class="card-header bg-success text-white">
+            <div class="card-header">
               <h5 class="mb-0"><i class="bi bi-trophy me-2"></i>Health & Fitness Goals</h5>
             </div>
             <div class="card-body">
-              <form @submit.prevent="saveGoals">
-                <div class="mb-3">
-                  <label for="goalType" class="form-label">Primary Goal</label>
-                  <select class="form-select" id="goalType" v-model="goalsData.goalType">
-                    <option value="">Select your goal</option>
-                    <option value="lose-weight">Lose Weight</option>
-                    <option value="maintain">Maintain Weight</option>
-                    <option value="gain-muscle">Gain Muscle</option>
-                    <option value="improve-fitness">Improve Overall Fitness</option>
-                  </select>
-                </div>
+              <div class="mb-3">
+                <label for="goalType" class="form-label">Primary Goal</label>
+                <select class="form-select" id="goalType" v-model="goalsData.goalType">
+                  <option value="">Select your goal</option>
+                  <option value="lose-weight">Lose Weight</option>
+                  <option value="maintain">Maintain Weight</option>
+                  <option value="gain-muscle">Gain Muscle</option>
+                  <option value="improve-fitness">Improve Overall Fitness</option>
+                </select>
+              </div>
 
-                <div class="mb-3">
-                  <label for="calorieTarget" class="form-label">Daily Calorie Target</label>
-                  <input 
-                    type="number" 
-                    class="form-control" 
-                    id="calorieTarget" 
-                    v-model.number="goalsData.calorieTarget" 
-                    min="1000" 
-                    max="5000"
-                    placeholder="e.g., 2000"
-                  >
-                  <small class="text-muted">Recommended: 1800-2500 kcal for students</small>
-                </div>
+              <div class="mb-3">
+                <label for="calorieTarget" class="form-label">Daily Calorie Target</label>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  id="calorieTarget" 
+                  v-model.number="goalsData.calorieTarget" 
+                  min="1000" 
+                  max="5000"
+                  placeholder="e.g., 2000"
+                >
+                <small class="text-muted">Recommended: 1800-2500 kcal for students</small>
+              </div>
 
-                <div class="mb-3">
-                  <label for="dietaryPreference" class="form-label">Dietary Preference</label>
-                  <select class="form-select" id="dietaryPreference" v-model="goalsData.dietaryPreference">
-                    <option value="">No specific preference</option>
-                    <option value="vegetarian">Vegetarian</option>
-                    <option value="vegan">Vegan</option>
-                    <option value="halal">Halal</option>
-                    <option value="kosher">Kosher</option>
-                    <option value="keto">Keto</option>
-                    <option value="paleo">Paleo</option>
-                    <option value="mediterranean">Mediterranean</option>
-                  </select>
-                </div>
+              <div class="mb-3">
+                <label for="dietaryPreference" class="form-label">Dietary Preference</label>
+                <select class="form-select" id="dietaryPreference" v-model="goalsData.dietaryPreference">
+                  <option value="">No specific preference</option>
+                  <option value="vegetarian">Vegetarian</option>
+                  <option value="vegan">Vegan</option>
+                  <option value="halal">Halal</option>
+                  <option value="kosher">Kosher</option>
+                  <option value="keto">Keto</option>
+                  <option value="paleo">Paleo</option>
+                  <option value="mediterranean">Mediterranean</option>
+                </select>
+              </div>
 
-                <div class="mb-3">
-                  <label for="allergies" class="form-label">Allergies & Food Restrictions</label>
-                  <input 
-                    type="text" 
-                    class="form-control" 
-                    id="allergies" 
-                    v-model="goalsData.allergies" 
-                    placeholder="e.g., peanuts, shellfish, dairy"
-                  >
-                  <small class="text-muted">Separate multiple items with commas</small>
-                </div>
+              <div class="mb-3">
+                <label for="allergies" class="form-label">Allergies & Food Restrictions</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  id="allergies" 
+                  v-model="goalsData.allergies" 
+                  placeholder="e.g., peanuts, shellfish, dairy"
+                >
+                <small class="text-muted">Separate multiple items with commas</small>
+              </div>
 
-                <div class="mb-3">
-                  <label for="workoutFrequency" class="form-label">Workout Frequency (days/week)</label>
-                  <input 
-                    type="number" 
-                    class="form-control" 
-                    id="workoutFrequency" 
-                    v-model.number="goalsData.workoutFrequency" 
-                    min="0" 
-                    max="7"
-                  >
-                </div>
-              </form>
+              <div class="mb-3">
+                <label for="workoutFrequency" class="form-label">Workout Frequency (days/week)</label>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  id="workoutFrequency" 
+                  v-model.number="goalsData.workoutFrequency" 
+                  min="0" 
+                  max="7"
+                >
+              </div>
             </div>
           </div>
 
           <!-- Preferences & Integrations Card -->
           <div class="card mb-4">
-            <div class="card-header bg-success text-white">
+            <div class="card-header">
               <h5 class="mb-0"><i class="bi bi-gear me-2"></i>Preferences & Integrations</h5>
             </div>
             <div class="card-body">
@@ -257,64 +263,57 @@
             </div>
           </div>
 
-        </div>
-
-        <!-- Right Column: Progress & Actions -->
-        <div class="col-lg-12">
-          
-          <!-- Fitness Progress Overview Card -->
+          <!-- Progress Overview Card -->
           <div class="card mb-4">
-            <div class="card-header bg-success text-white">
+            <div class="card-header">
               <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Progress Overview</h5>
             </div>
             <div class="card-body">
-              <!-- Placeholder for Chart.js Weekly Calorie Chart -->
+              <!-- Chart Placeholder -->
               <div class="chart-placeholder mb-3">
                 <canvas id="calorieChart" ref="calorieChartRef"></canvas>
                 <p class="text-center text-muted mt-2">Weekly Calorie Intake</p>
               </div>
 
-              <!-- Workout Streak Display -->
-             <div class="stat-card-full mb-3">
-            <div class="stat-header">
-                <h6>Workout Streak</h6>
-                <h3>{{ workoutStreak }} days</h3>
-            </div>
-            <div class="progress-full">
-                <div 
-                class="progress-bar bg-success" 
-                role="progressbar" 
-                :style="{ width: (workoutStreak / 12 * 100) + '%' }"
-                :aria-valuenow="workoutStreak" 
-                aria-valuemin="0" 
-                aria-valuemax="7"
-                >
+              <!-- Workout Streak Progress -->
+              <div class="stat-card-full mb-3">
+                <div class="stat-header">
+                  <h6>Workout Streak</h6>
+                  <h3>{{ workoutStreak }} days</h3>
                 </div>
-            </div>
-            <small class="text-muted">Goal: 12 days</small>
-            </div>
-
-            <!-- Time Management Balance - Full Width Progress Bar -->
-            <div class="stat-card-full">
-            <div class="stat-header">
-                <h6>Study-Life Balance</h6>
-                <h3>{{ timeBalance }}%</h3>
-            </div>
-            <div class="progress-full">
-                <div 
-                class="progress-bar bg-success" 
-                role="progressbar" 
-                :style="{ width: timeBalance + '%' }"
-                :aria-valuenow="timeBalance" 
-                aria-valuemin="0" 
-                aria-valuemax="100"
-                >
+                <div class="progress-full">
+                  <div 
+                    class="progress-bar" 
+                    role="progressbar" 
+                    :style="{ width: (workoutStreak / 12 * 100) + '%' }"
+                    :aria-valuenow="workoutStreak" 
+                    aria-valuemin="0" 
+                    aria-valuemax="12"
+                  ></div>
                 </div>
-            </div>
-            <small class="text-muted">Balance between academics and personal life</small>
-            </div>
+                <small class="text-muted">Goal: 12 days</small>
+              </div>
 
-              <!-- Placeholder note for future Chart.js integration -->
+              <!-- Study-Life Balance Progress -->
+              <div class="stat-card-full">
+                <div class="stat-header">
+                  <h6>Study-Life Balance</h6>
+                  <h3>{{ timeBalance }}%</h3>
+                </div>
+                <div class="progress-full">
+                  <div 
+                    class="progress-bar" 
+                    role="progressbar" 
+                    :style="{ width: timeBalance + '%' }"
+                    :aria-valuenow="timeBalance" 
+                    aria-valuemin="0" 
+                    aria-valuemax="100"
+                  ></div>
+                </div>
+                <small class="text-muted">Balance between academics and personal life</small>
+              </div>
+
+              <!-- Info Alert -->
               <div class="alert alert-light mt-3">
                 <small><i class="bi bi-info-circle me-1"></i>Charts will display real data once you log activities</small>
               </div>
@@ -322,8 +321,8 @@
           </div>
 
           <!-- Account Actions Card -->
-          <div class="card">
-            <div class="card-header bg-success text-white">
+          <div class="card mb-4">
+            <div class="card-header">
               <h5 class="mb-0"><i class="bi bi-shield-check me-2"></i>Account Actions</h5>
             </div>
             <div class="card-body">
@@ -351,7 +350,7 @@
               >
                 <i class="bi bi-trash me-2"></i>Delete Account
               </button>
-              <small class="text-muted d-block mt-2">This action cannot be undone</small>
+              <small class="text-muted d-block mt-2 text-center">This action cannot be undone</small>
             </div>
           </div>
 
@@ -364,14 +363,25 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-// TODO: Import Firebase modules
-// import { getAuth, signOut, updateProfile } from 'firebase/auth';
-// import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
-// import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { getAuth, onAuthStateChanged, signOut, updateProfile } from 'firebase/auth';
+import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const router = useRouter();
+const auth = getAuth();
+const db = getFirestore();
+const storage = getStorage();
+
+// Default avatar URL - hosted on a CDN or you can use a local asset
+const defaultAvatar = ref('https://ui-avatars.com/api/?name=User&size=150&background=e63946&color=fff');
 
 // State Management
+const isLoading = ref(true);
+const isSaving = ref(false);
+const successMessage = ref('');
+const errorMessage = ref('');
+const currentUser = ref(null);
+
 const profileData = ref({
   fullName: '',
   email: '',
@@ -397,15 +407,8 @@ const preferences = ref({
   darkMode: false
 });
 
-const workoutStreak = ref(4); // Dummy data
-const timeBalance = ref(65); // Dummy data (percentage)
-const defaultAvatar = ref('https://via.placeholder.com/150?text=User');
-
-const successMessage = ref('');
-const errorMessage = ref('');
-const isSaving = ref(false);
-
-// Chart.js reference
+const workoutStreak = ref(4);
+const timeBalance = ref(65);
 const calorieChartRef = ref(null);
 
 // Computed Properties
@@ -427,79 +430,111 @@ const calculatedBMI = computed(() => {
 
 // Lifecycle Hooks
 onMounted(() => {
-  loadUserData();
-  initializeCharts();
+  // Listen to auth state changes
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      currentUser.value = user;
+      loadUserData(user.uid);
+    } else {
+      router.push('/login');
+    }
+  });
 });
 
-// Methods
+// Firebase Functions
 
 /**
- * Load user data from Firebase Auth and Firestore
+ * Load user data from Firestore
  */
-async function loadUserData() {
+async function loadUserData(uid) {
   try {
-    // TODO: Replace with actual Firebase Auth integration
-    // const auth = getAuth();
-    // const user = auth.currentUser;
-    
-    // if (!user) {
-    //   router.push('/login');
-    //   return;
-    // }
+    isLoading.value = true;
 
-    // Load from Firebase Auth
-    // profileData.value.email = user.email;
-    // profileData.value.photoURL = user.photoURL || defaultAvatar.value;
-    // profileData.value.fullName = user.displayName || '';
+    // Get user document from Firestore
+    const userDocRef = doc(db, 'users', uid);
+    const userDoc = await getDoc(userDocRef);
 
-    // Load from Firestore - Personal Info
-    // const db = getFirestore();
-    // const userDocRef = doc(db, 'users', user.uid);
-    // const userDoc = await getDoc(userDocRef);
-    
-    // if (userDoc.exists()) {
-    //   const data = userDoc.data();
-    //   profileData.value = { ...profileData.value, ...data.profile };
-    // }
+    if (userDoc.exists()) {
+      const data = userDoc.data();
+      
+      // Load profile data
+      profileData.value = {
+        fullName: data.fullName || currentUser.value.displayName || '',
+        email: data.email || currentUser.value.email || '',
+        photoURL: data.photoURL || currentUser.value.photoURL || defaultAvatar.value,
+        gender: data.gender || '',
+        age: data.age || null,
+        height: data.height || null,
+        weight: data.weight || null
+      };
 
-    // Load from Firestore - Goals
-    // const goalsDocRef = doc(db, 'users', user.uid, 'goals', 'current');
-    // const goalsDoc = await getDoc(goalsDocRef);
-    
-    // if (goalsDoc.exists()) {
-    //   goalsData.value = { ...goalsData.value, ...goalsDoc.data() };
-    // }
+      // Load goals data
+      goalsData.value = {
+        goalType: data.goalType || '',
+        calorieTarget: data.calorieTarget || 2000,
+        dietaryPreference: data.dietaryPreference || '',
+        allergies: data.allergies || '',
+        workoutFrequency: data.workoutFrequency || 3
+      };
 
-    // Load preferences
-    // const prefsDocRef = doc(db, 'users', user.uid, 'preferences', 'settings');
-    // const prefsDoc = await getDoc(prefsDocRef);
-    
-    // if (prefsDoc.exists()) {
-    //   preferences.value = { ...preferences.value, ...prefsDoc.data() };
-    // }
-
-    // DUMMY DATA for testing
-    profileData.value = {
-      fullName: 'John Doe',
-      email: 'johndoe@university.edu',
-      photoURL: defaultAvatar.value,
-      gender: 'male',
-      age: 21,
-      height: 175,
-      weight: 70
-    };
-
-    goalsData.value = {
-      goalType: 'maintain',
-      calorieTarget: 2200,
-      dietaryPreference: 'vegetarian',
-      allergies: 'peanuts, shellfish',
-      workoutFrequency: 4
-    };
+      // Load preferences
+      preferences.value = {
+        spotifyConnected: data.spotifyConnected || false,
+        aiSuggestionsEnabled: data.aiSuggestionsEnabled !== undefined ? data.aiSuggestionsEnabled : true,
+        remindersEnabled: data.remindersEnabled !== undefined ? data.remindersEnabled : true,
+        darkMode: data.darkMode || false
+      };
+    } else {
+      // If document doesn't exist, create it with default values
+      await createDefaultUserDocument(uid);
+    }
 
   } catch (error) {
     console.error('Error loading user data:', error);
     errorMessage.value = 'Failed to load profile data. Please refresh the page.';
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+/**
+ * Create default user document in Firestore
+ */
+async function createDefaultUserDocument(uid) {
+  try {
+    const userDocRef = doc(db, 'users', uid);
+    
+    const defaultData = {
+      fullName: currentUser.value.displayName || '',
+      email: currentUser.value.email || '',
+      photoURL: currentUser.value.photoURL || defaultAvatar.value,
+      gender: '',
+      age: null,
+      height: null,
+      weight: null,
+      goalType: '',
+      calorieTarget: 2000,
+      dietaryPreference: '',
+      allergies: '',
+      workoutFrequency: 3,
+      spotifyConnected: false,
+      aiSuggestionsEnabled: true,
+      remindersEnabled: true,
+      darkMode: false,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    };
+
+    await setDoc(userDocRef, defaultData);
+    
+    // Load the default data into state
+    profileData.value.fullName = defaultData.fullName;
+    profileData.value.email = defaultData.email;
+    profileData.value.photoURL = defaultData.photoURL;
+    
+  } catch (error) {
+    console.error('Error creating default user document:', error);
+    errorMessage.value = 'Failed to initialize profile.';
   }
 }
 
@@ -523,108 +558,103 @@ async function handlePhotoUpload(event) {
   }
 
   try {
-    // TODO: Upload to Firebase Storage
-    // const auth = getAuth();
-    // const storage = getStorage();
-    // const photoRef = storageRef(storage, `profile-photos/${auth.currentUser.uid}`);
-    // await uploadBytes(photoRef, file);
-    // const photoURL = await getDownloadURL(photoRef);
+    isSaving.value = true;
     
-    // Update profile
-    // await updateProfile(auth.currentUser, { photoURL });
-    // profileData.value.photoURL = photoURL;
-
-    // DUMMY: Show preview locally
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      profileData.value.photoURL = e.target.result;
-    };
-    reader.readAsDataURL(file);
-
+    // Create storage reference
+    const photoStorageRef = storageRef(storage, `profile-photos/${currentUser.value.uid}`);
+    
+    // Upload file
+    await uploadBytes(photoStorageRef, file);
+    
+    // Get download URL
+    const photoURL = await getDownloadURL(photoStorageRef);
+    
+    // Update Firebase Auth profile
+    await updateProfile(currentUser.value, { photoURL });
+    
+    // Update Firestore
+    const userDocRef = doc(db, 'users', currentUser.value.uid);
+    await updateDoc(userDocRef, {
+      photoURL,
+      updatedAt: serverTimestamp()
+    });
+    
+    // Update local state
+    profileData.value.photoURL = photoURL;
+    
     successMessage.value = 'Profile picture updated successfully!';
+    
   } catch (error) {
     console.error('Error uploading photo:', error);
     errorMessage.value = 'Failed to upload photo. Please try again.';
-  }
-}
-
-/**
- * Save profile data to Firebase
- */
-async function saveProfile() {
-  try {
-    isSaving.value = true;
-
-    // TODO: Update Firebase Auth displayName
-    // const auth = getAuth();
-    // await updateProfile(auth.currentUser, {
-    //   displayName: profileData.value.fullName
-    // });
-
-    // TODO: Update Firestore
-    // const db = getFirestore();
-    // const userDocRef = doc(db, 'users', auth.currentUser.uid);
-    // await updateDoc(userDocRef, {
-    //   profile: profileData.value,
-    //   updatedAt: new Date()
-    // });
-
-    successMessage.value = 'Profile updated successfully!';
-    console.log('Profile saved:', profileData.value);
-  } catch (error) {
-    console.error('Error saving profile:', error);
-    errorMessage.value = 'Failed to save profile. Please try again.';
   } finally {
     isSaving.value = false;
   }
 }
 
 /**
- * Save goals data to Firestore
- */
-async function saveGoals() {
-  try {
-    isSaving.value = true;
-
-    // TODO: Save to Firestore subcollection
-    // const auth = getAuth();
-    // const db = getFirestore();
-    // const goalsDocRef = doc(db, 'users', auth.currentUser.uid, 'goals', 'current');
-    // await setDoc(goalsDocRef, {
-    //   ...goalsData.value,
-    //   updatedAt: new Date()
-    // }, { merge: true });
-
-    successMessage.value = 'Goals updated successfully!';
-    console.log('Goals saved:', goalsData.value);
-  } catch (error) {
-    console.error('Error saving goals:', error);
-    errorMessage.value = 'Failed to save goals. Please try again.';
-  } finally {
-    isSaving.value = false;
-  }
-}
-
-/**
- * Save all data (profile + goals + preferences)
+ * Save all profile data to Firestore
  */
 async function saveAllData() {
   try {
     isSaving.value = true;
-    
-    await saveProfile();
-    await saveGoals();
+    errorMessage.value = '';
 
-    // TODO: Save preferences
-    // const auth = getAuth();
-    // const db = getFirestore();
-    // const prefsDocRef = doc(db, 'users', auth.currentUser.uid, 'preferences', 'settings');
-    // await setDoc(prefsDocRef, preferences.value, { merge: true });
+    // Validate required fields
+    if (!profileData.value.fullName || !profileData.value.email) {
+      errorMessage.value = 'Please fill in all required fields';
+      return;
+    }
+
+    const userDocRef = doc(db, 'users', currentUser.value.uid);
+    
+    // Prepare data to save
+    const dataToSave = {
+      // Profile data
+      fullName: profileData.value.fullName,
+      email: profileData.value.email,
+      gender: profileData.value.gender,
+      age: profileData.value.age,
+      height: profileData.value.height,
+      weight: profileData.value.weight,
+      photoURL: profileData.value.photoURL,
+      
+      // Goals data
+      goalType: goalsData.value.goalType,
+      calorieTarget: goalsData.value.calorieTarget,
+      dietaryPreference: goalsData.value.dietaryPreference,
+      allergies: goalsData.value.allergies,
+      workoutFrequency: goalsData.value.workoutFrequency,
+      
+      // Preferences
+      spotifyConnected: preferences.value.spotifyConnected,
+      aiSuggestionsEnabled: preferences.value.aiSuggestionsEnabled,
+      remindersEnabled: preferences.value.remindersEnabled,
+      darkMode: preferences.value.darkMode,
+      
+      // Metadata
+      updatedAt: serverTimestamp()
+    };
+
+    // Update Firestore
+    await updateDoc(userDocRef, dataToSave);
+
+    // Update Firebase Auth display name if changed
+    if (currentUser.value.displayName !== profileData.value.fullName) {
+      await updateProfile(currentUser.value, {
+        displayName: profileData.value.fullName
+      });
+    }
 
     successMessage.value = 'All changes saved successfully!';
-    console.log('All data saved');
+    
+    // Clear success message after 3 seconds
+    setTimeout(() => {
+      successMessage.value = '';
+    }, 3000);
+    
   } catch (error) {
-    console.error('Error saving all data:', error);
+    console.error('Error saving profile:', error);
     errorMessage.value = 'Failed to save changes. Please try again.';
   } finally {
     isSaving.value = false;
@@ -636,12 +666,8 @@ async function saveAllData() {
  */
 async function handleLogout() {
   try {
-    // TODO: Firebase sign out
-    // const auth = getAuth();
-    // await signOut(auth);
-    
+    await signOut(auth);
     router.push('/login');
-    console.log('User logged out');
   } catch (error) {
     console.error('Error logging out:', error);
     errorMessage.value = 'Failed to logout. Please try again.';
@@ -662,21 +688,21 @@ function confirmDeleteAccount() {
 }
 
 /**
- * Delete user account from Firebase
+ * Delete user account (placeholder - implement with caution)
  */
 async function deleteAccount() {
   try {
-    // TODO: Delete user data from Firestore
-    // const auth = getAuth();
-    // const db = getFirestore();
-    // const userDocRef = doc(db, 'users', auth.currentUser.uid);
-    // await deleteDoc(userDocRef);
-
-    // TODO: Delete Firebase Auth account
-    // await auth.currentUser.delete();
-
-    router.push('/login');
-    console.log('Account deleted');
+    // This is a sensitive operation - implement with proper security
+    // You may want to require re-authentication before deletion
+    
+    errorMessage.value = 'Account deletion requires re-authentication. Please contact support.';
+    
+    // TODO: Implement proper account deletion flow
+    // 1. Re-authenticate user
+    // 2. Delete Firestore data
+    // 3. Delete Storage files
+    // 4. Delete Auth account
+    
   } catch (error) {
     console.error('Error deleting account:', error);
     errorMessage.value = 'Failed to delete account. Please contact support.';
@@ -684,57 +710,36 @@ async function deleteAccount() {
 }
 
 /**
- * Initialize Chart.js for progress visualization
+ * Initialize Chart.js (placeholder)
  */
 function initializeCharts() {
   // TODO: Initialize Chart.js when ready
-  // This is a placeholder for Chart.js integration
-  
-  // Example Chart.js initialization:
-  // import Chart from 'chart.js/auto';
-  // 
-  // if (calorieChartRef.value) {
-  //   const ctx = calorieChartRef.value.getContext('2d');
-  //   new Chart(ctx, {
-  //     type: 'line',
-  //     data: {
-  //       labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-  //       datasets: [{
-  //         label: 'Calories',
-  //         data: [2100, 1950, 2200, 2050, 2300, 1900, 2150],
-  //         borderColor: 'rgb(75, 192, 192)',
-  //         tension: 0.1
-  //       }]
-  //     },
-  //     options: {
-  //       responsive: true,
-  //       maintainAspectRatio: true
-  //     }
-  //   });
-  // }
-
   console.log('Charts initialized (placeholder)');
 }
 </script>
 
 <style scoped>
+/* Container */
 .profile-container {
   min-height: 100vh;
-  background-color: white;
+  background-color: #FFF7E6;
   padding: 20px 0;
 }
 
+/* Title */
 .page-title {
-  color: white;
+  color: #495057;
   font-weight: 700;
   text-align: center;
 }
 
+/* Cards */
 .card {
   border: none;
   border-radius: 15px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s;
+  background-color: #FFF7E6;
+  
 }
 
 .card:hover {
@@ -742,11 +747,17 @@ function initializeCharts() {
 }
 
 .card-header {
+  background-color: #e63946 !important;
+  color: #ffffff !important;
   border-radius: 15px 15px 0 0 !important;
   font-weight: 600;
 }
 
-/* Profile Picture Styles */
+.card-body {
+  background-color: #FFEBD0;
+}
+
+/* Profile Picture */
 .profile-picture-wrapper {
   display: flex;
   flex-direction: column;
@@ -758,118 +769,62 @@ function initializeCharts() {
   height: 150px;
   border-radius: 50%;
   object-fit: cover;
-  border: 5px solid grey;
+  border: 4px solid #e63946;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-change-photo {
+  background-color: #e63946;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.btn-change-photo:hover {
+  background-color: #c53030;
+  transform: scale(1.05);
+}
+
+/* Forms */
+.form-label {
+  font-weight: 600;
+  color: #495057;
+}
+
+.form-control,
+.form-select {
+  border-radius: 8px;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #e63946;
+  box-shadow: 0 0 0 0.2rem rgba(230, 57, 70, 0.25);
+}
+
+.form-check-input:checked {
+  background-color: #e63946;
+  border-color: #e63946;
 }
 
 /* Chart Placeholder */
 .chart-placeholder {
-  background: #f8f9fa;
+  background-color: #FFF7E6;
   border-radius: 10px;
   padding: 20px;
   min-height: 200px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-}
-
-/* Stat Cards */
-.stat-card {
-  display: flex;
-  align-items: center;
-  background-color: #f8f9fa;
-  color: #495057;
-  padding: 15px;
-  border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.stat-icon {
-  font-size: 2.5rem;
-  margin-right: 15px;
-}
-
-.stat-content h6 {
-  margin: 0;
-  font-size: 0.9rem;
-  opacity: 0.9;
-}
-
-.stat-content h3 {
-  margin: 5px 0 0 0;
-  font-size: 1.8rem;
-  font-weight: 700;
-}
-
-/* Progress Bar Styling */
-.progress {
-  height: 45px;
-  border-radius: 10px;
-  margin-top: 10px;
-}
-
-.progress-bar {
-  font-weight: 600;
-  line-height: 25px;
-}
-
-/* Form Styling */
-.form-label {
-  font-weight: 600;
-  color: #495057;
-}
-
-.form-control:focus,
-.form-select:focus {
-  border-color: #005d6c;
-  box-shadow: 0 0 0 0.2rem #005d6c;
-}
-
-.form-check-input:checked {
-  background-color: #005d6c;
-  border-color: #005d6c;
-}
-
-/* Button Styling */
-.btn-primary {
-  background: linear-gradient(135deg, #005d6c 0%, green 100%);
-  border: none;
-  font-weight: 600;
-}
-
-.btn-primary:hover {
-  background: linear-gradient(135deg, #005d6c 0%, #005d6c 100%);
-}
-
-/* Alert Styling */
-.alert {
-  border-radius: 10px;
-  border: none;
-  background-color: rgb(206, 255, 222);
-}
-
-.btn-outline-secondary:hover {
-    background: linear-gradient(135deg, #005d6c 0%, #005d6c 100%);
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .profile-picture {
-    width: 120px;
-    height: 120px;
-  }
-
-  .stat-icon {
-    font-size: 2rem;
-  }
-
-  .stat-content h3 {
-    font-size: 1.5rem;
-  }
-}
-
+/* Full Width Stat Cards */
 .stat-card-full {
-  background-color: #f8f9fa;
+  background-color: #FFF7E6;
   color: #495057;
   padding: 20px;
   border-radius: 10px;
@@ -894,7 +849,7 @@ function initializeCharts() {
   margin: 0;
   font-size: 1.8rem;
   font-weight: 700;
-  color: #198754;
+  color: #e63946;
 }
 
 .progress-full {
@@ -908,13 +863,7 @@ function initializeCharts() {
 .progress-full .progress-bar {
   height: 100%;
   transition: width 0.6s ease;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding-right: 10px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  background: linear-gradient(135deg, #005d6c 0%, green 100%);
+  background: linear-gradient(135deg, #e63946 0%, rgb(253, 222, 172) 100%);
 }
 
 .stat-card-full small {
@@ -923,6 +872,105 @@ function initializeCharts() {
   font-size: 0.85rem;
 }
 
-/* Bootstrap Icons (ensure you have Bootstrap Icons loaded) */
+/* Buttons */
+.btn-primary {
+  background-color: #FFF7E6;
+  color: rgb(88, 88, 88);
+  border: 1px solid #e63946;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #e63946 0%, rgb(253, 222, 172) 100%);
+  color: white;
+}
+
+.btn-outline-secondary {
+  color: rgb(88, 88, 88);
+  background-color: #FFF7E6;
+  border: 1px solid #6c757d;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-outline-secondary:hover {
+  background: linear-gradient(135deg, #e63946 0%, rgb(253, 222, 172) 100%);
+  color: white;
+}
+
+.btn-outline-danger {
+  color: #e63946;
+  background-color: #FFF7E6;
+  border: 1px solid #e63946;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-outline-danger:hover {
+  background: linear-gradient(135deg, #e63946 0%, rgb(253, 222, 172) 100%);
+  color: white;
+}
+
+/* Alerts */
+.alert {
+  border-radius: 10px;
+  border: none;
+}
+
+.alert-success {
+  background-color: rgb(255, 239, 212);
+  color: #e63946;
+  border-left: 4px solid #e63946;
+}
+
+.alert-danger {
+  background-color: rgb(255, 239, 212);
+  color: #e63946;
+  border-left: 4px solid #e63946;
+}
+
+.alert-info {
+  background-color: rgb(255, 239, 212);
+  color: #e63946;
+}
+
+.alert-light {
+  background-color: rgb(255, 239, 212);
+  color: #495057;
+}
+
+.btn-close {
+  filter: invert(0.3) sepia(1) saturate(5) hue-rotate(315deg);
+}
+
+/* Loading Spinner */
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+  border-width: 0.3em;
+}
+
+.spinner-border.text-primary {
+  color: #e63946 !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .profile-picture {
+    width: 120px;
+    height: 120px;
+  }
+
+  .stat-header h3 {
+    font-size: 1.5rem;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+  }
+}
+
+/* Bootstrap Icons */
 @import url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css');
 </style>
