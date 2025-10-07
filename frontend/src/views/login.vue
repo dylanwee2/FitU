@@ -35,11 +35,8 @@
                       <button data-mdb-button-init data-mdb-ripple-init class="btn btn-dark btn-lg btn-block" type="button" @click.prevent="login">Login</button>
                     </div>
 
-                    <a class="small text-muted" href="#!">Forgot password?</a>
-                    <p class="mb-5 pb-lg-2" style="color: #393f81;">Don't have an account? <a href="#!"
-                        style="color: #393f81;">Register here</a></p>
-                    <a href="#!" class="small text-muted">Terms of use.</a>
-                    <a href="#!" class="small text-muted">Privacy policy</a>
+                    <p class="mb-5 pb-lg-2" style="color: #393f81;">Don't have an account? <router-link to="/signup"
+                        style="color: #393f81;">Register here</router-link></p>
                   </form>
 
                 </div>
