@@ -1,31 +1,55 @@
 <template>
-  <div class="container">
-    <h1>Login</h1>
-    <form>
-      <!-- Text input -->
-      <div class="mb-3">
-        <label class="form-label">Email address</label>
-        <input type="email" class="form-control" placeholder="name@example.com" v-model="emailInput">
-      </div>
-  
-      <!-- Password -->
-      <div class="mb-3">
-        <label class="form-label">Password</label>
-        <input type="password" class="form-control" v-model="passwordInput">
-      </div>
-      
-      <!-- Submit button -->
-      <button type="submit" class="btn btn-primary" @click.prevent="login">Submit</button>
-    </form>
+  <section class="vh-100" style="background-color: #9A616D;">
+    <div class="container py-5 h-100">
+      <div class="row d-flex justify-content-center align-items-center h-100">
+        <div class="col col-xl-10">
+          <div class="card" style="border-radius: 1rem;">
+            <div class="row g-0">
+              <div class="col-md-6 col-lg-5 d-none d-md-block">
+                <img src="../../public/junwei.png"
+                  alt="login form" class="img-fluid w-100 h-100" style="border-radius: 1rem 0 0 1rem; object-fit: cover;" />
+              </div>
+              <div class="col-md-6 col-lg-7 d-flex align-items-center">
+                <div class="card-body p-4 p-lg-5 text-black">
 
-    <div class="mb-3">
-        <label class="form-label">Gemini Prompt</label>
-        <input type="text" class="form-control" v-model="geminiPrompt">
-      </div>
+                  <form>
 
-    <!-- GEMINI button -->
-      <button type="submit" class="btn btn-primary" @click.prevent="gemini_response">Gemini Button</button>
-  </div>
+                    <div class="d-flex align-items-center mb-3 pb-1">
+                      <i class="fas fa-cubes fa-2x me-3" style="color: #ff6219;"></i>
+                      <span class="h1 fw-bold mb-0">FitU</span>
+                    </div>
+
+                    <h5 class="fw-normal mb-3 pb-3" style="letter-spacing: 1px;">Sign into your account</h5>
+
+                    <div data-mdb-input-init class="form-outline mb-4">
+                      <input type="email" id="form2Example17" class="form-control form-control-lg" v-model="emailInput" />
+                      <label class="form-label" for="form2Example17">Email address</label>
+                    </div>
+
+                    <div data-mdb-input-init class="form-outline mb-4">
+                      <input type="password" id="form2Example27" class="form-control form-control-lg" v-model="passwordInput" />
+                      <label class="form-label" for="form2Example27">Password</label>
+                    </div>
+
+                    <div class="pt-1 mb-4">
+                      <button data-mdb-button-init data-mdb-ripple-init class="btn btn-dark btn-lg btn-block" type="button" @click.prevent="login">Login</button>
+                    </div>
+
+                    <a class="small text-muted" href="#!">Forgot password?</a>
+                    <p class="mb-5 pb-lg-2" style="color: #393f81;">Don't have an account? <a href="#!"
+                        style="color: #393f81;">Register here</a></p>
+                    <a href="#!" class="small text-muted">Terms of use.</a>
+                    <a href="#!" class="small text-muted">Privacy policy</a>
+                  </form>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 </template>
 
 <script>
@@ -42,7 +66,6 @@ export default {
 
     const emailInput = ref('');
     const passwordInput = ref('');
-    const geminiPrompt = ref('');
 
     const login = async () => {
       try {
@@ -54,22 +77,14 @@ export default {
       }
     }
 
-    const gemini_response = async () => {
-      try {
-        const response = await fetch("http://localhost:3000/api/gemini/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: geminiPrompt.value }),
-        });
-
-        const data = await response.json();
-        console.log(data)
-      } catch (err) {
-        console.error("Error calling Gemini API:", err);
-        alert("Something went wrong! Check console.");
-    }}
-
-    return { emailInput, passwordInput, geminiPrompt, login, gemini_response };
+    return { emailInput, passwordInput, login };
   }
 }
 </script>
+
+<style scoped>
+/* Custom styles for the login form */
+.btn-block {
+  width: 100%;
+}
+</style>
