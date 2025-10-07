@@ -128,9 +128,9 @@ export default {
 
       try {
         // Import Three.js dynamically
-        const THREE = await import('three')
-        const { OrbitControls } = await import('three/examples/jsm/controls/OrbitControls.js')
-        const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js')
+        // const THREE = await import('three')
+        // const { OrbitControls } = await import('three/examples/jsm/controls/OrbitControls.js')
+        // const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js')
 
         // Scene setup
         scene = new THREE.Scene()
