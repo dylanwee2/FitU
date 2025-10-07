@@ -17,6 +17,14 @@
       <!-- Submit button -->
       <button type="submit" class="btn btn-primary" @click.prevent="login">Submit</button>
     </form>
+
+    <div class="mb-3">
+        <label class="form-label">Gemini Prompt</label>
+        <input type="text" class="form-control" v-model="geminiPrompt">
+      </div>
+
+    <!-- GEMINI button -->
+      <button type="submit" class="btn btn-primary" @click.prevent="gemini_response">Gemini Button</button>
   </div>
 </template>
 
@@ -34,6 +42,7 @@ export default {
 
     const emailInput = ref('');
     const passwordInput = ref('');
+    const geminiPrompt = ref('');
 
     const login = async () => {
       try {
@@ -44,7 +53,23 @@ export default {
         alert('Sign In failed.')
       }
     }
-    return { emailInput, passwordInput, login };
+
+    const gemini_response = async () => {
+      try {
+        const response = await fetch("http://localhost:3000/api/gemini/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: geminiPrompt.value }),
+        });
+
+        const data = await response.json();
+        console.log(data)
+      } catch (err) {
+        console.error("Error calling Gemini API:", err);
+        alert("Something went wrong! Check console.");
+    }}
+
+    return { emailInput, passwordInput, geminiPrompt, login, gemini_response };
   }
 }
 </script>
