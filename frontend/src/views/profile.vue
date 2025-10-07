@@ -955,6 +955,11 @@ function initializeCharts() {
   color: #e63946 !important;
 }
 
+.card-body {
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .profile-picture {
