@@ -1,0 +1,53 @@
+:root {
+  /* Red & Cream Theme - Light Only */
+  --bg: #FFF7E6;      /* page background (cream) */
+  --surface: #FFEBD0; /* cards/sections */
+  --text: #1E1B16;    /* primary text */
+  --muted: #7A6E65;   /* secondary text */
+
+  --primary: #E63946;    /* red */
+  --primary-700: #C92D3A;/* hover/darken */
+  --secondary: #7A0017;  /* deep red */
+  --accent: #D4A017;     /* warm gold */
+
+  --success: #16A34A;
+  --warning: #D97706;
+  --danger: #DC2626;
+
+  --ring: #E63946;        /* focus ring */
+  --shadow-card: 0 8px 30px rgba(30, 27, 22, 0.12);
+  --border-subtle: color-mix(in srgb, var(--text) 12%, transparent);
+  --hero-gradient: linear-gradient(135deg, #E63946 0%, #D4A017 100%);
+}
+
+/* Theme Utility Classes */
+.u-bg { background: var(--bg); }
+.u-surface { background: var(--surface); }
+.u-text { color: var(--text); }
+.u-muted { color: var(--muted); }
+.u-card { background: var(--surface); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-card); border-radius: 12px; }
+.u-link { color: var(--primary); text-decoration: none; }
+.u-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.u-btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1rem; border-radius: 10px; font-weight: 600; outline-offset: 2px; border: none; cursor: pointer; transition: all 0.2s ease; }
+.u-btn:focus-visible { outline: 2px solid color-mix(in srgb, var(--ring) 70%, transparent); }
+.u-btn--primary { background: var(--primary); color: #FFF7E6; }
+.u-btn--primary:hover { background: var(--primary-700); }
+.u-btn--secondary { border: 1px solid var(--primary); color: var(--text); background: transparent; }
+.u-btn--secondary:hover { background: var(--primary); color: #FFF7E6; }
+.u-btn--danger { background: var(--danger); color: #fff; }
+.u-btn--danger:hover { filter: brightness(0.92); }
+.u-btn--accent { background: var(--accent); color: var(--text); }
+.u-btn--accent:hover { filter: brightness(0.92); }
+.u-hero-gradient { background: var(--hero-gradient); }
+.u-text-primary { color: var(--primary); }
+.u-text-secondary { color: var(--secondary); }
+.u-text-accent { color: var(--accent); }
+.u-text-success { color: var(--success); }
+.u-text-warning { color: var(--warning); }
+.u-text-danger { color: var(--danger); }
+.u-bg-primary { background: var(--primary); }
+.u-bg-secondary { background: var(--secondary); }
+.u-bg-accent { background: var(--accent); }
+.u-bg-success { background: var(--success); }
+.u-bg-warning { background: var(--warning); }
+.u-bg-danger { background: var(--danger); }

@@ -2,7 +2,7 @@
   <nav 
     role="navigation" 
     aria-label="Main navigation"
-    class="navbar navbar-expand-lg navbar-light bg-light sticky-top"
+    class="navbar navbar-expand-lg sticky-top u-surface"
     :class="{ 'navbar-shadow': isScrolled }"
   >
     <div class="container-fluid">
@@ -10,13 +10,13 @@
       <a href="#main" class="visually-hidden-focusable">Skip to content</a>
       
       <!-- Brand -->
-      <router-link class="navbar-brand fw-bold" to="/">
+      <router-link class="navbar-brand fw-bold u-text-primary" to="/">
         FitU
       </router-link>
 
       <!-- Mobile menu toggle -->
       <button 
-        class="navbar-toggler" 
+        class="navbar-toggler u-btn" 
         type="button" 
         :aria-expanded="isMobileMenuOpen"
         aria-controls="navbarNav"
@@ -42,7 +42,7 @@
           >
             <router-link 
               :to="link.href"
-              class="nav-link d-flex align-items-center"
+              class="nav-link d-flex align-items-center u-link"
               :class="{ 'active': isActiveRoute(link.href) }"
               :aria-current="isActiveRoute(link.href) ? 'page' : undefined"
               @click="closeMobileMenu"
@@ -168,29 +168,29 @@ export default {
 
 <style scoped>
 .navbar-shadow {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-card);
   transition: box-shadow 0.3s ease;
 }
 
 .nav-link.active {
   font-weight: 600;
-  color: var(--bs-primary) !important;
+  color: var(--primary) !important;
 }
 
 .navbar-brand {
   font-size: 1.5rem;
-  color: var(--bs-primary) !important;
+  color: var(--primary) !important;
 }
 
 .navbar-brand:hover {
-  color: var(--bs-primary) !important;
+  color: var(--primary) !important;
 }
 
 /* Focus styles for accessibility */
 .nav-link:focus,
 .navbar-brand:focus,
 .navbar-toggler:focus {
-  outline: 2px solid var(--bs-primary);
+  outline: 2px solid color-mix(in srgb, var(--ring) 70%, transparent);
   outline-offset: 2px;
 }
 
@@ -219,8 +219,8 @@ export default {
   overflow: visible !important;
   clip: auto !important;
   white-space: normal !important;
-  background: var(--bs-primary) !important;
-  color: white !important;
+  background: var(--primary) !important;
+  color: #FFF7E6 !important;
   text-decoration: none !important;
   border-radius: 4px !important;
 }
@@ -228,13 +228,28 @@ export default {
 /* Mobile menu improvements */
 @media (max-width: 991.98px) {
   .navbar-collapse {
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    border-top: 1px solid var(--border-subtle);
     margin-top: 0.5rem;
     padding-top: 0.5rem;
   }
-  
+
   .nav-link {
     padding: 0.75rem 1rem;
   }
+}
+
+/* Override Bootstrap navbar styles with theme tokens */
+.navbar {
+  background: var(--surface) !important;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.navbar-toggler {
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+}
+
+.navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2830, 27, 22, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 }
 </style>

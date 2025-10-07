@@ -1,10 +1,10 @@
 <template>
-  <div id="app" class="d-flex flex-column min-vh-100">
+  <div id="app" class="u-bg u-text d-flex flex-column min-vh-100">
     <!-- Global NavBar Component -->
     <Navbar />
 
     <!-- Main content area -->
-    <main id="main" class="flex-grow-1">
+    <main id="main" class="flex-grow-1" tabindex="-1">
       <!-- Dynamic content (changes based on URL) -->
       <router-view />
     </main>
@@ -28,22 +28,26 @@ export default {
 </script>
 
 <style>
-/* Global styles for the app */
-.min-vh-100 {
-  min-height: 100vh;
-}
-
-.flex-grow-1 {
-  flex-grow: 1;
-}
-
 /* Ensure main element is focusable for accessibility */
 #main:focus {
   outline: none;
 }
 
 #main:focus-visible {
-  outline: 2px solid var(--bs-primary);
+  outline: 2px solid color-mix(in srgb, var(--ring) 70%, transparent);
   outline-offset: 2px;
+}
+
+/* Ensure proper flexbox layout for footer positioning */
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+#main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 </style>
