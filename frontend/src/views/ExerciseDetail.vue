@@ -304,6 +304,24 @@ const loadExercise = async () => {
       targetMuscles: ['Triceps', 'Chest', 'Shoulders'],
       equipment: 'body weight'
     },
+    'push-ups': {
+      id: 'push-ups',
+      name: 'Push-ups',
+      category: 'Strength',
+      difficulty: 'Beginner',
+      duration: 15,
+      instructions: 'A classic upper body exercise that targets chest, shoulders, and triceps.',
+      steps: [
+        'Start in a plank position with hands slightly wider than shoulders',
+        'Lower your body until chest nearly touches the floor',
+        'Push back up to starting position',
+        'Repeat for desired number of reps'
+      ],
+      sets: 3,
+      reps: 12,
+      targetMuscles: ['Chest', 'Shoulders', 'Triceps'],
+      equipment: 'body weight'
+    },
     'pull-ups': {
       id: 'pull-ups',
       name: 'Pull-ups',
@@ -339,6 +357,333 @@ const loadExercise = async () => {
       reps: 10,
       targetMuscles: ['Middle Back', 'Rhomboids', 'Biceps'],
       equipment: 'barbell'
+    },
+    'lateral-raises': {
+      id: 'lateral-raises',
+      name: 'Lateral Raises',
+      category: 'Strength',
+      difficulty: 'Beginner',
+      duration: 10,
+      instructions: 'An isolation exercise that targets the lateral deltoids.',
+      steps: [
+        'Stand with dumbbells at your sides',
+        'Raise arms out to the sides until parallel to floor',
+        'Lower with control back to starting position',
+        'Keep slight bend in elbows'
+      ],
+      sets: 3,
+      reps: 12,
+      targetMuscles: ['Delts', 'Traps'],
+      equipment: 'dumbbell'
+    },
+    'bicep-curls': {
+      id: 'bicep-curls',
+      name: 'Bicep Curls',
+      category: 'Strength',
+      difficulty: 'Beginner',
+      duration: 10,
+      instructions: 'A classic arm exercise that targets the biceps.',
+      steps: [
+        'Stand with dumbbells at your sides',
+        'Curl the weights up to your shoulders',
+        'Squeeze biceps at the top',
+        'Lower with control back to starting position'
+      ],
+      sets: 3,
+      reps: 12,
+      targetMuscles: ['Biceps', 'Forearms'],
+      equipment: 'dumbbell'
+    },
+    'face-pulls': {
+      id: 'face-pulls',
+      name: 'Face Pulls',
+      category: 'Strength',
+      difficulty: 'Intermediate',
+      duration: 12,
+      instructions: 'A rear deltoid exercise that improves posture and shoulder health.',
+      steps: [
+        'Set cable at face height with rope attachment',
+        'Pull rope toward your face',
+        'Separate rope ends at your ears',
+        'Squeeze shoulder blades together'
+      ],
+      sets: 3,
+      reps: 15,
+      targetMuscles: ['Rear Delts', 'Rhomboids', 'Middle Traps'],
+      equipment: 'cable'
+    },
+    'lat-pulldown': {
+      id: 'lat-pulldown',
+      name: 'Lat Pulldown',
+      category: 'Strength',
+      difficulty: 'Intermediate',
+      duration: 15,
+      instructions: 'A machine exercise that targets the latissimus dorsi.',
+      steps: [
+        'Sit at lat pulldown machine',
+        'Grip bar wider than shoulder width',
+        'Pull bar down to upper chest',
+        'Control the weight back up'
+      ],
+      sets: 3,
+      reps: 10,
+      targetMuscles: ['Lats', 'Rhomboids', 'Biceps'],
+      equipment: 'machine'
+    },
+    'plank': {
+      id: 'plank',
+      name: 'Plank',
+      category: 'Core',
+      difficulty: 'Intermediate',
+      duration: 5,
+      instructions: 'An isometric core exercise that strengthens the entire core region.',
+      steps: [
+        'Start in a push-up position',
+        'Lower to your forearms',
+        'Keep your body in a straight line',
+        'Hold for the desired time'
+      ],
+      sets: 3,
+      reps: '30 seconds',
+      targetMuscles: ['Core', 'Shoulders', 'Glutes'],
+      equipment: 'body weight'
+    },
+    'crunches': {
+      id: 'crunches',
+      name: 'Crunches',
+      category: 'Core',
+      difficulty: 'Beginner',
+      duration: 8,
+      instructions: 'A basic abdominal exercise that targets the rectus abdominis.',
+      steps: [
+        'Lie on your back with knees bent',
+        'Place hands behind your head',
+        'Lift your shoulders off the ground',
+        'Lower with control'
+      ],
+      sets: 3,
+      reps: 15,
+      targetMuscles: ['Abs', 'Core'],
+      equipment: 'body weight'
+    },
+    'russian-twists': {
+      id: 'russian-twists',
+      name: 'Russian Twists',
+      category: 'Core',
+      difficulty: 'Intermediate',
+      duration: 8,
+      instructions: 'A rotational core exercise that targets the obliques.',
+      steps: [
+        'Sit with knees bent and feet off the ground',
+        'Lean back slightly and twist your torso',
+        'Touch the ground on each side alternately',
+        'Keep core engaged throughout'
+      ],
+      sets: 3,
+      reps: '30 seconds',
+      targetMuscles: ['Obliques', 'Core'],
+      equipment: 'body weight'
+    },
+    'dead-bug': {
+      id: 'dead-bug',
+      name: 'Dead Bug',
+      category: 'Core',
+      difficulty: 'Beginner',
+      duration: 10,
+      instructions: 'A core stability exercise that teaches proper core engagement.',
+      steps: [
+        'Lie on back with arms straight up',
+        'Bring knees to 90 degrees',
+        'Lower opposite arm and leg',
+        'Return to start and switch sides'
+      ],
+      sets: 3,
+      reps: 10,
+      targetMuscles: ['Core', 'Hip Flexors'],
+      equipment: 'body weight'
+    },
+    'mountain-climbers': {
+      id: 'mountain-climbers',
+      name: 'Mountain Climbers',
+      category: 'Cardio',
+      difficulty: 'Intermediate',
+      duration: 8,
+      instructions: 'A dynamic cardio exercise that targets core while getting your heart rate up.',
+      steps: [
+        'Start in plank position',
+        'Bring right knee toward chest',
+        'Quickly switch legs',
+        'Continue alternating at fast pace',
+        'Keep core engaged throughout'
+      ],
+      sets: 3,
+      reps: '30 seconds',
+      targetMuscles: ['Core', 'Shoulders', 'Legs'],
+      equipment: 'body weight'
+    },
+    'squats': {
+      id: 'squats',
+      name: 'Squats',
+      category: 'Strength',
+      difficulty: 'Beginner',
+      duration: 10,
+      instructions: 'A fundamental lower body exercise that targets glutes, quads, and hamstrings.',
+      steps: [
+        'Stand with feet shoulder-width apart',
+        'Lower your body by bending knees and hips',
+        'Keep chest up and weight on heels',
+        'Return to starting position'
+      ],
+      sets: 3,
+      reps: 15,
+      targetMuscles: ['Glutes', 'Quadriceps', 'Hamstrings'],
+      equipment: 'body weight'
+    },
+    'lunges': {
+      id: 'lunges',
+      name: 'Lunges',
+      category: 'Strength',
+      difficulty: 'Beginner',
+      duration: 12,
+      instructions: 'A unilateral leg exercise that improves balance and strength.',
+      steps: [
+        'Step forward with one leg',
+        'Lower your hips until both knees are bent at 90 degrees',
+        'Push back to starting position',
+        'Repeat with other leg'
+      ],
+      sets: 3,
+      reps: 12,
+      targetMuscles: ['Glutes', 'Quadriceps', 'Hamstrings'],
+      equipment: 'body weight'
+    },
+    'deadlifts': {
+      id: 'deadlifts',
+      name: 'Deadlifts',
+      category: 'Strength',
+      difficulty: 'Advanced',
+      duration: 20,
+      instructions: 'A compound exercise that targets the posterior chain.',
+      steps: [
+        'Stand with feet hip-width apart',
+        'Bend at hips and knees to grab bar',
+        'Keep chest up and back straight',
+        'Drive through heels to stand up'
+      ],
+      sets: 4,
+      reps: 6,
+      targetMuscles: ['Hamstrings', 'Glutes', 'Lower Back'],
+      equipment: 'barbell'
+    },
+    'calf-raises': {
+      id: 'calf-raises',
+      name: 'Calf Raises',
+      category: 'Strength',
+      difficulty: 'Beginner',
+      duration: 8,
+      instructions: 'An isolation exercise that targets the calf muscles.',
+      steps: [
+        'Stand with feet hip-width apart',
+        'Rise up onto your toes',
+        'Hold for a moment at the top',
+        'Lower with control'
+      ],
+      sets: 3,
+      reps: 20,
+      targetMuscles: ['Calves'],
+      equipment: 'body weight'
+    },
+    'leg-press': {
+      id: 'leg-press',
+      name: 'Leg Press',
+      category: 'Strength',
+      difficulty: 'Intermediate',
+      duration: 15,
+      instructions: 'A machine exercise that targets the quadriceps and glutes.',
+      steps: [
+        'Sit in leg press machine',
+        'Place feet shoulder-width apart on platform',
+        'Lower weight until knees reach 90 degrees',
+        'Press weight back up'
+      ],
+      sets: 3,
+      reps: 12,
+      targetMuscles: ['Quadriceps', 'Glutes'],
+      equipment: 'machine'
+    },
+    'burpees': {
+      id: 'burpees',
+      name: 'Burpees',
+      category: 'Cardio',
+      difficulty: 'Advanced',
+      duration: 12,
+      instructions: 'A full-body exercise that combines strength and cardio for maximum impact.',
+      steps: [
+        'Start in standing position',
+        'Drop into squat with hands on ground',
+        'Jump feet back into plank position',
+        'Do a push-up (optional)',
+        'Jump feet back to squat',
+        'Jump up with arms overhead'
+      ],
+      sets: 3,
+      reps: 10,
+      targetMuscles: ['Full Body', 'Core', 'Legs', 'Arms'],
+      equipment: 'body weight'
+    },
+    'jumping-jacks': {
+      id: 'jumping-jacks',
+      name: 'Jumping Jacks',
+      category: 'Cardio',
+      difficulty: 'Beginner',
+      duration: 10,
+      instructions: 'A classic cardio exercise that gets your heart rate up.',
+      steps: [
+        'Start with feet together and arms at sides',
+        'Jump feet apart while raising arms overhead',
+        'Jump back to starting position',
+        'Continue at a steady pace'
+      ],
+      sets: 3,
+      reps: '30 seconds',
+      targetMuscles: ['Legs', 'Core', 'Shoulders'],
+      equipment: 'body weight'
+    },
+    'high-knees': {
+      id: 'high-knees',
+      name: 'High Knees',
+      category: 'Cardio',
+      difficulty: 'Beginner',
+      duration: 5,
+      instructions: 'A dynamic cardio exercise that improves coordination.',
+      steps: [
+        'Stand with feet hip-width apart',
+        'Run in place lifting knees high',
+        'Aim to bring knees to waist level',
+        'Pump arms naturally'
+      ],
+      sets: 3,
+      reps: '30 seconds',
+      targetMuscles: ['Legs', 'Core'],
+      equipment: 'body weight'
+    },
+    'jump-squats': {
+      id: 'jump-squats',
+      name: 'Jump Squats',
+      category: 'Cardio',
+      difficulty: 'Intermediate',
+      duration: 10,
+      instructions: 'A plyometric exercise that combines squats with explosive jumping.',
+      steps: [
+        'Start in squat position',
+        'Jump up explosively',
+        'Land softly back in squat',
+        'Repeat immediately'
+      ],
+      sets: 3,
+      reps: 12,
+      targetMuscles: ['Glutes', 'Quadriceps', 'Calves'],
+      equipment: 'body weight'
     }
   }
   
