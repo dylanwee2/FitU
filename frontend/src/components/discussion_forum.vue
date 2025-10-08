@@ -163,6 +163,23 @@
       </div>
     </div>
   </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div v-if="showDeleteConfirm" class="delete-confirm-overlay" @click="cancelDelete">
+    <div class="delete-confirm-modal" @click.stop>
+      <div class="delete-confirm-header">
+        <h5>{{ deleteModalTitle }}</h5>
+      </div>
+      <div class="delete-confirm-body">
+        <p>{{ deleteModalMessage }}</p>
+        <p class="text-warning"><small>{{ deleteModalWarning }}</small></p>
+      </div>
+      <div class="delete-confirm-actions">
+        <button @click="cancelDelete" class="btn btn-secondary me-2">No, Cancel</button>
+        <button @click="confirmDelete" class="btn btn-danger">Yes, Delete</button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -219,10 +236,30 @@ const newCommentContent = reactive<Record<string | number, string>>({})
 const editingPost = ref<string | number | null>(null)
 const editPostContent = ref('')
 
+// Delete confirmation modal state
+const showDeleteConfirm = ref(false)
+const postToDelete = ref<string | number | null>(null)
+const commentToDelete = ref<{ postId: string | number; commentId: string | number } | null>(null)
+
 // Computed
 const canEdit = computed(() => (item: Post | Comment) => {
   return props.currentUser && item.author.id === props.currentUser.id
 })
+
+// Delete modal computed properties
+const isPostDeletion = computed(() => !!postToDelete.value)
+const isCommentDeletion = computed(() => !!commentToDelete.value)
+const deleteModalTitle = computed(() => isPostDeletion.value ? 'Delete Post' : 'Delete Comment')
+const deleteModalMessage = computed(() => 
+  isPostDeletion.value 
+    ? 'Are you sure you want to delete this post?' 
+    : 'Are you sure you want to delete this comment?'
+)
+const deleteModalWarning = computed(() => 
+  isPostDeletion.value 
+    ? 'This will also delete all comments and cannot be undone.' 
+    : 'This action cannot be undone.'
+)
 
 // Methods
 const loadPosts = async () => {
@@ -323,25 +360,65 @@ const updatePost = async (postId: string | number) => {
 }
 
 const deletePost = async (postId: string | number) => {
-  if (!confirm('Are you sure you want to delete this post? This will also delete all comments.')) return
-  
+  // Show confirmation modal instead of browser confirm
+  postToDelete.value = postId
+  showDeleteConfirm.value = true
+}
+
+const cancelDelete = () => {
+  showDeleteConfirm.value = false
+  postToDelete.value = null
+  commentToDelete.value = null
+}
+
+const confirmDelete = async () => {
   try {
-    console.log('Deleting post...')
-    await firebaseForumService.deletePost(postId.toString())
-    
-    // Update local state
-    const index = posts.value.findIndex(p => p.id === postId)
-    if (index !== -1) {
-      posts.value.splice(index, 1)
+    // Delete post
+    if (postToDelete.value) {
+      console.log('Deleting post...')
+      await firebaseForumService.deletePost(postToDelete.value.toString())
+      
+      // Update local state
+      const index = posts.value.findIndex(p => p.id === postToDelete.value)
+      if (index !== -1) {
+        posts.value.splice(index, 1)
+      }
+      
+      expandedPosts.value.delete(postToDelete.value)
+      emit('deleted-post', postToDelete.value)
+      
+      console.log('Post deleted successfully!')
+    }
+    // Delete comment
+    else if (commentToDelete.value) {
+      console.log('Deleting comment...')
+      await firebaseForumService.deleteComment(commentToDelete.value.commentId.toString())
+      
+      // Update local state
+      const post = posts.value.find(p => p.id === commentToDelete.value!.postId)
+      if (post) {
+        const index = post.comments.findIndex(c => c.id === commentToDelete.value!.commentId)
+        if (index !== -1) {
+          post.comments.splice(index, 1)
+        }
+      }
+      
+      emit('deleted-comment', commentToDelete.value.postId, commentToDelete.value.commentId)
+      
+      console.log('Comment deleted successfully!')
     }
     
-    expandedPosts.value.delete(postId)
-    emit('deleted-post', postId)
-    
-    console.log('Post deleted successfully!')
+    // Close modal
+    showDeleteConfirm.value = false
+    postToDelete.value = null
+    commentToDelete.value = null
   } catch (error) {
-    console.error('Failed to delete post:', error)
-    alert('Failed to delete post. Please try again.')
+    console.error('Failed to delete:', error)
+    alert('Failed to delete. Please try again.')
+    // Close modal even on error
+    showDeleteConfirm.value = false
+    postToDelete.value = null
+    commentToDelete.value = null
   }
 }
 
@@ -381,28 +458,9 @@ const createComment = async (postId: string | number) => {
 }
 
 const deleteComment = async (postId: string | number, commentId: string | number) => {
-  if (!confirm('Are you sure you want to delete this comment?')) return
-  
-  try {
-    console.log('Deleting comment...')
-    await firebaseForumService.deleteComment(commentId.toString())
-    
-    // Update local state
-    const post = posts.value.find(p => p.id === postId)
-    if (post) {
-      const index = post.comments.findIndex(c => c.id === commentId)
-      if (index !== -1) {
-        post.comments.splice(index, 1)
-      }
-    }
-    
-    emit('deleted-comment', postId, commentId)
-    
-    console.log('Comment deleted successfully!')
-  } catch (error) {
-    console.error('Failed to delete comment:', error)
-    alert('Failed to delete comment. Please try again.')
-  }
+  // Show confirmation modal instead of browser confirm
+  commentToDelete.value = { postId, commentId }
+  showDeleteConfirm.value = true
 }
 
 const formatTime = (date: Date) => {
@@ -457,6 +515,65 @@ watch(() => props.exerciseId, (newExerciseId, oldExerciseId) => {
 /* New Post Section */
 .new-post-section {
   margin-bottom: 2rem;
+}
+
+/* Delete Confirmation Modal */
+.delete-confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.delete-confirm-modal {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+  width: 90%;
+  max-height: 90vh;
+  overflow: hidden;
+}
+
+.delete-confirm-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+}
+
+.delete-confirm-header h5 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.delete-confirm-body {
+  padding: 1.5rem;
+}
+
+.delete-confirm-body p {
+  margin: 0 0 1rem 0;
+  color: #374151;
+}
+
+.delete-confirm-body p:last-child {
+  margin-bottom: 0;
+}
+
+.delete-confirm-actions {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
 }
 
 .new-post-form {
