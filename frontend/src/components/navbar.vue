@@ -34,7 +34,8 @@
         :class="{ 'show': isMobileMenuOpen }"
         ref="mobileMenu"
       >
-        <ul class="navbar-nav ms-auto">
+        <!-- Centered nav links (unchanged across auth state) -->
+        <ul class="navbar-nav mx-auto gap-lg-1">
           <li 
             v-for="link in navigationLinks" 
             :key="link.href" 
@@ -53,24 +54,37 @@
             </router-link>
           </li>
         </ul>
+
+        <!-- Right CTA: Profile when authed, else Login/Sign Up -->
+        <div class="d-none d-lg-flex align-items-center gap-2">
+          <router-link v-if="isAuthed" to="/profile" class="btn btn-primary px-3 py-2" @click="closeMobileMenu">Profile</router-link>
+          <template v-else>
+            <router-link to="/login" class="btn btn-secondary px-3 py-2" @click="closeMobileMenu">Login</router-link>
+            <router-link to="/signup" class="btn btn-primary px-3 py-2" @click="closeMobileMenu">Sign Up</router-link>
+          </template>
+        </div>
       </div>
     </div>
   </nav>
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { navigationLinks } from '@/config/nav.config.js'
+import { useUser } from '@/stores/user'
 
 export default {
   name: 'Navbar',
   setup() {
     const route = useRoute()
+    const user = useUser()
     const isMobileMenuOpen = ref(false)
     const isScrolled = ref(false)
     const mobileToggle = ref(null)
     const mobileMenu = ref(null)
+
+    const isAuthed = computed(() => !!user.uid)
 
     // Check if current route matches the link
     const isActiveRoute = (href) => route.path === href
@@ -137,7 +151,10 @@ export default {
       }
     }
 
-    onMounted(() => {
+    onMounted(async () => {
+      if (!user.uid) {
+        try { await user.loadUser() } catch {}
+      }
       window.addEventListener('scroll', handleScroll)
       document.addEventListener('keydown', handleEscape)
       document.addEventListener('click', handleOutsideClick)
@@ -153,6 +170,7 @@ export default {
 
     return {
       navigationLinks,
+      isAuthed,
       isMobileMenuOpen,
       isScrolled,
       mobileToggle,

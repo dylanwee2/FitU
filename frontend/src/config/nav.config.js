@@ -15,6 +15,16 @@ export const navigationLinks = [
     icon: '🍽️'
   },
   {
+    label: 'Calendar',
+    href: '/calendar',
+    icon: '🗓️'
+  },
+  {
+    label: 'Virtual Gym',
+    href: '/virtual-gym',
+    icon: '🏋️'
+  },
+  {
     label: 'Sign Up',
     href: '/signup',
     icon: '📝'
