@@ -10,17 +10,6 @@ export const navigationLinks = [
     icon: '🏠'
   },
   {
-    label: 'Exercise Library',
-    href: '/exerciselibrary',
-    icon: '💪'
-  },
-  {
-    label: 'Workout Sets',
-    href: '/workout-sets',
-    icon: '📋',
-    requiresAuth: true
-  },
-  {
     label: 'Recipes',
     href: '/recipes',
     icon: '🍽️'
@@ -34,6 +23,23 @@ export const navigationLinks = [
     label: 'Virtual Gym',
     href: '/virtual-gym',
     icon: '🏋️'
+  },
+    {
+    label: 'Exercise Library',
+    href: '/exerciselibrary',
+    icon: '💪'
+  },
+  {
+    label: 'Workout Sets',
+    href: '/workout-sets',
+    icon: '📋',
+    requiresAuth: true
+  },
+
+  {
+    label: 'Vault',
+    href: '/vault',
+    icon: '🗓️'
   },
   {
     label: 'Sign Up',

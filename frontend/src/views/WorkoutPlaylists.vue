@@ -51,7 +51,25 @@
             <div class="playlist-card">
               <!-- Playlist Header -->
               <div class="playlist-header">
-                <h5 class="playlist-name">{{ playlist.name }}</h5>
+                <div class="playlist-title-section">
+                  <h5 class="playlist-name">{{ playlist.name }}</h5>
+                  <div class="status-badges">
+                    <span 
+                      v-if="playlist.isPublished" 
+                      class="badge bg-success"
+                      title="Published to Community Vault"
+                    >
+                      <i class="fas fa-globe me-1"></i>Published
+                    </span>
+                    <span 
+                      v-else 
+                      class="badge bg-secondary"
+                      title="Private workout set"
+                    >
+                      <i class="fas fa-lock me-1"></i>Private
+                    </span>
+                  </div>
+                </div>
                 <div class="playlist-actions">
                   <button 
                     @click="editPlaylist(playlist)"
@@ -170,16 +188,32 @@
                 </div>
                 <div class="playlist-buttons">
                   <button 
-                    @click="loadPlaylist(playlist.id)"
+                    @click="editPlaylistExercises(playlist)"
                     class="btn btn-primary btn-sm"
                   >
-                    <i class="fas fa-play me-1"></i>Load
+                    <i class="fas fa-edit me-1"></i>Edit
                   </button>
                   <button 
                     @click="viewPlaylist(playlist)"
                     class="btn btn-outline-primary btn-sm"
                   >
                     <i class="fas fa-eye me-1"></i>View
+                  </button>
+                  <button 
+                    v-if="!playlist.isPublished"
+                    @click="publishToVault(playlist)"
+                    class="btn btn-success btn-sm"
+                    title="Publish to Community Vault"
+                  >
+                    <i class="fas fa-upload me-1"></i>Publish
+                  </button>
+                  <button 
+                    v-else
+                    @click="unpublishFromVault(playlist)"
+                    class="btn btn-warning btn-sm"
+                    title="Remove from Community Vault"
+                  >
+                    <i class="fas fa-download me-1"></i>Unpublish
                   </button>
                 </div>
               </div>
@@ -344,13 +378,326 @@
         </div>
       </div>
     </div>
+
+    <!-- Publish to Vault Modal -->
+    <div v-if="showPublishModal" class="modal-overlay" @click.self="showPublishModal = false">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fas fa-upload me-2 text-success"></i>
+            Publish to Community Vault
+          </h5>
+          <button @click="showPublishModal = false" class="btn-close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="publish-preview">
+            <div class="workout-preview-card">
+              <h6 class="workout-title">{{ publishingPlaylist.name }}</h6>
+              <p class="workout-description" v-if="publishingPlaylist.description">
+                {{ publishingPlaylist.description }}
+              </p>
+              <div class="workout-stats-preview">
+                <div class="stat">
+                  <i class="fas fa-dumbbell me-1"></i>
+                  {{ publishingPlaylist.exercises?.length || 0 }} exercises
+                </div>
+                <div class="stat">
+                  <i class="fas fa-clock me-1"></i>
+                  {{ Math.round(publishingPlaylist.totalDuration || 0) }} min
+                </div>
+                <div class="stat">
+                  <i class="fas fa-muscle me-1"></i>
+                  {{ publishingPlaylist.muscleGroups?.length || 0 }} muscle groups
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="publish-info">
+            <h6><i class="fas fa-info-circle me-2 text-info"></i>What happens when you publish?</h6>
+            <ul class="publish-benefits">
+              <li>Your workout becomes visible to the entire FitU community</li>
+              <li>Other users can discover, rate, and review your workout</li>
+              <li>You'll still own the workout and can unpublish it anytime</li>
+              <li>Your original workout set remains in your personal collection</li>
+            </ul>
+          </div>
+
+          <div class="confirmation-section">
+            <div class="form-check">
+              <input 
+                class="form-check-input" 
+                type="checkbox" 
+                id="confirmPublish"
+                v-model="confirmPublish"
+              >
+              <label class="form-check-label" for="confirmPublish">
+                I confirm that I want to publish "<strong>{{ publishingPlaylist.name }}</strong>" to the community vault
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button 
+            @click="showPublishModal = false"
+            class="btn btn-secondary"
+          >
+            <i class="fas fa-times me-1"></i>Cancel
+          </button>
+          <button 
+            @click="confirmPublishToVault"
+            class="btn btn-success"
+            :disabled="!confirmPublish || publishingInProgress"
+          >
+            <span v-if="publishingInProgress">
+              <i class="fas fa-spinner fa-spin me-1"></i>Publishing...
+            </span>
+            <span v-else>
+              <i class="fas fa-upload me-1"></i>Publish to Vault
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Unpublish Confirmation Modal -->
+    <div v-if="showUnpublishModal" class="modal-overlay" @click.self="showUnpublishModal = false">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fas fa-download me-2 text-warning"></i>
+            Remove from Community Vault
+          </h5>
+          <button @click="showUnpublishModal = false" class="btn-close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="unpublish-warning">
+            <div class="alert alert-warning">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              <strong>Are you sure you want to remove "{{ unpublishingPlaylist.name }}" from the community vault?</strong>
+            </div>
+            
+            <div class="unpublish-consequences">
+              <h6>What will happen:</h6>
+              <ul>
+                <li>Your workout will no longer be visible to other users</li>
+                <li>Existing reviews and ratings will be preserved but hidden</li>
+                <li>Your original workout set will remain in your personal collection</li>
+                <li>You can republish it later if you change your mind</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button 
+            @click="showUnpublishModal = false"
+            class="btn btn-secondary"
+          >
+            <i class="fas fa-times me-1"></i>Cancel
+          </button>
+          <button 
+            @click="confirmUnpublishFromVault"
+            class="btn btn-warning"
+            :disabled="unpublishingInProgress"
+          >
+            <span v-if="unpublishingInProgress">
+              <i class="fas fa-spinner fa-spin me-1"></i>Removing...
+            </span>
+            <span v-else>
+              <i class="fas fa-download me-1"></i>Remove from Vault
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Exercises Modal -->
+    <div v-if="showEditExercisesModal" class="modal-overlay" @click.self="showEditExercisesModal = false">
+      <div class="modal-content large">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fas fa-edit me-2"></i>
+            Edit Exercises - {{ editingExercisesPlaylist.name }}
+          </h5>
+          <button @click="showEditExercisesModal = false" class="btn-close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="exercise-editor">
+            <!-- Current Exercises -->
+            <div class="current-exercises-section mb-4">
+              <h6><i class="fas fa-list me-2"></i>Current Exercises</h6>
+              <div v-if="editingExercises.length === 0" class="text-muted text-center py-3">
+                No exercises in this workout set yet. Add some exercises below!
+              </div>
+              <div v-else class="exercise-list">
+                <div 
+                  v-for="(exercise, index) in editingExercises" 
+                  :key="exercise.id"
+                  class="exercise-edit-item"
+                >
+                  <div class="exercise-number">{{ index + 1 }}</div>
+                  <div class="exercise-image">
+                    <img 
+                      :src="exercise.gifUrl || '/images/exercise-placeholder.png'" 
+                      :alt="exercise.name"
+                      @error="handleImageError"
+                    >
+                  </div>
+                  <div class="exercise-info">
+                    <h6 class="exercise-name">{{ exercise.name }}</h6>
+                    <p class="exercise-target">{{ exercise.target }}</p>
+                    <div class="exercise-badges">
+                      <span class="badge bg-primary">{{ exercise.bodyPart }}</span>
+                      <span class="badge bg-secondary">{{ exercise.equipment }}</span>
+                    </div>
+                  </div>
+                  <div class="exercise-controls">
+                    <div class="sets-reps-controls">
+                      <div class="control-group">
+                        <label>Sets:</label>
+                        <input 
+                          v-model.number="exercise.sets" 
+                          type="number" 
+                          min="1" 
+                          max="20"
+                          class="form-control form-control-sm"
+                        >
+                      </div>
+                      <div class="control-group">
+                        <label>Reps:</label>
+                        <input 
+                          v-model.number="exercise.reps" 
+                          type="number" 
+                          min="1" 
+                          max="100"
+                          class="form-control form-control-sm"
+                        >
+                      </div>
+                      <div class="control-group">
+                        <label>Weight (lbs):</label>
+                        <input 
+                          v-model.number="exercise.weight" 
+                          type="number" 
+                          min="0" 
+                          step="0.5"
+                          class="form-control form-control-sm"
+                          placeholder="Optional"
+                        >
+                      </div>
+                    </div>
+                    <button 
+                      @click="removeExerciseFromEdit(index)"
+                      class="btn btn-sm btn-outline-danger"
+                      title="Remove exercise"
+                    >
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Add New Exercises -->
+            <div class="add-exercises-section">
+              <h6><i class="fas fa-plus me-2"></i>Add New Exercises</h6>
+              <div class="exercise-search">
+                <div class="search-input-group">
+                  <input 
+                    v-model="exerciseSearchQuery"
+                    @input="searchExercises"
+                    type="text" 
+                    class="form-control"
+                    placeholder="Search exercises by name, muscle group, or equipment..."
+                  >
+                  <button 
+                    v-if="exerciseSearchQuery"
+                    @click="clearExerciseSearch"
+                    class="btn btn-outline-secondary"
+                  >
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div v-if="exerciseSearchResults.length > 0" class="search-results mt-3">
+                <div class="exercise-search-list">
+                  <div 
+                    v-for="exercise in exerciseSearchResults.slice(0, 10)" 
+                    :key="exercise.id"
+                    class="exercise-search-item"
+                  >
+                    <div class="exercise-image">
+                      <img 
+                        :src="exercise.gifUrl || '/images/exercise-placeholder.png'" 
+                        :alt="exercise.name"
+                        @error="handleImageError"
+                      >
+                    </div>
+                    <div class="exercise-info">
+                      <h6 class="exercise-name">{{ exercise.name }}</h6>
+                      <p class="exercise-target">{{ exercise.target }}</p>
+                      <div class="exercise-badges">
+                        <span class="badge bg-primary">{{ exercise.bodyPart }}</span>
+                        <span class="badge bg-secondary">{{ exercise.equipment }}</span>
+                      </div>
+                    </div>
+                    <button 
+                      @click="addExerciseToEdit(exercise)"
+                      class="btn btn-sm btn-success"
+                      :disabled="isExerciseInEdit(exercise.id)"
+                    >
+                      <i class="fas fa-plus me-1"></i>
+                      {{ isExerciseInEdit(exercise.id) ? 'Added' : 'Add' }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button 
+            @click="showEditExercisesModal = false"
+            class="btn btn-secondary"
+          >
+            <i class="fas fa-times me-1"></i>Cancel
+          </button>
+          <button 
+            @click="saveExerciseChanges"
+            class="btn btn-primary"
+            :disabled="savingChanges"
+          >
+            <span v-if="savingChanges">
+              <i class="fas fa-spinner fa-spin me-1"></i>Saving...
+            </span>
+            <span v-else>
+              <i class="fas fa-save me-1"></i>Save Changes
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useWorkoutCartStore } from '../stores/workoutCart'
+import { workoutVaultService } from '@/services/workoutVaultService.js'
+import { auth } from '@/firebase.js'
 
 const router = useRouter()
 const cartStore = useWorkoutCartStore()
@@ -358,8 +705,21 @@ const cartStore = useWorkoutCartStore()
 // Local state
 const showEditModal = ref(false)
 const showViewModal = ref(false)
+const showPublishModal = ref(false)
+const showUnpublishModal = ref(false)
+const showEditExercisesModal = ref(false)
 const editingPlaylist = ref({})
 const viewingPlaylist = ref({})
+const publishingPlaylist = ref({})
+const unpublishingPlaylist = ref({})
+const editingExercisesPlaylist = ref({})
+const editingExercises = ref([])
+const exerciseSearchQuery = ref('')
+const exerciseSearchResults = ref([])
+const confirmPublish = ref(false)
+const publishingInProgress = ref(false)
+const unpublishingInProgress = ref(false)
+const savingChanges = ref(false)
 
 // Computed properties from store
 const savedPlaylists = computed(() => cartStore.savedPlaylists)
@@ -436,6 +796,183 @@ const deletePlaylist = async (playlistId) => {
   }
 }
 
+const publishToVault = async (playlist) => {
+  if (!auth.currentUser) {
+    alert('You must be logged in to publish workouts')
+    return
+  }
+
+  publishingPlaylist.value = { ...playlist }
+  confirmPublish.value = false
+  showPublishModal.value = true
+}
+
+const confirmPublishToVault = async () => {
+  if (!confirmPublish.value || publishingInProgress.value) return
+
+  publishingInProgress.value = true
+
+  try {
+    const result = await workoutVaultService.publishWorkout(publishingPlaylist.value.id, auth.currentUser.uid)
+    
+    // Update the local playlist to reflect published status
+    await cartStore.updatePlaylist(publishingPlaylist.value.id, {
+      isPublished: true,
+      publishedId: result.id,
+      publishedAt: new Date().toISOString()
+    })
+    
+    showPublishModal.value = false
+    publishingPlaylist.value = {}
+    confirmPublish.value = false
+  } catch (error) {
+    console.error('Error publishing workout:', error)
+    alert('Failed to publish workout: ' + error.message)
+  } finally {
+    publishingInProgress.value = false
+  }
+}
+
+const unpublishFromVault = async (playlist) => {
+  if (!auth.currentUser) {
+    alert('You must be logged in to unpublish workouts')
+    return
+  }
+
+  unpublishingPlaylist.value = { ...playlist }
+  showUnpublishModal.value = true
+}
+
+const confirmUnpublishFromVault = async () => {
+  if (unpublishingInProgress.value) return
+
+  unpublishingInProgress.value = true
+
+  try {
+    // We need the published workout ID, which should be stored in the playlist
+    if (unpublishingPlaylist.value.publishedId) {
+      await workoutVaultService.unpublishWorkout(unpublishingPlaylist.value.publishedId, auth.currentUser.uid)
+    }
+    
+    // Update the local playlist to reflect unpublished status
+    await cartStore.updatePlaylist(unpublishingPlaylist.value.id, {
+      isPublished: false,
+      publishedAt: null,
+      publishedId: null
+    })
+    
+    showUnpublishModal.value = false
+    unpublishingPlaylist.value = {}
+  } catch (error) {
+    console.error('Error unpublishing workout:', error)
+    alert('Failed to remove workout from vault: ' + error.message)
+  } finally {
+    unpublishingInProgress.value = false
+  }
+}
+
+const editPlaylistExercises = (playlist) => {
+  editingExercisesPlaylist.value = { ...playlist }
+  editingExercises.value = [...(playlist.exercises || [])]
+  exerciseSearchQuery.value = ''
+  exerciseSearchResults.value = []
+  showEditExercisesModal.value = true
+}
+
+const removeExerciseFromEdit = (index) => {
+  editingExercises.value.splice(index, 1)
+}
+
+const addExerciseToEdit = (exercise) => {
+  if (!isExerciseInEdit(exercise.id)) {
+    const exerciseWithDefaults = {
+      ...exercise,
+      sets: 3,
+      reps: 10,
+      weight: null
+    }
+    editingExercises.value.push(exerciseWithDefaults)
+  }
+}
+
+const isExerciseInEdit = (exerciseId) => {
+  return editingExercises.value.some(ex => ex.id === exerciseId)
+}
+
+const searchExercises = async () => {
+  if (!exerciseSearchQuery.value.trim()) {
+    exerciseSearchResults.value = []
+    return
+  }
+
+  try {
+    // This assumes you have an exercise API service available
+    // You might need to import this from your existing exercise service
+    const response = await fetch(`https://exercisedb.p.rapidapi.com/exercises/name/${encodeURIComponent(exerciseSearchQuery.value)}`, {
+      headers: {
+        'X-RapidAPI-Key': 'your-api-key', // You'll need to use your actual API key
+        'X-RapidAPI-Host': 'exercisedb.p.rapidapi.com'
+      }
+    })
+    
+    if (response.ok) {
+      const exercises = await response.json()
+      exerciseSearchResults.value = exercises.slice(0, 10)
+    }
+  } catch (error) {
+    console.error('Error searching exercises:', error)
+    exerciseSearchResults.value = []
+  }
+}
+
+const clearExerciseSearch = () => {
+  exerciseSearchQuery.value = ''
+  exerciseSearchResults.value = []
+}
+
+// Calculate total duration based on sets (5 minutes per set)
+const calculateWorkoutDuration = (exercises) => {
+  if (!exercises || exercises.length === 0) return 0
+  
+  return exercises.reduce((total, exercise) => {
+    const sets = exercise.sets || 3 // Default to 3 sets if not specified
+    return total + (sets * 5) // 5 minutes per set
+  }, 0)
+}
+
+const saveExerciseChanges = async () => {
+  if (savingChanges.value) return
+
+  savingChanges.value = true
+
+  try {
+    // Calculate updated workout stats
+    const muscleGroups = [...new Set(editingExercises.value.map(ex => ex.target))].filter(Boolean)
+    const totalDuration = calculateWorkoutDuration(editingExercises.value)
+
+    const updatedPlaylist = {
+      ...editingExercisesPlaylist.value,
+      exercises: editingExercises.value,
+      muscleGroups,
+      totalDuration,
+      updatedAt: new Date().toISOString()
+    }
+
+    await cartStore.updatePlaylist(editingExercisesPlaylist.value.id, updatedPlaylist)
+    
+    showEditExercisesModal.value = false
+    editingExercisesPlaylist.value = {}
+    editingExercises.value = []
+    exerciseSearchQuery.value = ''
+    exerciseSearchResults.value = []
+  } catch (error) {
+    console.error('Error saving exercise changes:', error)
+    alert('Failed to save changes: ' + error.message)
+  } finally {
+    savingChanges.value = false
+  }
+}
+
 const handleImageError = (event) => {
   event.target.src = '/images/exercise-placeholder.png'
 }
@@ -444,6 +981,74 @@ onMounted(() => {
   // Initialize store to load saved playlists
   cartStore.initializeStore()
 })
+
+// Watch for both auth state and saved playlists to check published status
+watch([() => auth.currentUser, savedPlaylists], async ([user, playlists]) => {
+  if (user && playlists.length > 0) {
+    await checkPublishedStatus()
+    await updateWorkoutDurations(playlists)
+  }
+}, { immediate: true })
+
+// Update workout durations for existing workouts
+const updateWorkoutDurations = async (playlists) => {
+  for (const playlist of playlists) {
+    if (playlist.exercises && playlist.exercises.length > 0) {
+      const currentDuration = playlist.totalDuration || 0
+      const calculatedDuration = calculateWorkoutDuration(playlist.exercises)
+      
+      // Update if duration is significantly different (accounting for old calculation method)
+      if (Math.abs(currentDuration - calculatedDuration) > 5) {
+        console.log(`Updating duration for ${playlist.name}: ${currentDuration} -> ${calculatedDuration}`)
+        try {
+          await cartStore.updatePlaylist(playlist.id, {
+            totalDuration: calculatedDuration
+          })
+        } catch (error) {
+          console.error('Error updating workout duration:', error)
+        }
+      }
+    }
+  }
+}
+
+// Add method to check published status from Firebase
+const checkPublishedStatus = async () => {
+  if (!auth.currentUser) {
+    console.log('No current user, skipping published status check')
+    return
+  }
+
+  console.log('Checking published status for user:', auth.currentUser.uid)
+
+  try {
+    const userWorkouts = await workoutVaultService.getUserWorkouts(auth.currentUser.uid)
+    console.log('Firebase workouts:', userWorkouts)
+    console.log('Local playlists:', savedPlaylists.value)
+    
+    // Update local playlist status based on Firebase data
+    for (const firebaseWorkout of userWorkouts) {
+      const localPlaylist = savedPlaylists.value.find(p => p.id === firebaseWorkout.id)
+      if (localPlaylist) {
+        console.log(`Comparing workout ${firebaseWorkout.id}:`, {
+          localPublished: localPlaylist.isPublished,
+          firebasePublished: firebaseWorkout.isPublished
+        })
+        
+        if (localPlaylist.isPublished !== firebaseWorkout.isPublished) {
+          console.log(`Updating playlist ${firebaseWorkout.id} published status`)
+          await cartStore.updatePlaylist(firebaseWorkout.id, {
+            isPublished: firebaseWorkout.isPublished,
+            publishedId: firebaseWorkout.publishedId,
+            publishedAt: firebaseWorkout.publishedAt
+          })
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error checking published status:', error)
+  }
+}
 </script>
 
 <style scoped>
@@ -519,13 +1124,26 @@ onMounted(() => {
   margin-bottom: 1rem;
 }
 
+.playlist-title-section {
+  flex: 1;
+  margin-right: 1rem;
+}
+
 .playlist-name {
   font-size: 1.2rem;
   font-weight: 600;
   color: #2c3e50;
-  margin: 0;
-  flex: 1;
-  margin-right: 1rem;
+  margin: 0 0 0.5rem 0;
+}
+
+.status-badges {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.status-badges .badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
 }
 
 .playlist-actions {
@@ -839,6 +1457,213 @@ onMounted(() => {
 
 .sets, .reps, .weight {
   font-weight: 500;
+}
+
+/* Publish/Unpublish Modal Styles */
+.publish-preview {
+  margin-bottom: 1.5rem;
+}
+
+.workout-preview-card {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1rem;
+  border: 2px dashed #dee2e6;
+}
+
+.workout-title {
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.workout-description {
+  color: #6c757d;
+  margin-bottom: 1rem;
+  font-style: italic;
+}
+
+.workout-stats-preview {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.workout-stats-preview .stat {
+  color: #495057;
+  font-size: 0.9rem;
+}
+
+.publish-info {
+  margin-bottom: 1.5rem;
+}
+
+.publish-info h6 {
+  color: #2c3e50;
+  margin-bottom: 0.75rem;
+}
+
+.publish-benefits {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.publish-benefits li {
+  margin-bottom: 0.5rem;
+  color: #495057;
+}
+
+.confirmation-section {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1rem;
+  border-left: 4px solid #28a745;
+}
+
+.form-check-label {
+  color: #495057;
+  cursor: pointer;
+}
+
+.unpublish-warning {
+  margin-bottom: 1rem;
+}
+
+.unpublish-consequences h6 {
+  color: #2c3e50;
+  margin-bottom: 0.75rem;
+}
+
+.unpublish-consequences ul {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.unpublish-consequences li {
+  margin-bottom: 0.5rem;
+  color: #495057;
+}
+
+/* Exercise Editing Modal Styles */
+.exercise-editor {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.current-exercises-section {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.exercise-edit-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  background: white;
+}
+
+.exercise-edit-item:last-child {
+  margin-bottom: 0;
+}
+
+.exercise-number {
+  background: #007bff;
+  color: white;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.exercise-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-left: auto;
+}
+
+.sets-reps-controls {
+  display: flex;
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 80px;
+}
+
+.control-group label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+  color: #6c757d;
+}
+
+.control-group .form-control {
+  width: 70px;
+  text-align: center;
+}
+
+.add-exercises-section {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.exercise-search {
+  margin-bottom: 1rem;
+}
+
+.search-input-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.exercise-search-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+}
+
+.exercise-search-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+  background: white;
+  transition: background-color 0.2s ease;
+}
+
+.exercise-search-item:hover {
+  background: #f8f9fa;
+}
+
+.exercise-search-item:last-child {
+  border-bottom: none;
+}
+
+.exercise-search-item .exercise-info {
+  flex-grow: 1;
+}
+
+.exercise-search-item .btn {
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 /* Responsive */
