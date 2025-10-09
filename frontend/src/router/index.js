@@ -7,12 +7,14 @@ import Login from '../views/login.vue'
 import Profile from '../views/profile.vue'
 import Recipes from '../views/recipes.vue'
 import ExerciseDetail from '../views/ExerciseDetail.vue'
+import ExerciseBrowser from '../views/ExerciseBrowser.vue'
 import CommentsAdmin from '../views/CommentsAdmin.vue'
 import Calendar from '../views/calendar.vue'
 import VirtualGym from '../views/VirtualGym.vue'
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
+  { path: '/exercises', name: 'ExerciseBrowser', component: ExerciseBrowser },
   { path: '/recipes', name: 'Recipes', component: Recipes },
   { path: '/calendar', name: 'Calendar', component: Calendar },
   { path: '/virtual-gym', name: 'VirtualGym', component: VirtualGym },

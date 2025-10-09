@@ -10,6 +10,11 @@ export const navigationLinks = [
     icon: '🏠'
   },
   {
+    label: 'Exercise Library',
+    href: '/exercises',
+    icon: '💪'
+  },
+  {
     label: 'Recipes',
     href: '/recipes',
     icon: '🍽️'

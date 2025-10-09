@@ -1,0 +1,556 @@
+<template>
+  <div class="exercise-browser">
+    <div class="container mt-4">
+      <!-- Header -->
+      <div class="header-section mb-4">
+        <h1 class="page-title">Exercise Library</h1>
+        <p class="page-subtitle">Discover thousands of exercises to reach your fitness goals</p>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="search-section mb-4">
+        <div class="row justify-content-center">
+          <div class="col-md-8 col-lg-6">
+            <div class="search-container">
+              <input
+                v-model="searchQuery"
+                @input="handleSearch"
+                type="text"
+                class="form-control search-input"
+                placeholder="Search exercises by name (e.g., push-up, squat, bicep)..."
+                :disabled="loading"
+              >
+              <div class="search-icon">
+                <i class="fas fa-search"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div v-if="loading" class="loading-section text-center py-5">
+        <div class="spinner-border text-primary mb-3" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="loading-text">Loading exercises...</p>
+      </div>
+
+      <!-- Error State -->
+      <div v-else-if="error" class="error-section text-center py-5">
+        <div class="error-icon mb-3">
+          <i class="fas fa-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
+        </div>
+        <h4 class="error-title">Oops! Something went wrong</h4>
+        <p class="error-message">{{ error }}</p>
+        <button @click="fetchExercises" class="btn btn-primary">
+          <i class="fas fa-redo me-2"></i>Try Again
+        </button>
+      </div>
+
+      <!-- Exercise Grid -->
+      <div v-else class="exercises-section">
+        <!-- Results Info -->
+        <div class="results-info mb-4">
+          <div class="row align-items-center">
+            <div class="col">
+              <p class="results-count mb-0">
+                {{ exercises.length }} exercise{{ exercises.length !== 1 ? 's' : '' }} found
+                <span v-if="totalExercises > 0" class="text-muted">
+                  ({{ totalExercises }} total available)
+                </span>
+                <span v-if="searchQuery" class="search-query">for "{{ searchQuery }}"</span>
+              </p>
+            </div>
+            <div class="col-auto" v-if="searchQuery">
+              <button @click="clearSearch" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-times me-1"></i>Clear Search
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- No Results -->
+        <div v-if="exercises.length === 0" class="no-results text-center py-5">
+          <div class="no-results-icon mb-3">
+            <i class="fas fa-search text-muted" style="font-size: 3rem;"></i>
+          </div>
+          <h4 class="no-results-title">No exercises found</h4>
+          <p class="no-results-message">Try adjusting your search terms or browse all exercises</p>
+          <button @click="clearSearch" class="btn btn-primary">Browse All Exercises</button>
+        </div>
+
+        <!-- Exercise Cards Grid -->
+        <div v-else class="exercise-grid">
+          <div class="row g-4">
+            <div 
+              v-for="exercise in exercises" 
+              :key="exercise.id"
+              class="col-sm-6 col-md-4 col-lg-3"
+            >
+              <div class="exercise-card" @click="viewExercise(exercise)">
+                <!-- Exercise Image -->
+                <div class="exercise-image-container">
+                  <img 
+                    :src="exercise.gifUrl || '/images/exercise-placeholder.png'" 
+                    :alt="exercise.name"
+                    class="exercise-image"
+                    @error="handleImageError"
+                    loading="lazy"
+                  >
+                  <div class="exercise-overlay">
+                    <i class="fas fa-play-circle"></i>
+                  </div>
+                </div>
+
+                <!-- Exercise Info -->
+                <div class="exercise-info">
+                  <h5 class="exercise-name">{{ exercise.name }}</h5>
+                  <p class="exercise-target">
+                    <i class="fas fa-bullseye me-1"></i>
+                    {{ exercise.target || 'Full Body' }}
+                  </p>
+                  <div class="exercise-badges">
+                    <span class="badge bg-primary me-1">{{ exercise.bodyPart || 'General' }}</span>
+                    <span class="badge bg-secondary">{{ exercise.equipment || 'Bodyweight' }}</span>
+                  </div>
+                </div>
+
+                <!-- Action Button -->
+                <div class="exercise-actions">
+                  <button class="btn btn-outline-primary btn-sm w-100">
+                    <i class="fas fa-eye me-1"></i>View Details
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Load More Button -->
+        <div v-if="hasMorePages" class="load-more-section text-center mt-5">
+          <button @click="loadMoreExercises" class="btn btn-outline-primary" :disabled="loadingMore">
+            <span v-if="loadingMore" class="spinner-border spinner-border-sm me-2"></span>
+            <i v-else class="fas fa-plus me-2"></i>
+            {{ loadingMore ? 'Loading...' : 'Load More Exercises' }}
+          </button>
+        </div>
+        
+        <!-- End of Results Indicator -->
+        <div v-else-if="exercises.length > 0" class="text-center mt-5 mb-4">
+          <p class="text-muted">
+            <i class="fas fa-check me-2"></i>
+            You've seen all {{ totalExercises }} exercises!
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
+
+// Router
+const router = useRouter()
+
+// Reactive state
+const exercises = ref([])
+const loading = ref(false)
+const loadingMore = ref(false)
+const error = ref('')
+const searchQuery = ref('')
+const searchTimeout = ref(null)
+const totalExercises = ref(0)
+const currentPage = ref(1)
+const hasMorePages = ref(false)
+
+// API Configuration
+const API_BASE_URL = 'https://www.exercisedb.dev/api/v1'
+const EXERCISES_PER_PAGE = 60
+
+// Methods
+const fetchExercises = async (query = '', append = false) => {
+  if (!append) {
+    loading.value = true
+    currentPage.value = 1
+  } else {
+    loadingMore.value = true
+  }
+  
+  error.value = ''
+  
+  try {
+    const offset = append ? (currentPage.value - 1) * EXERCISES_PER_PAGE : 0
+    const url = query 
+      ? `${API_BASE_URL}/exercises/search?q=${encodeURIComponent(query)}&limit=${EXERCISES_PER_PAGE}&offset=${offset}`
+      : `${API_BASE_URL}/exercises?limit=${EXERCISES_PER_PAGE}&offset=${offset}`
+    
+    console.log('Fetching exercises from:', url)
+    
+    const response = await fetch(url)
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch exercises: ${response.status} ${response.statusText}`)
+    }
+    
+    const data = await response.json()
+    
+    // Handle ExerciseDB API response structure
+    if (data.success && data.data) {
+      // Map the API response to our expected format
+      const mappedExercises = data.data.map(exercise => ({
+        id: exercise.exerciseId,
+        name: exercise.name,
+        target: exercise.targetMuscles,
+        bodyPart: exercise.bodyParts,
+        equipment: exercise.equipments,
+        gifUrl: exercise.gifUrl,
+        instructions: exercise.instructions ? (
+          typeof exercise.instructions === 'string' 
+            ? exercise.instructions.split('Step:').filter(step => step.trim()).map(step => step.trim())
+            : exercise.instructions
+        ) : [],
+        secondaryMuscles: exercise.secondaryMuscles ? (
+          typeof exercise.secondaryMuscles === 'string'
+            ? exercise.secondaryMuscles.split(' ')
+            : exercise.secondaryMuscles
+        ) : []
+      }))
+      
+      // Handle pagination
+      if (append) {
+        exercises.value = [...exercises.value, ...mappedExercises]
+        currentPage.value += 1
+      } else {
+        exercises.value = mappedExercises
+        currentPage.value = 1
+      }
+      
+      // Update pagination info from metadata
+      if (data.metadata) {
+        totalExercises.value = data.metadata.totalExercises || 0
+        hasMorePages.value = !!data.metadata.nextPage
+      }
+      
+    } else {
+      // Fallback for other API structures
+      exercises.value = Array.isArray(data) ? data : (data.exercises || [])
+    }
+    
+    console.log(`Loaded ${exercises.value.length} exercises (${totalExercises.value} total available)`)
+    
+  } catch (err) {
+    console.error('Error fetching exercises:', err)
+    error.value = err.message || 'Failed to load exercises. Please check your internet connection and try again.'
+    if (!append) {
+      exercises.value = []
+    }
+  } finally {
+    loading.value = false
+    loadingMore.value = false
+  }
+}
+
+// Load more exercises (pagination)
+const loadMoreExercises = async () => {
+  if (!hasMorePages.value || loadingMore.value) return
+  await fetchExercises(searchQuery.value, true)
+}
+
+const handleSearch = () => {
+  // Debounce search to avoid too many API calls
+  clearTimeout(searchTimeout.value)
+  
+  searchTimeout.value = setTimeout(() => {
+    if (searchQuery.value.trim()) {
+      fetchExercises(searchQuery.value.trim())
+    } else {
+      fetchExercises()
+    }
+  }, 500)
+}
+
+const clearSearch = () => {
+  searchQuery.value = ''
+  fetchExercises()
+}
+
+const viewExercise = (exercise) => {
+  // Navigate to exercise detail page
+  router.push(`/exercise/${exercise.id}`)
+}
+
+const handleImageError = (event) => {
+  // Fallback for broken images
+  event.target.src = '/images/exercise-placeholder.png'
+}
+
+const loadMore = async () => {
+  // Implement if the API supports pagination
+  loadingMore.value = true
+  // Add pagination logic here
+  loadingMore.value = false
+}
+
+// Lifecycle
+onMounted(() => {
+  fetchExercises()
+})
+
+// Watch for route changes (if coming back from exercise detail)
+watch(() => router.currentRoute.value.path, (newPath) => {
+  if (newPath === '/exercises' && exercises.value.length === 0) {
+    fetchExercises()
+  }
+})
+</script>
+
+<style scoped>
+.exercise-browser {
+  min-height: 100vh;
+  background: #f8f9fa;
+}
+
+.container {
+  max-width: 1200px;
+}
+
+/* Header */
+.header-section {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.page-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.page-subtitle {
+  font-size: 1.1rem;
+  color: #6c757d;
+  margin-bottom: 0;
+}
+
+/* Search */
+.search-container {
+  position: relative;
+}
+
+.search-input {
+  padding: 1rem 1rem 1rem 3rem;
+  border-radius: 50px;
+  border: 2px solid #e9ecef;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.search-input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.search-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6c757d;
+  font-size: 1.2rem;
+}
+
+/* Loading */
+.loading-section {
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.loading-text {
+  color: #6c757d;
+  font-size: 1.1rem;
+}
+
+/* Error */
+.error-section {
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.error-title {
+  color: #dc3545;
+  margin-bottom: 1rem;
+}
+
+.error-message {
+  color: #6c757d;
+  margin-bottom: 2rem;
+  max-width: 500px;
+}
+
+/* Results */
+.results-count {
+  font-weight: 500;
+  color: #495057;
+}
+
+.search-query {
+  color: #007bff;
+  font-weight: 600;
+}
+
+/* Exercise Grid */
+.exercise-grid {
+  margin-bottom: 3rem;
+}
+
+.exercise-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.exercise-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.exercise-image-container {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+  background: #f8f9fa;
+}
+
+.exercise-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.exercise-card:hover .exercise-image {
+  transform: scale(1.05);
+}
+
+.exercise-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.exercise-card:hover .exercise-overlay {
+  opacity: 1;
+}
+
+.exercise-info {
+  padding: 1.5rem;
+  flex-grow: 1;
+}
+
+.exercise-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+  line-height: 1.3;
+}
+
+.exercise-target {
+  color: #6c757d;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.exercise-badges {
+  margin-bottom: 1rem;
+}
+
+.exercise-actions {
+  padding: 0 1.5rem 1.5rem;
+}
+
+/* No Results */
+.no-results {
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.no-results-title {
+  color: #495057;
+  margin-bottom: 1rem;
+}
+
+.no-results-message {
+  color: #6c757d;
+  margin-bottom: 2rem;
+}
+
+/* Load More */
+.load-more-section {
+  padding: 2rem 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 2rem;
+  }
+  
+  .exercise-image-container {
+    height: 150px;
+  }
+  
+  .exercise-info {
+    padding: 1rem;
+  }
+  
+  .exercise-actions {
+    padding: 0 1rem 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .header-section {
+    padding: 1rem 0;
+  }
+  
+  .page-title {
+    font-size: 1.75rem;
+  }
+  
+  .search-input {
+    padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+  }
+}
+</style>

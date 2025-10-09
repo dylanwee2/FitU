@@ -807,6 +807,9 @@ function formatLabel(ymd) {
 </script>
 
 <style scoped>
+/* Bootstrap Icons */
+@import url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css');
+
 /* Container */
 .profile-container {
   min-height: 100vh;
@@ -1070,6 +1073,4 @@ function formatLabel(ymd) {
   }
 }
 
-/* Bootstrap Icons */
-@import url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css');
 </style>
