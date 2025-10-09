@@ -11,18 +11,20 @@ import ExerciseBrowser from '../views/ExerciseBrowser.vue'
 import CommentsAdmin from '../views/CommentsAdmin.vue'
 import Calendar from '../views/calendar.vue'
 import VirtualGym from '../views/VirtualGym.vue'
+import ExerciseDemo from '../views/exercise-demo.vue'
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
-  { path: '/exercises', name: 'ExerciseBrowser', component: ExerciseBrowser },
-  { path: '/recipes', name: 'Recipes', component: Recipes },
-  { path: '/calendar', name: 'Calendar', component: Calendar },
-  { path: '/virtual-gym', name: 'VirtualGym', component: VirtualGym },
   { path: '/signup', name: 'Signup', component: Signup },
   { path: '/login', name: 'Login', component: Login },
   { path: '/profile', name: 'Profile', component: Profile },
+  { path: '/recipes', name: 'Recipes', component: Recipes },
+  { path: '/exerciselibrary', name: 'ExerciseBrowser', component: ExerciseBrowser },
   { path: '/exercise/:id', name: 'ExerciseDetail', component: ExerciseDetail },
-  { path: '/admin/comments', name: 'CommentsAdmin', component: CommentsAdmin }
+  { path: '/admin/comments', name: 'CommentsAdmin', component: CommentsAdmin },
+  { path: '/calendar', name: 'Calendar', component: Calendar },
+  { path: '/virtual-gym', name: 'VirtualGym', component: VirtualGym },
+  { path: '/exercise-demo/:id', name: 'ExerciseDemo', component: ExerciseDemo, props: true },
 ]
 
 const router = createRouter({

@@ -115,11 +115,6 @@
       <CalorieChart :series="meals.weekSeries(7)" />
     </div>
 
-    <!-- Workout Planner Toggle -->
-    <div class="mb-4 mt-4 d-flex">
-      <button class="btn btn-primary btn-elevate" @click="toggleWorkoutPlanner">{{ showWorkoutPlanner ? 'Hide Workouts' : '🏋️ Show Workouts' }}</button>
-    </div>
-
     <!-- Stats Section -->
     <div class="home-card p-3 mb-4" v-reveal>
       <div class="row text-center">
@@ -165,17 +160,6 @@
       <router-link to="/signup" class="btn btn-primary btn-elevate">Get Started Free</router-link>
     </section>
 
-    <!-- Workout Planner Component -->
-    <div v-if="showWorkoutPlanner" class="card p-3 home-card">
-      <WorkoutPlanner 
-        :show-back-button="false"
-        :show-progress-tracker="true"
-        @workout-selected="onWorkoutSelected"
-        @exercise-selected="onExerciseSelected"
-        @workout-completed="onWorkoutCompleted"
-      />
-    </div>
-
   </div>
 
 </template>
@@ -186,11 +170,9 @@ import CalorieProgress from '@/components/CalorieProgress.vue'
 import CalorieChart from '@/components/CalorieChart.vue'
 import { useUser } from '@/stores/user'
 import { useMeals } from '@/stores/meals'
-import WorkoutPlanner from "../components/WorkoutPlanner.vue";
 
 export default {
   components: {
-    WorkoutPlanner,
     CalorieProgress,
     CalorieChart
   },
@@ -202,21 +184,7 @@ export default {
       await user.loadUser();
       await meals.init();
     })
-    // Workout Planner state and handlers
-    const showWorkoutPlanner = ref(false)
-    const toggleWorkoutPlanner = () => {
-      showWorkoutPlanner.value = !showWorkoutPlanner.value
-    }
-    const onWorkoutSelected = (workout) => {
-      console.log('Workout selected:', workout)
-    }
-    const onExerciseSelected = (exercise) => {
-      console.log('Exercise selected:', exercise)
-    }
-    const onWorkoutCompleted = (data) => {
-      console.log('Workout completed:', data)
-    }
-
+    
     const amount = ref(0)
     const note = ref('')
     const onAdd = async () => {
@@ -262,11 +230,6 @@ export default {
     onMounted(loadReviews)
 
     return { 
-      showWorkoutPlanner,
-      toggleWorkoutPlanner,
-      onWorkoutSelected,
-      onExerciseSelected,
-      onWorkoutCompleted,
       user,
       meals,
       amount,

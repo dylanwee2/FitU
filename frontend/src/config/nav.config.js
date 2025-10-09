@@ -11,7 +11,7 @@ export const navigationLinks = [
   },
   {
     label: 'Exercise Library',
-    href: '/exercises',
+    href: '/exerciselibrary',
     icon: '💪'
   },
   {
