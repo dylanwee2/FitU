@@ -13,18 +13,23 @@
 
     <!-- Global Footer Component -->
     <Footer />
+
+    <!-- Global Workout Cart Component -->
+    <WorkoutCart />
   </div>
 </template>
 
 <script>
 import Navbar from './components/navbar.vue'
 import Footer from './components/Footer.vue'
+import WorkoutCart from './components/WorkoutCart.vue'
 
 export default {
   name: 'App',
   components: {
     Navbar,
-    Footer
+    Footer,
+    WorkoutCart
   }
 }
 </script>

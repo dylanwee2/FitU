@@ -116,10 +116,22 @@
                   </div>
                 </div>
 
-                <!-- Action Button -->
+                <!-- Action Buttons -->
                 <div class="exercise-actions">
-                  <button class="btn btn-outline-primary btn-sm w-100">
-                    <i class="fas fa-eye me-1"></i>View Details
+                  <button 
+                    @click.stop="addToCart(exercise)"
+                    class="btn btn-success btn-sm me-2"
+                    :disabled="isInCart(exercise.id)"
+                    :title="isInCart(exercise.id) ? 'Already in cart' : 'Add to workout cart'"
+                  >
+                    <i class="fas fa-plus me-1"></i>
+                    {{ isInCart(exercise.id) ? 'In Cart' : 'Add to Cart' }}
+                  </button>
+                  <button 
+                    @click.stop="viewExercise(exercise)"
+                    class="btn btn-outline-primary btn-sm"
+                  >
+                    <i class="fas fa-eye me-1"></i>View
                   </button>
                 </div>
               </div>
@@ -149,11 +161,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useWorkoutCartStore } from '../stores/workoutCart'
 
 // Router
 const router = useRouter()
+
+// Cart store
+const cartStore = useWorkoutCartStore()
 
 // Reactive state
 const exercises = ref([])
@@ -285,6 +301,19 @@ const viewExercise = (exercise) => {
 const handleImageError = (event) => {
   // Fallback for broken images
   event.target.src = '/images/exercise-placeholder.png'
+}
+
+// Cart methods
+const addToCart = (exercise) => {
+  const success = cartStore.addToCart(exercise)
+  if (success) {
+    // You could add a toast notification here
+    console.log('Added to cart:', exercise.name)
+  }
+}
+
+const isInCart = (exerciseId) => {
+  return cartStore.cartItems.some(item => item.id === exerciseId)
 }
 
 const loadMore = async () => {

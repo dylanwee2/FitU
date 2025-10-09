@@ -34,10 +34,10 @@
         :class="{ 'show': isMobileMenuOpen }"
         ref="mobileMenu"
       >
-        <!-- Centered nav links (unchanged across auth state) -->
+        <!-- Centered nav links (filtered by auth state) -->
         <ul class="navbar-nav mx-auto gap-lg-1">
           <li 
-            v-for="link in navigationLinks" 
+            v-for="link in filteredNavigationLinks" 
             :key="link.href" 
             class="nav-item"
           >
@@ -85,6 +85,13 @@ export default {
     const mobileMenu = ref(null)
 
     const isAuthed = computed(() => !!user.uid)
+    
+    const filteredNavigationLinks = computed(() => {
+      return navigationLinks.filter(link => {
+        // Show all links if authenticated, or if link doesn't require auth
+        return isAuthed.value || !link.requiresAuth
+      })
+    })
 
     // Check if current route matches the link
     const isActiveRoute = (href) => route.path === href
@@ -169,7 +176,7 @@ export default {
     })
 
     return {
-      navigationLinks,
+      filteredNavigationLinks,
       isAuthed,
       isMobileMenuOpen,
       isScrolled,

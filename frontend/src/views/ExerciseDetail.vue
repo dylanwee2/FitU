@@ -7,11 +7,26 @@
       <div v-else-if="error">Error: {{ error }}</div>
       <div v-else>
         <div class="exercise-header mb-4">
-          <h1>{{ exercise.name }}</h1>
-          <div class="exercise-badges mb-3">
-            <span class="badge bg-primary me-2">{{ exercise.target }}</span>
-            <span class="badge bg-secondary me-2">{{ exercise.bodyPart }}</span>
-            <span class="badge bg-info">{{ exercise.equipment }}</span>
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <h1>{{ exercise.name }}</h1>
+              <div class="exercise-badges mb-3">
+                <span class="badge bg-primary me-2">{{ exercise.target }}</span>
+                <span class="badge bg-secondary me-2">{{ exercise.bodyPart }}</span>
+                <span class="badge bg-info">{{ exercise.equipment }}</span>
+              </div>
+            </div>
+            <div class="exercise-actions">
+              <button 
+                @click="addToCart"
+                class="btn btn-success"
+                :disabled="isInCart"
+                :title="isInCart ? 'Already in cart' : 'Add to workout cart'"
+              >
+                <i class="fas fa-plus me-2"></i>
+                {{ isInCart ? 'In Cart' : 'Add to Cart' }}
+              </button>
+            </div>
           </div>
         </div>
         
@@ -63,14 +78,21 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useWorkoutCartStore } from '../stores/workoutCart'
 
 const route = useRoute()
 const router = useRouter()
+const cartStore = useWorkoutCartStore()
 
 const exerciseId = computed(() => route.params.id)
 const exercise = ref({})
 const loading = ref(false)
 const error = ref('')
+
+// Cart computed properties
+const isInCart = computed(() => {
+  return cartStore.cartItems.some(item => item.id === exercise.value.id)
+})
 
 const goBack = () => {
   router.push('/exercises')
@@ -107,6 +129,14 @@ const loadExercise = async () => {
     error.value = err.message
   } finally {
     loading.value = false
+  }
+}
+
+const addToCart = () => {
+  const success = cartStore.addToCart(exercise.value)
+  if (success) {
+    // You could add a toast notification here
+    console.log('Added to cart:', exercise.value.name)
   }
 }
 

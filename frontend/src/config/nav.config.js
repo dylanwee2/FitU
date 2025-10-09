@@ -15,6 +15,12 @@ export const navigationLinks = [
     icon: '💪'
   },
   {
+    label: 'Workout Sets',
+    href: '/workout-sets',
+    icon: '📋',
+    requiresAuth: true
+  },
+  {
     label: 'Recipes',
     href: '/recipes',
     icon: '🍽️'

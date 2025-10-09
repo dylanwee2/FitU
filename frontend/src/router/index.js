@@ -11,7 +11,7 @@ import ExerciseBrowser from '../views/ExerciseBrowser.vue'
 import CommentsAdmin from '../views/CommentsAdmin.vue'
 import Calendar from '../views/calendar.vue'
 import VirtualGym from '../views/VirtualGym.vue'
-import ExerciseDemo from '../views/exercise-demo.vue'
+import WorkoutPlaylists from '../views/WorkoutPlaylists.vue'
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
@@ -24,7 +24,8 @@ const routes = [
   { path: '/admin/comments', name: 'CommentsAdmin', component: CommentsAdmin },
   { path: '/calendar', name: 'Calendar', component: Calendar },
   { path: '/virtual-gym', name: 'VirtualGym', component: VirtualGym },
-  { path: '/exercise-demo/:id', name: 'ExerciseDemo', component: ExerciseDemo, props: true },
+  { path: '/workout-sets', name: 'WorkoutPlaylists', component: WorkoutPlaylists },
+  { path: '/admin/comments', name: 'CommentsAdmin', component: CommentsAdmin }
 ]
 
 const router = createRouter({
