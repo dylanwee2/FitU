@@ -35,7 +35,7 @@
         <p class="empty-state-message">
           Create your first workout set by adding exercises to your cart and saving them as a playlist.
         </p>
-        <router-link to="/exercises" class="btn btn-primary">
+        <router-link to="/exerciselibrary" class="btn btn-primary">
           <i class="fas fa-plus me-2"></i>Browse Exercises
         </router-link>
       </div>
@@ -1019,12 +1019,11 @@ const checkPublishedStatus = async () => {
     return
   }
 
-  console.log('Checking published status for user:', auth.currentUser.uid)
+  // console.log('Checking published status for user:', auth.currentUser.uid)
 
   try {
     const userWorkouts = await workoutVaultService.getUserWorkouts(auth.currentUser.uid)
     console.log('Firebase workouts:', userWorkouts)
-    console.log('Local playlists:', savedPlaylists.value)
     
     // Update local playlist status based on Firebase data
     for (const firebaseWorkout of userWorkouts) {

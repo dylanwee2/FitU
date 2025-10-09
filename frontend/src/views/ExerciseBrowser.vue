@@ -184,7 +184,7 @@ const hasMorePages = ref(false)
 
 // API Configuration
 const API_BASE_URL = 'https://www.exercisedb.dev/api/v1'
-const EXERCISES_PER_PAGE = 60
+const EXERCISES_PER_PAGE = 12
 
 // Methods
 const fetchExercises = async (query = '', append = false) => {
@@ -203,7 +203,7 @@ const fetchExercises = async (query = '', append = false) => {
       ? `${API_BASE_URL}/exercises/search?q=${encodeURIComponent(query)}&limit=${EXERCISES_PER_PAGE}&offset=${offset}`
       : `${API_BASE_URL}/exercises?limit=${EXERCISES_PER_PAGE}&offset=${offset}`
     
-    console.log('Fetching exercises from:', url)
+    // console.log('Fetching exercises from:', url)
     
     const response = await fetch(url)
     
@@ -255,7 +255,7 @@ const fetchExercises = async (query = '', append = false) => {
       exercises.value = Array.isArray(data) ? data : (data.exercises || [])
     }
     
-    console.log(`Loaded ${exercises.value.length} exercises (${totalExercises.value} total available)`)
+    // console.log(`Loaded ${exercises.value.length} exercises (${totalExercises.value} total available)`)
     
   } catch (err) {
     console.error('Error fetching exercises:', err)
@@ -305,22 +305,11 @@ const handleImageError = (event) => {
 
 // Cart methods
 const addToCart = (exercise) => {
-  const success = cartStore.addToCart(exercise)
-  if (success) {
-    // You could add a toast notification here
-    console.log('Added to cart:', exercise.name)
-  }
+  cartStore.addToCart(exercise)
 }
 
 const isInCart = (exerciseId) => {
   return cartStore.cartItems.some(item => item.id === exerciseId)
-}
-
-const loadMore = async () => {
-  // Implement if the API supports pagination
-  loadingMore.value = true
-  // Add pagination logic here
-  loadingMore.value = false
 }
 
 // Lifecycle
@@ -328,12 +317,6 @@ onMounted(() => {
   fetchExercises()
 })
 
-// Watch for route changes (if coming back from exercise detail)
-watch(() => router.currentRoute.value.path, (newPath) => {
-  if (newPath === '/exercises' && exercises.value.length === 0) {
-    fetchExercises()
-  }
-})
 </script>
 
 <style scoped>
