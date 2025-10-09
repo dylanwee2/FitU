@@ -24,25 +24,6 @@
         <div class="col-lg-12">
           
           <!-- Calorie Goal Card -->
-          <div class="card mb-4">
-            <div class="card-header text-white" style="background: var(--primary)">
-              <h5 class="mb-0">Calorie Goal</h5>
-            </div>
-            <div class="card-body">
-              <div class="row g-3 align-items-end">
-                <div class="col-sm-4">
-                  <label class="form-label">Daily Goal (kcal)</label>
-                  <input type="number" min="800" max="5000" step="10" class="form-control" v-model.number="goalInput" />
-                </div>
-                <div class="col-sm-3 d-grid">
-                  <button class="btn btn-primary" @click="saveCalorieGoal">Save</button>
-                </div>
-                <div class="col-sm-5">
-                  <small class="text-muted">This goal appears as read-only on Home.</small>
-                </div>
-              </div>
-            </div>
-          </div>
 
           <!-- Personal Information Card -->
           <div class="card mb-4">
@@ -60,7 +41,7 @@
                         alt="Profile Picture" 
                         class="profile-picture"
                       >
-                      <div class="mt-3">
+                      <div v-if=false class="mt-3">
                         <label for="photoUpload" class="btn btn-change-photo">
                           <i class="bi bi-camera me-1"></i>Change Photo
                         </label>
@@ -72,7 +53,7 @@
                           class="d-none"
                         >
                       </div>
-                      <small class="text-muted d-block mt-2">Max size: 2MB</small>
+                      <small v-if=false class="text-muted d-block mt-2">Max size: 2MB</small>
                     </div>
                   </div>
                 </div>
@@ -175,12 +156,12 @@
               </div>
 
               <div class="mb-3">
-                <label for="calorieTarget" class="form-label">Daily Calorie Target</label>
+                <label for="dailyCalorieGoal" class="form-label">Daily Calorie Target</label>
                 <input 
                   type="number" 
                   class="form-control" 
-                  id="calorieTarget" 
-                  v-model.number="goalsData.calorieTarget" 
+                  id="dailyCalorieGoal" 
+                  v-model.number="goalsData.dailyGoal" 
                   min="1000" 
                   max="5000"
                   placeholder="e.g., 2000"
@@ -334,9 +315,9 @@
                 <small class="text-muted">Balance between academics and personal life</small>
               </div>
 
-              <div class="alert alert-light mt-3">
+          
                 <small><i class="bi bi-info-circle me-1"></i>Charts will display real data once you log activities</small>
-              </div>
+          
             </div>
           </div>
 
@@ -370,7 +351,7 @@
               >
                 <i class="bi bi-trash me-2"></i>Delete Account
               </button>
-              <small class="text-muted d-block mt-2 text-center">This action cannot be undone</small>
+              <small class="text-muted d-block mt-2 text-center">Account deletion cannot be undone</small>
             </div>
           </div>
 
@@ -383,12 +364,12 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useUser } from '@/stores/user'
-import { useMeals } from '@/stores/meals'
-import Chart from 'chart.js/auto'
-import { getAuth, onAuthStateChanged, signOut, updateProfile } from 'firebase/auth';
-import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { useUser } from '@/stores/user';
+import { useMeals } from '@/stores/meals';
+import Chart from 'chart.js/auto';
+import { getAuth, onAuthStateChanged, signOut, updateProfile, deleteUser, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
+import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp, deleteDoc } from 'firebase/firestore';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 
 const router = useRouter();
 const auth = getAuth();
@@ -396,7 +377,7 @@ const db = getFirestore();
 const storage = getStorage();
 
 // Default avatar URL - hosted on a CDN or you can use a local asset
-const defaultAvatar = ref('https://ui-avatars.com/api/?name=User&size=150&background=e63946&color=fff');
+const defaultAvatar = ref('https://ui-avatars.com/api/?name=User&size=150&background=008280&color=fff');
 
 // State Management
 const isLoading = ref(true);
@@ -417,7 +398,7 @@ const profileData = ref({
 
 const goalsData = ref({
   goalType: '',
-  calorieTarget: 2000,
+  dailyGoal: 2000,
   dietaryPreference: '',
   allergies: '',
   workoutFrequency: 3
@@ -436,19 +417,6 @@ const timeBalance = ref(65);
 // Calorie Goal Editor
 const user = useUser()
 const goalInput = ref(user.dailyGoal)
-async function saveCalorieGoal() {
-  const g = Number(goalInput.value)
-  if (!Number.isFinite(g) || g < 800 || g > 5000) {
-    errorMessage.value = 'Goal must be between 800 and 5000 kcal.'
-    return
-  }
-  try {
-    await user.setDailyGoal(g)
-    successMessage.value = 'Daily calorie goal saved.'
-  } catch (e) {
-    errorMessage.value = 'Failed to save goal.'
-  }
-}
 const calorieChartRef = ref(null);
 const chartInstance = ref(null);
 
@@ -486,7 +454,15 @@ onMounted(() => {
   });
 });
 
-// Firebase Functions
+// ============================================
+// FIREBASE FUNCTIONS - COPY THIS ENTIRE SECTION
+// Replace everything from "// Firebase Functions" to the end of your script setup
+// ============================================
+
+// ============================================
+// FIREBASE FUNCTIONS - COPY THIS ENTIRE SECTION
+// Replace everything from "// Firebase Functions" to the end of your script setup
+// ============================================
 
 /**
  * Load user data from Firestore
@@ -495,7 +471,7 @@ async function loadUserData(uid) {
   try {
     isLoading.value = true;
 
-    // Get user document from Firestore
+    // Get user document from Firestore using the user's UID
     const userDocRef = doc(db, 'users', uid);
     const userDoc = await getDoc(userDocRef);
 
@@ -516,11 +492,14 @@ async function loadUserData(uid) {
       // Load goals data
       goalsData.value = {
         goalType: data.goalType || '',
-        calorieTarget: data.calorieTarget || 2000,
+        dailyGoal: data.dailyGoal || 2000,
         dietaryPreference: data.dietaryPreference || '',
         allergies: data.allergies || '',
         workoutFrequency: data.workoutFrequency || 3
       };
+      
+      // Sync the calorie goal with the goalInput
+      goalInput.value = data.dailyGoal || 2000;
 
       // Load preferences
       preferences.value = {
@@ -547,6 +526,7 @@ async function loadUserData(uid) {
  */
 async function createDefaultUserDocument(uid) {
   try {
+    // CRITICAL: Use doc() to specify the exact document ID (the user's UID)
     const userDocRef = doc(db, 'users', uid);
     
     const defaultData = {
@@ -558,7 +538,7 @@ async function createDefaultUserDocument(uid) {
       height: null,
       weight: null,
       goalType: '',
-      calorieTarget: 2000,
+      dailyGoal: 2000,
       dietaryPreference: '',
       allergies: '',
       workoutFrequency: 3,
@@ -570,6 +550,7 @@ async function createDefaultUserDocument(uid) {
       updatedAt: serverTimestamp()
     };
 
+    // Use setDoc to create the document with the specific UID
     await setDoc(userDocRef, defaultData);
     
     // Load the default data into state
@@ -617,12 +598,12 @@ async function handlePhotoUpload(event) {
     // Update Firebase Auth profile
     await updateProfile(currentUser.value, { photoURL });
     
-    // Update Firestore
+    // Update Firestore - CRITICAL: Use the user's UID
     const userDocRef = doc(db, 'users', currentUser.value.uid);
-    await updateDoc(userDocRef, {
+    await setDoc(userDocRef, {
       photoURL,
       updatedAt: serverTimestamp()
-    });
+    }, { merge: true });
     
     // Update local state
     profileData.value.photoURL = photoURL;
@@ -648,9 +629,11 @@ async function saveAllData() {
     // Validate required fields
     if (!profileData.value.fullName || !profileData.value.email) {
       errorMessage.value = 'Please fill in all required fields';
+      isSaving.value = false;
       return;
     }
 
+    // CRITICAL: Always use the current user's UID as the document ID
     const userDocRef = doc(db, 'users', currentUser.value.uid);
     
     // Prepare data to save
@@ -658,31 +641,32 @@ async function saveAllData() {
       // Profile data
       fullName: profileData.value.fullName,
       email: profileData.value.email,
-      gender: profileData.value.gender,
-      age: profileData.value.age,
-      height: profileData.value.height,
-      weight: profileData.value.weight,
-      photoURL: profileData.value.photoURL,
+      gender: profileData.value.gender || '',
+      age: profileData.value.age || null,
+      height: profileData.value.height || null,
+      weight: profileData.value.weight || null,
+      photoURL: profileData.value.photoURL || defaultAvatar.value,
       
       // Goals data
-      goalType: goalsData.value.goalType,
-      calorieTarget: goalsData.value.calorieTarget,
-      dietaryPreference: goalsData.value.dietaryPreference,
-      allergies: goalsData.value.allergies,
-      workoutFrequency: goalsData.value.workoutFrequency,
+      goalType: goalsData.value.goalType || '',
+      dailyGoal: goalsData.value.dailyGoal || 2000,
+      dietaryPreference: goalsData.value.dietaryPreference || '',
+      allergies: goalsData.value.allergies || '',
+      workoutFrequency: goalsData.value.workoutFrequency || 3,
       
       // Preferences
-      spotifyConnected: preferences.value.spotifyConnected,
-      aiSuggestionsEnabled: preferences.value.aiSuggestionsEnabled,
-      remindersEnabled: preferences.value.remindersEnabled,
-      darkMode: preferences.value.darkMode,
+      spotifyConnected: preferences.value.spotifyConnected || false,
+      aiSuggestionsEnabled: preferences.value.aiSuggestionsEnabled !== undefined ? preferences.value.aiSuggestionsEnabled : true,
+      remindersEnabled: preferences.value.remindersEnabled !== undefined ? preferences.value.remindersEnabled : true,
+      darkMode: preferences.value.darkMode || false,
       
       // Metadata
       updatedAt: serverTimestamp()
     };
 
-    // Update Firestore
-    await updateDoc(userDocRef, dataToSave);
+    // Use setDoc with merge:true to update the existing document
+    // This will update fields or create the document if it doesn't exist
+    await setDoc(userDocRef, dataToSave, { merge: true });
 
     // Update Firebase Auth display name if changed
     if (currentUser.value.displayName !== profileData.value.fullName) {
@@ -700,7 +684,7 @@ async function saveAllData() {
     
   } catch (error) {
     console.error('Error saving profile:', error);
-    errorMessage.value = 'Failed to save changes. Please try again.';
+    errorMessage.value = `Failed to save changes: ${error.message}`;
   } finally {
     isSaving.value = false;
   }
@@ -728,34 +712,123 @@ function confirmDeleteAccount() {
   );
   
   if (confirmed) {
-    deleteAccount();
+    // Ask for password to re-authenticate
+    const password = prompt('Please enter your password to confirm account deletion:');
+    if (password) {
+      deleteAccount(password);
+    } else {
+      errorMessage.value = 'Account deletion canceled. Password is required.';
+    }
   }
 }
 
 /**
- * Delete user account (placeholder - implement with caution)
+ * Delete user account with re-authentication
  */
-async function deleteAccount() {
+async function deleteAccount(password) {
   try {
-    // This is a sensitive operation - implement with proper security
-    // You may want to require re-authentication before deletion
+    isSaving.value = true;
+    errorMessage.value = '';
     
-    errorMessage.value = 'Account deletion requires re-authentication. Please contact support.';
+    console.log('Starting account deletion process...');
     
-    // TODO: Implement proper account deletion flow
-    // 1. Re-authenticate user
-    // 2. Delete Firestore data
-    // 3. Delete Storage files
-    // 4. Delete Auth account
+    // Step 1: Re-authenticate the user (required for sensitive operations)
+    console.log('Re-authenticating user...');
+    const credential = EmailAuthProvider.credential(
+      currentUser.value.email,
+      password
+    );
+    await reauthenticateWithCredential(currentUser.value, credential);
+    console.log('User re-authenticated successfully');
+    
+    const uid = currentUser.value.uid;
+    
+    // Step 2: Delete profile photo from Storage (if exists)
+    console.log('Deleting profile photo from Storage...');
+    try {
+      const photoStorageRef = storageRef(storage, `profile-photos/${uid}`);
+      await deleteObject(photoStorageRef);
+      console.log('Profile photo deleted');
+    } catch (storageError) {
+      // Photo might not exist, that's okay
+      console.log('No profile photo to delete or already deleted:', storageError.code);
+    }
+    
+    // Step 3: Delete user document from Firestore
+    console.log('Deleting user data from Firestore...');
+    const userDocRef = doc(db, 'users', uid);
+    await deleteDoc(userDocRef);
+    console.log('Firestore data deleted');
+    
+    // Step 4: Delete user from Firebase Authentication
+    console.log('Deleting user from Authentication...');
+    await deleteUser(currentUser.value);
+    console.log('User account deleted successfully');
+    
+    // Redirect to home/login page
+    alert('Your account has been successfully deleted. You will now be redirected to the home page.');
+    router.push('/');
     
   } catch (error) {
     console.error('Error deleting account:', error);
-    errorMessage.value = 'Failed to delete account. Please contact support.';
+    
+    // Provide specific error messages
+    if (error.code === 'auth/wrong-password') {
+      errorMessage.value = 'Incorrect password. Account deletion canceled.';
+    } else if (error.code === 'auth/too-many-requests') {
+      errorMessage.value = 'Too many failed attempts. Please try again later.';
+    } else if (error.code === 'auth/requires-recent-login') {
+      errorMessage.value = 'This operation requires recent authentication. Please log out and log back in, then try again.';
+    } else {
+      errorMessage.value = `Failed to delete account: ${error.message}`;
+    }
+  } finally {
+    isSaving.value = false;
   }
 }
 
 /**
- * Initialize Chart.js (placeholder)
+ * Save calorie goal to Firebase
+ */
+async function saveCalorieGoal() {
+  const g = Number(goalInput.value)
+  if (!Number.isFinite(g) || g < 800 || g > 5000) {
+    errorMessage.value = 'Goal must be between 800 and 5000 kcal.'
+    return
+  }
+  try {
+    isSaving.value = true;
+    errorMessage.value = '';
+    
+    // Update in the user store
+    await user.setDailyGoal(g)
+    
+    // ALSO update in Firestore under the user's document
+    const userDocRef = doc(db, 'users', currentUser.value.uid);
+    await setDoc(userDocRef, {
+      dailyGoal: g,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+    
+    // Update local state to match
+    goalsData.value.dailyGoal = g;
+    
+    successMessage.value = 'Daily calorie goal saved to your profile.';
+    
+    setTimeout(() => {
+      successMessage.value = '';
+    }, 3000);
+    
+  } catch (e) {
+    console.error('Error saving calorie goal:', e);
+    errorMessage.value = 'Failed to save goal.';
+  } finally {
+    isSaving.value = false;
+  }
+}
+
+/**
+ * Initialize Chart.js
  */
 function initializeCharts() {
   if (!calorieChartRef.value) return
@@ -777,7 +850,7 @@ function initializeCharts() {
       datasets: [{
         label: 'Calories',
         data: values,
-        backgroundColor: 'rgba(230, 57, 70, 0.8)'
+        backgroundColor: 'rgb(0, 130, 128)',
       }]
     },
     options: {
@@ -799,6 +872,9 @@ function initializeCharts() {
   })
 }
 
+/**
+ * Format date label for chart
+ */
 function formatLabel(ymd) {
   const [y, m, d] = ymd.split('-').map(Number)
   const date = new Date(y, m - 1, d)
@@ -807,52 +883,95 @@ function formatLabel(ymd) {
 </script>
 
 <style scoped>
-/* Bootstrap Icons */
-@import url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css');
-
 /* Container */
 .profile-container {
   min-height: 100vh;
-  background-color: #FFF7E6;
+  background-color: white;
   padding: 20px 0;
 }
 
-/* Title */
+/* Title with animation */
 .page-title {
-  color: #495057;
-  font-weight: 700;
+  color: var(--primary);
+  font-weight: 800;
   text-align: center;
+  animation: fadeInDown 0.6s ease-out;
 }
 
-/* Cards */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Cards - matching home page style */
 .card {
-  border: none;
-  border-radius: 15px;
-  transition: transform 0.2s;
-  background-color: #FFF7E6;
-  
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  animation: fadeInUp 0.6s ease-out backwards;
+}
+
+.card:nth-child(1) { animation-delay: 0.1s; }
+.card:nth-child(2) { animation-delay: 0.2s; }
+.card:nth-child(3) { animation-delay: 0.3s; }
+.card:nth-child(4) { animation-delay: 0.4s; }
+.card:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(34, 170, 255, 0.4);
 }
 
 .card-header {
-  background-color: #e63946 !important;
+  background-color: var(--primary);
   color: #ffffff !important;
-  border-radius: 15px 15px 0 0 !important;
+  border-radius: 12px 12px 0 0 !important;
   font-weight: 600;
+  padding: 1rem 1.5rem;
 }
 
 .card-body {
-  background-color: #FFEBD0;
+  background-color: white;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-/* Profile Picture */
+/* Profile Picture with enhanced animation */
 .profile-picture-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
+  animation: scaleIn 0.6s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .profile-picture {
@@ -860,67 +979,126 @@ function formatLabel(ymd) {
   height: 150px;
   border-radius: 50%;
   object-fit: cover;
-  border: 4px solid #e63946;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 16px rgba(120, 135, 145, 0.4);
+  transition: all 0.4s ease;
+  position: relative;
+}
+
+.profile-picture:hover {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 12px 24px rgba(194, 224, 255, 0.4);
 }
 
 .btn-change-photo {
-  background-color: #e63946;
-  color: white;
-  border: none;
+  background-color: white;
+  color: var(--primary);
+  border: 1px solid var(--primary);
   border-radius: 8px;
-  padding: 8px 16px;
+  padding: 10px 20px;
   transition: all 0.3s ease;
   font-weight: 500;
 }
 
 .btn-change-photo:hover {
-  background-color: #c53030;
-  transform: scale(1.05);
+  background-color: var(--primary);
+  color: white;
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 24px rgba(34, 170, 255, 0.4);
 }
 
-/* Forms */
+.btn-change-photo:active {
+  transform: translateY(1px);
+}
+
+/* Forms with smooth transitions */
 .form-label {
   font-weight: 600;
   color: #495057;
+  transition: color 0.2s ease;
 }
 
 .form-control,
 .form-select {
   border-radius: 8px;
+  border: 2px solid #e9ecef;
+  transition: all 0.3s ease;
 }
 
 .form-control:focus,
 .form-select:focus {
-  border-color: #e63946;
-  box-shadow: 0 0 0 0.2rem rgba(230, 57, 70, 0.25);
+  border-color: var(--primary);
+
+  transform: translateY(-2px);
+}
+
+.form-control:hover,
+.form-select:hover {
+  border-color: var(--primary);
+}
+
+.form-check-input {
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 .form-check-input:checked {
-  background-color: #e63946;
-  border-color: #e63946;
+  background-color: var(--primary);
+  border-color: var(--primary);
+  transform: scale(1.1);
+}
+
+.form-check-label {
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.form-check-label:hover {
+  color: var(--primary);
 }
 
 /* Chart Placeholder */
 .chart-placeholder {
-  background-color: #FFF7E6;
+  background-color: white;
   border-radius: 10px;
   padding: 20px;
   min-height: 200px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
 }
 
-/* Full Width Stat Cards */
+.chart-placeholder:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Full Width Stat Cards with pulse animation */
 .stat-card-full {
-  background-color: #FFF7E6;
+  background-color: white;
   color: #495057;
   padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   width: 100%;
+  transition: all 0.3s ease;
+  animation: slideInRight 0.6s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.stat-card-full:hover {
+  transform: translateX(5px);
+  box-shadow: 0 4px 12px rgba(34, 170, 255, 0.4);
 }
 
 .stat-header {
@@ -940,7 +1118,17 @@ function formatLabel(ymd) {
   margin: 0;
   font-size: 1.8rem;
   font-weight: 700;
-  color: #e63946;
+  color: var(--primary);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
 }
 
 .progress-full {
@@ -949,18 +1137,40 @@ function formatLabel(ymd) {
   background-color: #e9ecef;
   overflow: hidden;
   margin-bottom: 10px;
+  position: relative;
 }
 
 .progress-full .progress-bar {
   height: 100%;
-  transition: width 0.6s ease;
+  transition: width 0.8s ease;
   display: flex;
   align-items: center;
   justify-content: flex-end;
   padding-right: 10px;
   font-weight: 600;
   font-size: 0.9rem;
-  background: var(--primary);
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-full .progress-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background-color: rgb(0, 130, 128);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
 }
 
 .stat-card-full small {
@@ -969,92 +1179,236 @@ function formatLabel(ymd) {
   font-size: 0.85rem;
 }
 
-/* Buttons */
+/* Buttons - matching home page style */
 .btn-primary {
-  background-color: #FFF7E6;
-  color: rgb(88, 88, 88);
-  border: 1px solid #e63946;
+  color: rgb(66, 176, 110);
+  background-color: white;
+  border: 1px solid rgb(66, 176, 110);
   transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-weight: 600;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+  z-index: 0;
+}
+
+.btn-primary:hover::before {
+  width: 300px;
+  height: 300px;
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, #e63946 0%, rgb(253, 222, 172) 100%);
   color: white;
+  background-color: rgb(66, 176, 110);
+  border-color: rgb(66, 176, 110);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(134, 255, 168, 0.4);
+}
+
+.btn-primary:active {
+  transform: translateY(1px);
+}
+
+.btn-primary span,
+.btn-primary i {
+  position: relative;
+  z-index: 1;
 }
 
 .btn-outline-secondary {
-  color: rgb(88, 88, 88);
-  background-color: #FFF7E6;
-  border: 1px solid #6c757d;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: red;
+  background-color: white;
+  border: 1px solid red;
+  transition: all 0.3s ease;;
+  font-weight: 600;
+  position: relative;
+  overflow: hidden;
+}
+
+
+.btn-outline-secondary:hover::before {
+  width: 300px;
+  height: 300px;
 }
 
 .btn-outline-secondary:hover {
-  background: linear-gradient(135deg, #e63946 0%, rgb(253, 222, 172) 100%);
   color: white;
+  border-color: rgb(224, 41, 41);
+  background-color: rgb(224, 41, 41);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(255, 91, 91, 0.4);
+}
+
+.btn-outline-secondary:active {
+  transform: translateY(1px);
+}
+
+.btn-outline-secondary span,
+.btn-outline-secondary i {
+  position: relative;
+  z-index: 1;
 }
 
 .btn-outline-danger {
-  color: #e63946;
-  background-color: #FFF7E6;
-  border: 1px solid #e63946;
+  color: rgb(224, 41, 41);
+  background-color: white;
+  border: 1px solid rgb(224, 41, 41);
   transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-weight: 600;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-outline-danger:hover::before {
+  width: 300px;
+  height: 300px;
 }
 
 .btn-outline-danger:hover {
-  background: linear-gradient(135deg, #e63946 0%, rgb(253, 222, 172) 100%);
   color: white;
+  border-color: rgb(224, 41, 41);
+  background-color: rgb(224, 41, 41);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: rgb(255, 77, 77);
 }
 
-/* Alerts */
+.btn-outline-danger:active {
+  transform: translateY(1px);
+}
+
+.btn-outline-danger span,
+.btn-outline-danger i {
+  position: relative;
+  z-index: 1;
+}
+
+/* Disabled button state */
+.btn-primary:disabled,
+.btn-outline-secondary:disabled,
+.btn-outline-danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Alerts with slide-in animation */
 .alert {
-  border-radius: 10px;
+  border-radius: 12px;
   border: none;
+  animation: slideInFromTop 0.4s ease-out;
+}
+
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .alert-success {
-  background-color: rgb(255, 239, 212);
-  color: #e63946;
-  border-left: 4px solid #e63946;
+  background-color: white;
+  color: var(--primary);
+  border-left: 4px solid var(--primary);
+  box-shadow: 0 4px 12px rgba(213, 239, 255, 0.4);
 }
 
 .alert-danger {
-  background-color: rgb(255, 239, 212);
-  color: #e63946;
-  border-left: 4px solid #e63946;
+  background-color: white;
+  color: var(--primary);
+  border-left: 4px solid var(--primary);
+  box-shadow: 0 4px 12px rgba(213, 239, 255, 0.4);
 }
 
 .alert-info {
-  background-color: rgb(255, 239, 212);
-  color: #e63946;
+  background-color: white;
+  color: var(--primary);
+  border: 2px solid #e9ecef;
 }
 
 .alert-light {
   background-color: rgb(255, 239, 212);
   color: #495057;
+  border: 2px solid #e9ecef;
 }
 
 .btn-close {
   filter: invert(0.3) sepia(1) saturate(5) hue-rotate(315deg);
+  transition: transform 0.2s ease;
 }
 
-/* Loading Spinner */
+.btn-close:hover {
+  transform: scale(1.2) rotate(90deg);
+}
+
+/* Loading Spinner with enhanced animation */
 .spinner-border {
   width: 3rem;
   height: 3rem;
   border-width: 0.3em;
+  animation: spin 1s linear infinite, pulse 2s ease-in-out infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .spinner-border.text-primary {
-  color: #e63946 !important;
+  color: var(--primary) !important;
 }
 
-.card-body {
-    border-bottom-left-radius: 12px;
-    border-bottom-right-radius: 12px;
+/* BMI Alert with icon animation */
+.alert-info strong {
+  animation: bounce 1s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+/* Icon animations */
+.bi {
+  color: rgb(221, 221, 221);
+  transition: all 0.3s ease;
+}
+
+.card-header .bi:hover {
+  transform: scale(1.2) rotate(10deg);
+}
+
+/* Input focus glow effect */
+.form-control:focus,
+.form-select:focus {
+  animation: inputGlow 0.6s ease-out;
+}
+
+@keyframes inputGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(34, 170, 255, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 0 0.2rem rgba(34, 170, 255, 0.4);
+  }
 }
 
 /* Responsive Design */
@@ -1071,6 +1425,29 @@ function formatLabel(ymd) {
   .page-title {
     font-size: 1.5rem;
   }
+  
+  .card:hover {
+    transform: translateY(-4px);
+  }
 }
 
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Add floating animation to cards on hover */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(-8px);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+
+
+/* Bootstrap Icons */
+@import url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css');
 </style>
