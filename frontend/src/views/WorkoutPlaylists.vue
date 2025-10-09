@@ -982,6 +982,56 @@ onMounted(() => {
   cartStore.initializeStore()
 })
 
+// Add method to check published status from Firebase
+const checkPublishedStatus = async () => {
+  if (!auth.currentUser) {
+    console.log('No current user, skipping published status check')
+    return
+  }
+
+  // console.log('Checking published status for user:', auth.currentUser.uid)
+
+  try {
+    // Get user's workout sets from 'workoutSets' collection
+    const userWorkouts = await workoutVaultService.getUserWorkouts(auth.currentUser.uid)
+    // console.log('User workouts from workoutSets:', userWorkouts)
+    
+    // Get user's published workouts from 'publishedWorkouts' collection
+    const publishedWorkouts = await workoutVaultService.getPublishedWorkoutsByUser(auth.currentUser.uid)
+    // console.log('Published workouts from publishedWorkouts:', publishedWorkouts)
+    
+    // Create a map of originalId -> publishedWorkout for quick lookup
+    const publishedMap = new Map()
+    publishedWorkouts.forEach(published => {
+      if (published.originalId) {
+        publishedMap.set(published.originalId, published)
+      }
+    })
+    
+    // Update local playlist status based on Firebase data
+    for (const userWorkout of userWorkouts) {
+      const localPlaylist = savedPlaylists.value.find(p => p.id === userWorkout.id)
+      if (localPlaylist) {
+        // Check if this workout is published by looking for it in publishedWorkouts
+        const isActuallyPublished = publishedMap.has(userWorkout.id)
+        const publishedWorkout = publishedMap.get(userWorkout.id)
+         
+        // Update the status based on whether it's actually in the publishedWorkouts collection
+        if (localPlaylist.isPublished !== isActuallyPublished) {
+          // console.log(`Updating playlist ${userWorkout.id} published status to ${isActuallyPublished}`)
+          await cartStore.updatePlaylist(userWorkout.id, {
+            isPublished: isActuallyPublished,
+            publishedId: publishedWorkout?.id || null,
+            publishedAt: publishedWorkout?.publishedAt || null
+          })
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error checking published status:', error)
+  }
+}
+
 // Watch for both auth state and saved playlists to check published status
 watch([() => auth.currentUser, savedPlaylists], async ([user, playlists]) => {
   if (user && playlists.length > 0) {
@@ -1009,43 +1059,6 @@ const updateWorkoutDurations = async (playlists) => {
         }
       }
     }
-  }
-}
-
-// Add method to check published status from Firebase
-const checkPublishedStatus = async () => {
-  if (!auth.currentUser) {
-    console.log('No current user, skipping published status check')
-    return
-  }
-
-  // console.log('Checking published status for user:', auth.currentUser.uid)
-
-  try {
-    const userWorkouts = await workoutVaultService.getUserWorkouts(auth.currentUser.uid)
-    console.log('Firebase workouts:', userWorkouts)
-    
-    // Update local playlist status based on Firebase data
-    for (const firebaseWorkout of userWorkouts) {
-      const localPlaylist = savedPlaylists.value.find(p => p.id === firebaseWorkout.id)
-      if (localPlaylist) {
-        console.log(`Comparing workout ${firebaseWorkout.id}:`, {
-          localPublished: localPlaylist.isPublished,
-          firebasePublished: firebaseWorkout.isPublished
-        })
-        
-        if (localPlaylist.isPublished !== firebaseWorkout.isPublished) {
-          console.log(`Updating playlist ${firebaseWorkout.id} published status`)
-          await cartStore.updatePlaylist(firebaseWorkout.id, {
-            isPublished: firebaseWorkout.isPublished,
-            publishedId: firebaseWorkout.publishedId,
-            publishedAt: firebaseWorkout.publishedAt
-          })
-        }
-      }
-    }
-  } catch (error) {
-    console.error('Error checking published status:', error)
   }
 }
 </script>

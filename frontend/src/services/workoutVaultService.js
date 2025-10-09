@@ -45,15 +45,21 @@ class WorkoutVaultService {
   async getUserWorkouts(userId) {
     try {
       const q = query(
-        collection(db, this.userWorkoutsCollection),
-        where('userId', '==', userId),
-        orderBy('createdAt', 'desc')
-      );
-      const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+        collection(db, "workoutSets"), 
+        where("userId", "==", userId)
+      )
+      const querySnapshot = await getDocs(q)
+      
+      // Convert querySnapshot to array of workout objects with IDs
+      const workouts = []
+      querySnapshot.forEach((doc) => {
+        workouts.push({
+          id: doc.id,
+          ...doc.data()
+        })
+      })
+      
+      return workouts
     } catch (error) {
       console.error('Error fetching user workouts:', error);
       throw error;
@@ -194,6 +200,30 @@ class WorkoutVaultService {
       }));
     } catch (error) {
       console.error('Error fetching vault workouts:', error);
+      throw error;
+    }
+  }
+
+  // Get published workouts by user ID
+  async getPublishedWorkoutsByUser(userId) {
+    try {
+      const q = query(
+        collection(db, this.vaultWorkoutsCollection),
+        where("userId", "==", userId)
+      );
+
+      const querySnapshot = await getDocs(q);
+      const publishedWorkouts = [];
+      querySnapshot.forEach((doc) => {
+        publishedWorkouts.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      });
+
+      return publishedWorkouts;
+    } catch (error) {
+      console.error('Error fetching published workouts by user:', error);
       throw error;
     }
   }
