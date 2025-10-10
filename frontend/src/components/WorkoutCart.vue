@@ -154,7 +154,7 @@
             class="btn btn-primary btn-sm"
           >
             <i class="fas fa-save me-1"></i>
-            Save Playlist
+            Save Workout
           </button>
           
           <button 
@@ -169,11 +169,11 @@
       </div>
     </div>
 
-    <!-- Save Playlist Modal -->
+    <!-- Save Workout Modal -->
     <div v-if="showSavePlaylistModal" class="modal-overlay" @click.self="showSavePlaylistModal = false">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Save Workout Playlist</h5>
+          <h5 class="modal-title">Save Workout</h5>
           <button @click="showSavePlaylistModal = false" class="btn-close">
             <i class="fas fa-times"></i>
           </button>
@@ -181,7 +181,7 @@
         
         <div class="modal-body">
           <div class="form-group">
-            <label for="playlistName" class="form-label">Playlist Name</label>
+            <label for="playlistName" class="form-label">Workout Name</label>
             <input 
               v-model="newPlaylistName"
               type="text" 
@@ -227,7 +227,7 @@
             :disabled="!newPlaylistName.trim()"
           >
             <i class="fas fa-save me-1"></i>
-            Save Playlist
+            Save Workout
           </button>
         </div>
       </div>
@@ -238,6 +238,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useWorkoutCartStore } from '../stores/workoutCart'
+import router from '@/router'
 
 const cartStore = useWorkoutCartStore()
 
@@ -288,8 +289,9 @@ const savePlaylist = async () => {
     newPlaylistDescription.value = ''
     showSavePlaylistModal.value = false
     
-    // Show success message (you could add a toast notification here)
-    alert('Workout set saved successfully!')
+    cartStore.clearCart()
+    isOpen.value = false
+    router.push('/workout-sets')
   } catch (error) {
     if (error.message.includes('log in')) {
       promptLogin()

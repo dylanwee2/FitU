@@ -15,7 +15,8 @@ export const useWorkoutCartStore = defineStore('workoutCart', () => {
   const cartItemCount = computed(() => cartItems.value.length)
   const cartTotalDuration = computed(() => {
     return cartItems.value.reduce((total, item) => {
-      return total + (item.estimatedDuration || 0)
+      const sets = item.sets || 3 // Default to 3 sets if not specified
+      return total + (sets * 5) // 5 minutes per set
     }, 0)
   })
 
@@ -45,7 +46,6 @@ export const useWorkoutCartStore = defineStore('workoutCart', () => {
     const cartItem = {
       ...exercise,
       addedAt: new Date().toISOString(),
-      estimatedDuration: 5, // Default 5 minutes per exercise
       sets: 3, // Default sets
       reps: 10, // Default reps
       weight: null, // User can set this later
