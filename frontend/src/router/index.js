@@ -28,9 +28,7 @@ const routes = [
   { path: '/calendar', name: 'Calendar', component: Calendar },
   { path: '/virtual-gym', name: 'VirtualGym', component: VirtualGym },
   { path: '/workout-sets', name: 'WorkoutPlaylists', component: WorkoutPlaylists },
-  { path: '/admin/comments', name: 'CommentsAdmin', component: CommentsAdmin },
-  { path: '/vault', name: 'Vault', component: Vault }
-
+  { path: '/vault', name: 'Vault', component: Vault },  
 ]
 
 const router = createRouter({

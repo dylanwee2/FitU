@@ -12,9 +12,8 @@
   <div class="menu-items" :class="{ active: isMenuOpen }">
     <router-link to="/home" :class="{ active: $route.path === '/home' }" @click.native="closeMenu">Home</router-link>
     <router-link to="/exerciselibrary" :class="{ active: $route.path === '/exerciselibrary' }" @click.native="closeMenu">Library</router-link>
-    <router-link to="/workout-sets" :class="{ active: $route.path === '/workout-sets' }" @click.native="closeMenu">Workout</router-link>
+    <router-link to="/vault" :class="{ active: $route.path === '/vault' }" @click.native="closeMenu">Workouts</router-link>
     <router-link to="/recipes" :class="{ active: $route.path === '/recipes' }" @click.native="closeMenu">Recipes</router-link>
-    <router-link to="/calendar" :class="{ active: $route.path === '/calendar' }" @click.native="closeMenu">Calendar</router-link>
     <router-link to="/virtual-gym" :class="{ active: $route.path === '/virtual-gym' }" @click.native="closeMenu">Virtual Gym</router-link>
     <router-link to="/profile" :class="{ active: $route.path === '/profile' }" @click.native="closeMenu">Profile</router-link>
   </div>

@@ -1,4 +1,45 @@
 <template>
+  <div class="container-fluid">
+    <!-- Example 3: Full Calendar Component -->
+    <div class="row mb-5">
+      <div class="col-12 col-xxl-6 mb-3 mb-xxl-0">
+        <div class="card h-100">
+          <div class="card-header">
+            <h5 class="mb-0">TimeTable</h5>
+          </div>
+          <div class="card-body">
+            <CalendarComponent 
+              :show-controls="true"
+              :show-add-event="true"
+              :show-file-upload="true"
+              :show-department-field="true"
+              @event-added="handleEventAdded"
+              @event-updated="handleEventUpdated"
+              @event-deleted="handleEventDeleted"
+              @events-imported="handleEventsImported"
+            />
+          </div>
+        </div>
+      </div>
+
+       <div class="col-12 col-xxl-6">
+        <div class="card h-100">
+          <div class="card-header">
+            <h5 class="mb-0">My Workouts</h5>
+          </div>
+          <div class="card-body workout-scrollable">
+            <WorkoutPlaylistsComponent 
+              @playlist-selected="handlePlaylistSelected"
+              @playlist-edited="handlePlaylistEdited"
+              @playlist-published="handlePlaylistPublished"
+              @playlist-unpublished="handlePlaylistUnpublished"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> 
+
   <div class="container mt-4">
     <!-- Authentication Required Modal -->
     <div v-if="showAuthModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
@@ -16,6 +57,8 @@
         </div>
       </div>
     </div>
+
+    
   
     <h1 class="mb-1" style="color: var(--primary); font-weight: 800">Today's Calories</h1>
     <p class="u-muted mb-4">Quickly log your intake and visualize your last 7 days.</p>
@@ -67,12 +110,16 @@ import { useUser } from '@/stores/user'
 import { useMeals } from '@/stores/meals'
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { useRouter } from 'vue-router'
+import WorkoutPlaylistsComponent from '@/components/WorkoutPlaylistsComponent.vue'
+import CalendarComponent from '@/components/CalendarComponent.vue'
 
 
 export default {
   components: {
     CalorieProgress,
-    CalorieChart
+    CalorieChart,
+    WorkoutPlaylistsComponent,
+    CalendarComponent
   },
   setup() {
 
@@ -126,6 +173,33 @@ export default {
 </script>
 
 <style scoped>
+.workout-scrollable {
+  max-height: 700px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
 
+/* Custom scrollbar styling */
+.workout-scrollable::-webkit-scrollbar {
+  width: 6px;
+}
 
+.workout-scrollable::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.workout-scrollable::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.workout-scrollable::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Ensure equal height cards */
+.card.h-100 {
+  min-height: 700px;
+}
 </style>
