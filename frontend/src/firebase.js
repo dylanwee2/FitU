@@ -18,11 +18,10 @@ const firebaseConfig = {
 // Initialize Firebase app
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firestore
+// Initialize services
 const db = getFirestore(app);
-
-// Initialize Storage
+const auth = getAuth(app);
 const storage = getStorage(app);
 
-// Export what you need - use ONE export statement
-export { app, db, storage };
+// Export what you need
+export { app, db, auth, storage };

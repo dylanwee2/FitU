@@ -95,7 +95,7 @@ const isInCart = computed(() => {
 })
 
 const goBack = () => {
-  router.push('/exercises')
+  router.push('/exerciselibrary')
 }
 
 const loadExercise = async () => {
