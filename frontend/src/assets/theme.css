@@ -1,7 +1,7 @@
 :root{
-  --brand-blue-700:#1D4ED8;
-  --brand-blue-600:#2563EB;
-  --brand-blue-500:#3B82F6;
+  --brand-blue-700:#1c2733;
+  --brand-blue-600:#2c3e50;
+  --brand-blue-500:#3a5168;
   --accent-cyan-600:#0891B2;
   --accent-cyan-500:#06B6D4;
   --accent-green-500:#10B981;
@@ -20,7 +20,7 @@
   --muted: var(--text-muted);
   --primary: var(--brand-blue-600);
   --primary-700: var(--brand-blue-700);
-  --secondary: var(--accent-cyan-500);
+  --secondary: var(--brand-blue-500);
   --accent: var(--accent-green-500);
   --ring: var(--focus);
   --shadow-card: 0 10px 16px -10px rgba(2,6,23,.15);
