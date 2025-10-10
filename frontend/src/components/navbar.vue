@@ -55,7 +55,6 @@ export default {
 }
 
 .navbar .logo {
-  text-transform: uppercase;
   font-weight: bold;
   color: white;
 }
