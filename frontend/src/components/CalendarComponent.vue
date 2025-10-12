@@ -4,24 +4,24 @@
     <div class="calendar-controls mb-3" v-if="showControls">
       <div class="row align-items-center">
         <div class="col-12 col-md-8 col-lg-6 col-xl-6 col-xxl-9 mb-2 mb-md-0" v-if="showFileUpload">
-          <div class="file-upload-container">
-            <input 
-              type="file" 
-              class="upload-box" 
-              accept=".ics" 
-              @change="handleIcsUpload" 
-              ref="fileInput"
-            />
+          
+          <div class="file-upload-container info-icon-tooltip-wrapper">
+            <input type="file" class="upload-box" accept=".ics" @change="handleIcsUpload" ref="fileInput"/>
+            <span class="ics-info-icon-btn" tabindex="0" @mouseenter="showTooltip = true" @mouseleave="showTooltip = false" @focus="showTooltip = true" @blur="showTooltip = false">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                <circle cx="8" cy="8" r="8" fill="var(--primary)"/>
+                <text x="8" y="12" text-anchor="middle" font-size="10" fill="#fff" font-family="Arial" font-weight="bold">?</text>
+              </svg>
+            </span>
             <label class="upload-label">Import ICS File</label>
+            <div v-if="showTooltip" class="custom-tooltip custom-tooltip-icon">
+              You can export an ICS file from your Google Calendar and import it here.
+            </div>
           </div>
         </div>
         <div class="col-12 col-md-4 col-lg-6 col-xl-6 col-xxl-3 d-flex justify-content-end">
-          <button 
-            v-if="showAddEvent"
-            class="btn btn-primary" 
-            @click="openEventForm"
-          >
-            <i class="fas fa-plus me-2"></i>Add Event
+          <button v-if="showAddEvent" class="u-btn u-btn--primary" @click="openEventForm">
+            Add Event
           </button>
         </div>
       </div>
@@ -31,7 +31,8 @@
     <div 
       v-if="showEventForm" 
       class="modal-backdrop"
-    >
+      @click.self="closeEventForm" 
+    > <!--click.self part basically closes the form when you click outside the modal-->
       <div class="event-form-modal">
         <div class="modal-header">
           <h5 class="modal-title">{{ editingEvent ? 'Edit Event' : 'Add Event' }}</h5>
@@ -95,7 +96,7 @@
           </div>
           
           <div class="form-group" v-if="showDepartmentField">
-            <label class="form-label">Department/Category</label>
+            <label class="form-label">Category</label>
             <input 
               v-model="newEvent.department" 
               class="form-control" 
@@ -106,18 +107,10 @@
         
         <div class="modal-footer">
           <button @click="closeEventForm" class="btn btn-secondary">Cancel</button>
-          <button 
-            @click="submitEvent" 
-            class="btn btn-primary"
-            :disabled="!newEvent.title"
-          >
+          <button @click="submitEvent" class="u-btn u-btn--primary" :disabled="!newEvent.title">
             {{ editingEvent ? 'Update' : 'Add' }} Event
           </button>
-          <button 
-            v-if="editingEvent" 
-            @click="deleteEvent" 
-            class="btn btn-danger ms-2"
-          >
+          <button v-if="editingEvent" @click="deleteEvent" class="u-btn u-btn--danger ms-2">
             Delete
           </button>
         </div>
@@ -133,6 +126,9 @@
 
 <script setup>
 import { ref, onMounted, nextTick, onUnmounted } from 'vue'
+
+// Tooltip state for ICS input
+const showTooltip = ref(false)
 import { Calendar } from '@fullcalendar/core'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
@@ -241,20 +237,17 @@ const initializeCalendar = async () => {
     selectable: props.selectable,
     nowIndicator: true,
     events: props.events,
-    
+    eventColor: getComputedStyle(document.documentElement).getPropertyValue('--primary').trim(),
     // Event handlers
     eventClick: (info) => {
       handleEventClick(info)
     },
-    
     select: (info) => {
       handleDateSelect(info)
     },
-    
     eventDrop: (info) => {
       handleEventUpdate(info)
     },
-    
     eventResize: (info) => {
       handleEventUpdate(info)
     }
@@ -304,7 +297,7 @@ const handleEventUpdate = (info) => {
     title: event.title,
     start: event.start,
     end: event.end,
-    allDay: event.allDay
+    allDay: event.allDay,
   })
 }
 
@@ -499,6 +492,50 @@ defineExpose({
 </script>
 
 <style scoped>
+.info-icon-tooltip-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+.ics-info-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-left: 0.25em;
+  outline: none;
+}
+.ics-info-icon-btn svg {
+  display: block;
+}
+.custom-tooltip.custom-tooltip-icon {
+  left: auto;
+  right: 0;
+  top: 120%;
+  transform: none;
+  min-width: 220px;
+}
+.input-tooltip-wrapper {
+  position: relative;
+  display: inline-block;
+}
+.custom-tooltip {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%);
+  margin-top: 0.5em;
+  background: var(--primary-700);
+  color: #fff;
+  padding: 0.5em 1em;
+  border-radius: 6px;
+  font-size: 0.85em;
+  white-space: pre-line;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  pointer-events: none;
+}
 .calendar-component {
   width: 100%;
 }
@@ -516,6 +553,7 @@ defineExpose({
 
 .upload-box {
   width: 100%;
+  /*max-width: 300px;*/
   padding: 0.5rem;
   border: 1px solid #ced4da;
   border-radius: 6px;
@@ -525,7 +563,7 @@ defineExpose({
 
 .upload-box::-webkit-file-upload-button {
   color: white;
-  background: #2C3E50;
+  background: var(--primary);
   padding: 0.375rem 0.75rem;
   border: none;
   border-radius: 4px;
@@ -534,12 +572,12 @@ defineExpose({
 }
 
 .upload-box::-webkit-file-upload-button:hover {
-  background-color: #3c556e;
+  background-color: var(--primary-700);
 }
 
 .upload-label {
   position: absolute;
-  right: 0.75rem;
+  right: 3rem;
   top: 50%;
   transform: translateY(-50%);
   color: #6c757d;
@@ -706,18 +744,5 @@ defineExpose({
   background-color: rgba(0, 123, 255, 0.1) !important;
 }
 
-.fc-button-primary {
-  background-color: #007bff;
-  border-color: #007bff;
-}
 
-.fc-button-primary:hover {
-  background-color: #0056b3;
-  border-color: #0056b3;
-}
-
-.fc-button-primary:disabled {
-  background-color: #6c757d;
-  border-color: #6c757d;
-}
 </style>

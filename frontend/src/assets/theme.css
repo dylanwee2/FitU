@@ -21,6 +21,7 @@
   --primary: var(--brand-blue-600);
   --primary-700: var(--brand-blue-700);
   --secondary: var(--brand-blue-500);
+  --danger: rgb(155, 0, 0);
   --accent: var(--accent-green-500);
   --ring: var(--focus);
   --shadow-card: 0 10px 16px -10px rgba(2,6,23,.15);
@@ -38,6 +39,8 @@
 .u-btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1rem; border-radius: 10px; font-weight: 600; outline-offset: 2px; border: none; cursor: pointer; transition: all 0.2s ease; }
 .u-btn:focus-visible { outline: 2px solid color-mix(in srgb, var(--ring) 70%, transparent); }
 .u-btn--primary { background: var(--primary); color: #fff; }
+.u-btn--primary:disabled { background: var(--brand-blue-500); color: #fff; cursor: default; filter: none;}
+.u-btn--primary:disabled:hover { background: var(--brand-blue-500); color: #fff; cursor: default; filter: none;}
 .u-btn--primary:hover { background: var(--primary-700); }
 .u-btn--secondary { border: 1px solid var(--primary); color: var(--text); background: transparent; }
 .u-btn--secondary:hover { background: var(--primary); color: #fff; }
