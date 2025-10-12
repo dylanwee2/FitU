@@ -3,23 +3,24 @@
     <!-- Calendar Controls -->
     <div class="calendar-controls mb-3" v-if="showControls">
       <div class="row align-items-center">
-        <div class="col-12 col-md-8 col-lg-6 col-xl-6 col-xxl-9 mb-2 mb-md-0" v-if="showFileUpload">
+        <div class="col-6 mb-2 mb-md-0" v-if="showFileUpload">
           
           <div class="file-upload-container info-icon-tooltip-wrapper">
-            <input type="file" class="upload-box" accept=".ics" @change="handleIcsUpload" ref="fileInput"/>
+            <input type="file" class="upload-box visually-hidden" accept=".ics" @change="handleIcsUpload" ref="fileInput" id="icsFileInput" />
+            <label for="icsFileInput" class="custom-upload-btn">Import ICS File</label>
             <span class="ics-info-icon-btn" tabindex="0" @mouseenter="showTooltip = true" @mouseleave="showTooltip = false" @focus="showTooltip = true" @blur="showTooltip = false">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
                 <circle cx="8" cy="8" r="8" fill="var(--primary)"/>
                 <text x="8" y="12" text-anchor="middle" font-size="10" fill="#fff" font-family="Arial" font-weight="bold">?</text>
               </svg>
             </span>
-            <label class="upload-label">Import ICS File</label>
             <div v-if="showTooltip" class="custom-tooltip custom-tooltip-icon">
               You can export an ICS file from your Google Calendar and import it here.
             </div>
           </div>
         </div>
-        <div class="col-12 col-md-4 col-lg-6 col-xl-6 col-xxl-3 d-flex justify-content-end">
+        <div class="col-6 d-flex justify-content-end">
+
           <button v-if="showAddEvent" class="u-btn u-btn--primary" @click="openEventForm">
             Add Event
           </button>
@@ -37,7 +38,7 @@
         <div class="modal-header">
           <h5 class="modal-title">{{ editingEvent ? 'Edit Event' : 'Add Event' }}</h5>
           <button @click="closeEventForm" class="btn-close">
-            <i class="fas fa-times"></i>
+            x
           </button>
         </div>
         
@@ -83,7 +84,7 @@
                 All Day Event
               </label>
             </div>
-          </div>
+          </div> 
           
           <div class="form-group">
             <label class="form-label">Description</label>
@@ -95,14 +96,7 @@
             ></textarea>
           </div>
           
-          <div class="form-group" v-if="showDepartmentField">
-            <label class="form-label">Category</label>
-            <input 
-              v-model="newEvent.department" 
-              class="form-control" 
-              placeholder="e.g., Work, Personal, School"
-            />
-          </div>
+
         </div>
         
         <div class="modal-footer">
@@ -212,7 +206,7 @@ const newEvent = ref({
   end: '',
   allDay: false,
   description: '',
-  department: ''
+
 })
 
 let calendarInstance = null
@@ -238,6 +232,10 @@ const initializeCalendar = async () => {
     nowIndicator: true,
     events: props.events,
     eventColor: getComputedStyle(document.documentElement).getPropertyValue('--primary').trim(),
+    // eventContent: function(arg) {
+    //   // Only show the event title, not the time
+    //   return { domNodes: [document.createTextNode(arg.event.title)] };
+    // },
     // Event handlers
     eventClick: (info) => {
       handleEventClick(info)
@@ -268,7 +266,7 @@ const handleEventClick = (info) => {
     end: event.end ? formatDateForInput(event.end) : '',
     allDay: event.allDay,
     description: event.extendedProps.description || '',
-    department: event.extendedProps.department || ''
+
   }
   
   showEventForm.value = true
@@ -277,15 +275,20 @@ const handleEventClick = (info) => {
 
 const handleDateSelect = (info) => {
   // Pre-fill form with selected date
+  // If end is provided, set it to 23:59 of the previous day (if time is 00:00)
+  let endDate = info.end ? new Date(info.end) : null;
+  // if (endDate && endDate.getHours() === 0 && endDate.getMinutes() === 0) {
+  //   endDate.setMinutes(endDate.getMinutes() - 1); // Go to 23:59 of previous day
+  // }
   newEvent.value = {
     title: '',
     start: formatDateForInput(info.start),
-    end: formatDateForInput(info.end),
-    allDay: info.allDay,
+    end: endDate ? formatDateForInput(endDate) : '',
+    allDay: info.allDay, 
+    //allDay: false,
     description: '',
-    department: ''
+
   }
-  
   showEventForm.value = true
   emit('date-selected', info)
 }
@@ -351,7 +354,7 @@ const openEventForm = () => {
     end: '',
     allDay: false,
     description: '',
-    department: ''
+
   }
   showEventForm.value = true
 }
@@ -376,10 +379,11 @@ const submitEvent = () => {
     title: newEvent.value.title,
     start: newEvent.value.start,
     end: newEvent.value.end || undefined,
-    allDay: newEvent.value.allDay,
+    //allDay: false,
+    allDay: newEvent.value.allDay,//disabled this, only allowing non full day inputs
     description: newEvent.value.description,
     extendedProps: {
-      department: newEvent.value.department,
+
       description: newEvent.value.description
     }
   }
@@ -391,7 +395,7 @@ const submitEvent = () => {
     editingEvent.value.setEnd(eventData.end)
     editingEvent.value.setAllDay(eventData.allDay)
     editingEvent.value.setExtendedProp('description', eventData.description)
-    editingEvent.value.setExtendedProp('department', eventData.department)
+
     
     emit('event-updated', {
       id: editingEvent.value.id,
@@ -421,10 +425,17 @@ const deleteEvent = () => {
 }
 
 // Utility functions
+// Format date for datetime-local input in local time (not UTC)
 const formatDateForInput = (date) => {
   if (!date) return ''
   const d = new Date(date)
-  return d.toISOString().slice(0, 16)
+  const pad = (n) => n.toString().padStart(2, '0')
+  const year = d.getFullYear()
+  const month = pad(d.getMonth() + 1)
+  const day = pad(d.getDate())
+  const hours = pad(d.getHours())
+  const minutes = pad(d.getMinutes())
+  return `${year}-${month}-${day}T${hours}:${minutes}`
 }
 
 // Public methods (exposed via defineExpose)
@@ -536,6 +547,29 @@ defineExpose({
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   pointer-events: none;
 }
+
+/* Global FullCalendar styles */
+.fc-daygrid-day-frame, 
+.fc-scrollgrid-sync-inner {
+  background-color: white;
+}
+
+.fc a, 
+.fc-daygrid-day-number, 
+.fc-event {
+  text-decoration: none !important;
+}
+
+.fc-event {
+  border-radius: 4px;
+  margin: 1px 0;
+}
+
+.fc-day-today {
+  background-color: rgba(0, 123, 255, 0.1) !important;
+}
+
+
 .calendar-component {
   width: 100%;
 }
@@ -551,38 +585,31 @@ defineExpose({
   position: relative;
 }
 
-.upload-box {
-  width: 100%;
-  /*max-width: 300px;*/
-  padding: 0.5rem;
-  border: 1px solid #ced4da;
-  border-radius: 6px;
-  background: white;
-  cursor: pointer;
+
+.upload-box.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  border: 0;
 }
 
-.upload-box::-webkit-file-upload-button {
-  color: white;
+.custom-upload-btn {
+  display: inline-block;
   background: var(--primary);
-  padding: 0.375rem 0.75rem;
-  border: none;
-  border-radius: 4px;
-  margin-right: 0.5rem;
+  color: #fff;
+  padding: 0.5rem 1.25rem;
+  border-radius: 6px;
   cursor: pointer;
+  font-weight: 500;
+  margin-right: 0.5rem;
+  transition: background 0.2s;
 }
-
-.upload-box::-webkit-file-upload-button:hover {
-  background-color: var(--primary-700);
-}
-
-.upload-label {
-  position: absolute;
-  right: 3rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #6c757d;
-  font-size: 0.875rem;
-  pointer-events: none;
+.custom-upload-btn:hover {
+  background: var(--primary-700);
 }
 
 .calendar-container {
@@ -710,39 +737,10 @@ defineExpose({
 
 /* Responsive */
 @media (max-width: 768px) {
-  .calendar-controls .row {
-    flex-direction: column;
-    gap: 1rem;
-  }
   
   .event-form-modal {
     margin: 1rem;
     width: calc(100% - 2rem);
   }
 }
-</style>
-
-<style>
-/* Global FullCalendar styles */
-.fc-daygrid-day-frame, 
-.fc-scrollgrid-sync-inner {
-  background-color: white;
-}
-
-.fc a, 
-.fc-daygrid-day-number, 
-.fc-event {
-  text-decoration: none !important;
-}
-
-.fc-event {
-  border-radius: 4px;
-  margin: 1px 0;
-}
-
-.fc-day-today {
-  background-color: rgba(0, 123, 255, 0.1) !important;
-}
-
-
 </style>
