@@ -21,7 +21,7 @@
       </div>
 
       <div v-else class="row">
-        <div class="col-lg-12">
+        <div class="col-12">
           
           <!-- Calorie Goal Card -->
 
@@ -143,33 +143,33 @@
             <div class="card-header text-white" style="background: var(--primary)">
               <h5 class="mb-0"><i class="bi bi-trophy me-2"></i>Health & Fitness Goals</h5>
             </div>
-            <div class="card-body">
-              <div class="mb-3">
-                <label for="goalType" class="form-label">Primary Goal</label>
-                <select class="form-select" id="goalType" v-model="goalsData.goalType">
-                  <option value="">Select your goal</option>
-                  <option value="lose-weight">Lose Weight</option>
-                  <option value="maintain">Maintain Weight</option>
-                  <option value="gain-muscle">Gain Muscle</option>
-                  <option value="improve-fitness">Improve Overall Fitness</option>
-                </select>
-              </div>
+              <div class="card-body row">
+                <div class="mb-3 col-6">
+                  <label for="goalType" class="form-label">Primary Goal</label>
+                  <select class="form-select" id="goalType" v-model="goalsData.goalType">
+                    <option value="">Select your goal</option>
+                    <option value="lose-weight">Lose Weight</option>
+                    <option value="maintain">Maintain Weight</option>
+                    <option value="gain-muscle">Gain Muscle</option>
+                    <option value="improve-fitness">Improve Overall Fitness</option>
+                  </select>
+                </div>
 
-              <div class="mb-3">
-                <label for="dailyCalorieGoal" class="form-label">Daily Calorie Target</label>
-                <input 
-                  type="number" 
-                  class="form-control" 
-                  id="dailyCalorieGoal" 
-                  v-model.number="goalsData.dailyGoal" 
-                  min="1000" 
-                  max="5000"
-                  placeholder="e.g., 2000"
-                >
-                <small class="text-muted">Recommended: 1800-2500 kcal for students</small>
-              </div>
+                <div class="mb-3 col-6">
+                  <label for="dailyCalorieGoal" class="form-label">Daily Calorie Target</label>
+                  <input 
+                    type="number" 
+                    class="form-control" 
+                    id="dailyCalorieGoal" 
+                    v-model.number="goalsData.dailyGoal" 
+                    min="1000" 
+                    max="5000"
+                    placeholder="e.g., 2000"
+                  >
+                  <small class="text-muted">Recommended: 1800-2500 kcal for students</small>
+                </div>
 
-              <div class="mb-3">
+              <div class="mb-3 col-6">
                 <label for="dietaryPreference" class="form-label">Dietary Preference</label>
                 <select class="form-select" id="dietaryPreference" v-model="goalsData.dietaryPreference">
                   <option value="">No specific preference</option>
@@ -183,7 +183,7 @@
                 </select>
               </div>
 
-              <div class="mb-3">
+              <div class="mb-3 col-6">
                 <label for="allergies" class="form-label">Allergies & Food Restrictions</label>
                 <input 
                   type="text" 
@@ -195,7 +195,7 @@
                 <small class="text-muted">Separate multiple items with commas</small>
               </div>
 
-              <div class="mb-3">
+              <div class="mb-3 col-6">
                 <label for="workoutFrequency" class="form-label">Workout Frequency (days/week)</label>
                 <input 
                   type="number" 
@@ -205,62 +205,6 @@
                   min="0" 
                   max="7"
                 >
-              </div>
-            </div>
-          </div>
-
-          <!-- Preferences & Integrations Card -->
-          <div class="card mb-4">
-            <div class="card-header text-white" style="background: var(--primary)">
-              <h5 class="mb-0"><i class="bi bi-gear me-2"></i>Preferences & Integrations</h5>
-            </div>
-            <div class="card-body">
-              <div class="form-check form-switch mb-3">
-                <input 
-                  class="form-check-input" 
-                  type="checkbox" 
-                  id="spotifyConnect" 
-                  v-model="preferences.spotifyConnected"
-                >
-                <label class="form-check-label" for="spotifyConnect">
-                  <i class="bi bi-spotify me-2"></i>Connect Spotify for Workout Playlists
-                </label>
-              </div>
-
-              <div class="form-check form-switch mb-3">
-                <input 
-                  class="form-check-input" 
-                  type="checkbox" 
-                  id="aiSuggestions" 
-                  v-model="preferences.aiSuggestionsEnabled"
-                >
-                <label class="form-check-label" for="aiSuggestions">
-                  <i class="bi bi-robot me-2"></i>Enable AI-Powered Health Suggestions
-                </label>
-              </div>
-
-              <div class="form-check form-switch mb-3">
-                <input 
-                  class="form-check-input" 
-                  type="checkbox" 
-                  id="reminders" 
-                  v-model="preferences.remindersEnabled"
-                >
-                <label class="form-check-label" for="reminders">
-                  <i class="bi bi-bell me-2"></i>Enable Reminders & Notifications
-                </label>
-              </div>
-
-              <div class="form-check form-switch">
-                <input 
-                  class="form-check-input" 
-                  type="checkbox" 
-                  id="darkMode" 
-                  v-model="preferences.darkMode"
-                >
-                <label class="form-check-label" for="darkMode">
-                  <i class="bi bi-moon me-2"></i>Dark Mode
-                </label>
               </div>
             </div>
           </div>
@@ -321,38 +265,105 @@
             </div>
           </div>
 
+          <!-- Preferences & Integrations Card -->
+          <div class="card mb-4">
+            <div class="card-header text-white" style="background: var(--primary)">
+              <h5 class="mb-0"><i class="bi bi-gear me-2"></i>Preferences & Integrations</h5>
+            </div>
+            <div class="card-body">
+              <div class="form-check form-switch mb-3">
+                <input 
+                  class="form-check-input" 
+                  type="checkbox" 
+                  id="spotifyConnect" 
+                  v-model="preferences.spotifyConnected"
+                >
+                <label class="form-check-label" for="spotifyConnect">
+                  <i class="bi bi-spotify me-2"></i>Connect Spotify for Workout Playlists
+                </label>
+              </div>
+
+              <div class="form-check form-switch mb-3">
+                <input 
+                  class="form-check-input" 
+                  type="checkbox" 
+                  id="aiSuggestions" 
+                  v-model="preferences.aiSuggestionsEnabled"
+                >
+                <label class="form-check-label" for="aiSuggestions">
+                  <i class="bi bi-robot me-2"></i>Enable AI-Powered Health Suggestions
+                </label>
+              </div>
+
+              <div class="form-check form-switch mb-3">
+                <input 
+                  class="form-check-input" 
+                  type="checkbox" 
+                  id="reminders" 
+                  v-model="preferences.remindersEnabled"
+                >
+                <label class="form-check-label" for="reminders">
+                  <i class="bi bi-bell me-2"></i>Enable Reminders & Notifications
+                </label>
+              </div>
+
+              <div class="form-check form-switch">
+                <input 
+                  class="form-check-input" 
+                  type="checkbox" 
+                  id="darkMode" 
+                  v-model="preferences.darkMode"
+                >
+                <label class="form-check-label" for="darkMode">
+                  <i class="bi bi-moon me-2"></i>Dark Mode
+                </label>
+              </div>
+            </div>
+          </div>
+
           <!-- Account Actions Card -->
           <div class="card mb-4">
             <div class="card-header text-white" style="background: var(--primary)">
               <h5 class="mb-0"><i class="bi bi-shield-check me-2"></i>Account Actions</h5>
             </div>
-            <div class="card-body">
-              <button 
-                @click="saveAllData" 
-                class="btn btn-primary w-100 mb-2"
-                :disabled="isSaving"
-              >
-                <i class="bi bi-save me-2"></i>
-                {{ isSaving ? 'Saving...' : 'Save All Changes' }}
-              </button>
+              <div class="card-body d-flex flex-wrap gap-2">
+                <button 
+                  @click="saveAllData" 
+                  class="btn u-btn--primary u-btn--primary-success" 
+                  :disabled="isSaving"
+                  style="flex: 1"
+                >
+                  <i class="bi bi-save me-2"></i>{{ isSaving ? 'Saving...' : 'Save All Changes' }}
+                </button>
 
-              <button 
-                @click="handleLogout" 
-                class="btn btn-outline-secondary w-100 mb-2"
-              >
-                <i class="bi bi-box-arrow-right me-2"></i>Logout
-              </button>
+                <button 
+                  @click="handleLogout" 
+                  class="btn u-btn--primary u-btn--primary-danger"
+                  style="flex: 1"
+                >
+                  <i class="bi bi-box-arrow-right me-2"></i>Logout
+                </button>
 
-              <hr>
+                <hr class="w-100">
+              
+              <div class="row">
+                <div class="col-12">
+                  <button 
+                  @click="confirmDeleteAccount" 
+                  class="btn btn-outline-danger btn-sm py-2 px-3"
+                >
+                  <i class="bi bi-trash me-2"></i>Delete Account
+                </button>
+                </div>
 
-              <button 
-                @click="confirmDeleteAccount" 
-                class="btn btn-outline-danger w-100"
-              >
-                <i class="bi bi-trash me-2"></i>Delete Account
-              </button>
-              <small class="text-muted d-block mt-2 text-center">Account deletion cannot be undone</small>
-            </div>
+                <div class="col-12">
+                  <small class="text-muted d-block mt-2">
+                    Account deletion cannot be undone
+                  </small>
+                </div>
+              </div>
+                
+              </div>
           </div>
 
         </div>
@@ -1142,7 +1153,6 @@ function formatLabel(ymd) {
 
 .progress-full .progress-bar {
   height: 100%;
-  transition: width 0.8s ease;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -1161,7 +1171,7 @@ function formatLabel(ymd) {
   width: 100%;
   height: 100%;
   background-color: rgb(0, 130, 128);
-  animation: shimmer 2s infinite;
+  animation: shimmer 2s 1;
 }
 
 @keyframes shimmer {
@@ -1180,17 +1190,7 @@ function formatLabel(ymd) {
 }
 
 /* Buttons - matching home page style */
-.btn-primary {
-  color: rgb(66, 176, 110);
-  background-color: white;
-  border: 1px solid rgb(66, 176, 110);
-  transition: all 0.3s ease;
-  font-weight: 600;
-  position: relative;
-  overflow: hidden;
-}
-
-.btn-primary::before {
+.u-btn--primary-success::before {
   content: '';
   position: absolute;
   top: 50%;
@@ -1203,12 +1203,12 @@ function formatLabel(ymd) {
   z-index: 0;
 }
 
-.btn-primary:hover::before {
+.u-btn--primary-success:hover::before {
   width: 300px;
   height: 300px;
 }
 
-.btn-primary:hover {
+.u-btn--primary-success:hover {
   color: white;
   background-color: rgb(66, 176, 110);
   border-color: rgb(66, 176, 110);
@@ -1216,12 +1216,12 @@ function formatLabel(ymd) {
   box-shadow: 0 8px 24px rgba(134, 255, 168, 0.4);
 }
 
-.btn-primary:active {
+.u-btn--primary-success:active {
   transform: translateY(1px);
 }
 
-.btn-primary span,
-.btn-primary i {
+.u-btn--primary-success span,
+.u-btn--primary-success i {
   position: relative;
   z-index: 1;
 }
@@ -1237,12 +1237,12 @@ function formatLabel(ymd) {
 }
 
 
-.btn-outline-secondary:hover::before {
+.u-btn--primary-danger:hover::before {
   width: 300px;
   height: 300px;
 }
 
-.btn-outline-secondary:hover {
+.u-btn--primary-danger:hover {
   color: white;
   border-color: rgb(224, 41, 41);
   background-color: rgb(224, 41, 41);
@@ -1266,8 +1266,6 @@ function formatLabel(ymd) {
   border: 1px solid rgb(224, 41, 41);
   transition: all 0.3s ease;
   font-weight: 600;
-  position: relative;
-  overflow: hidden;
 }
 
 .btn-outline-danger:hover::before {
@@ -1285,12 +1283,6 @@ function formatLabel(ymd) {
 
 .btn-outline-danger:active {
   transform: translateY(1px);
-}
-
-.btn-outline-danger span,
-.btn-outline-danger i {
-  position: relative;
-  z-index: 1;
 }
 
 /* Disabled button state */
