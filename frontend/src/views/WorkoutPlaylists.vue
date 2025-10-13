@@ -59,14 +59,14 @@
                       class="badge bg-success"
                       title="Published to Community Vault"
                     >
-                      <i class="fas fa-globe me-1"></i>Published
+                      Published
                     </span>
                     <span 
                       v-else 
                       class="badge bg-secondary"
                       title="Private workout set"
                     >
-                      <i class="fas fa-lock me-1"></i>Private
+                      Private
                     </span>
                   </div>
                 </div>
@@ -76,7 +76,7 @@
                     class="btn btn-sm btn-outline-secondary"
                     title="Edit playlist"
                   >
-                    <i class="fas fa-edit"></i>
+                    <i class="fas fa-edit"></i>Edit Workout
                   </button>
                   <div class="dropdown">
                     <button 
@@ -98,7 +98,7 @@
                       </li>
                       <li>
                         <button 
-                          @click="deletePlaylist(playlist.id)"
+                          @click="showDeleteConfirmation(playlist)"
                           class="dropdown-item text-danger"
                         >
                           <i class="fas fa-trash me-2"></i>Delete
@@ -109,95 +109,59 @@
                 </div>
               </div>
 
-              <!-- Playlist Description -->
-              <p v-if="playlist.description" class="playlist-description">
-                {{ playlist.description }}
-              </p>
-
-              <!-- Playlist Stats -->
-              <div class="playlist-stats">
-                <div class="stat">
-                  <i class="fas fa-dumbbell"></i>
-                  <span>{{ playlist.exercises.length }} exercises</span>
+              <!-- Playlist Content -->
+              <div class="playlist-content">
+                <div class="playlist-description">
+                  <p class="playlist-desc-text">{{ playlist.description || 'No description' }}</p>
                 </div>
-                <div class="stat">
-                  <i class="fas fa-clock"></i>
-                  <span>{{ Math.round(playlist.totalDuration) }} min</span>
-                </div>
-                <div class="stat">
-                  <i class="fas fa-muscle"></i>
-                  <span>{{ playlist.muscleGroups.length }} muscle groups</span>
-                </div>
-              </div>
-
-              <!-- Muscle Groups -->
-              <div class="muscle-groups">
-                <span 
-                  v-for="muscle in playlist.muscleGroups.slice(0, 4)" 
-                  :key="muscle"
-                  class="muscle-badge"
-                >
-                  {{ muscle }}
-                </span>
-                <span 
-                  v-if="playlist.muscleGroups.length > 4"
-                  class="muscle-badge more"
-                >
-                  +{{ playlist.muscleGroups.length - 4 }} more
-                </span>
-              </div>
-
-              <!-- Exercise Preview -->
-              <div class="exercise-preview">
-                <h6 class="preview-title">Exercises:</h6>
-                <div class="exercise-list">
-                  <div 
-                    v-for="exercise in playlist.exercises.slice(0, 3)" 
-                    :key="exercise.id"
-                    class="exercise-item"
-                  >
-                    <img 
-                      :src="exercise.gifUrl || '/images/exercise-placeholder.png'" 
-                      :alt="exercise.name"
-                      class="exercise-thumb"
-                      @error="handleImageError"
-                    >
-                    <span class="exercise-name">{{ exercise.name }}</span>
+                
+                <div class="playlist-stats">
+                  <div class="stat-item">
+                    <i class="fas fa-dumbbell text-primary"></i>
+                    <span>{{ playlist.exercises?.length || 0 }} exercises</span>
                   </div>
-                  <div 
-                    v-if="playlist.exercises.length > 3"
-                    class="exercise-item more"
-                  >
-                    <div class="more-exercises">
-                      <i class="fas fa-plus"></i>
-                      <span>{{ playlist.exercises.length - 3 }} more</span>
+                  <div class="stat-item">
+                    <i class="fas fa-clock text-info"></i>
+                    <span>{{ formatDuration(playlist.totalDuration) }}</span>
+                  </div>
+                  <div class="stat-item">
+                    <i class="fas fa-calendar text-success"></i>
+                    <span>{{ formatWorkoutDays(playlist.workoutDays) }}</span>
+                  </div>
+                </div>
+
+                <div class="playlist-exercises">
+                  <div v-if="playlist.exercises && playlist.exercises.length > 0" class="exercise-preview">
+                    <div class="exercise-tags">
+                      <span 
+                        v-for="exercise in playlist.exercises.slice(0, 3)" 
+                        :key="exercise.id"
+                        class="exercise-tag"
+                      >
+                        {{ exercise.name }}
+                      </span>
+                      <span 
+                        v-if="playlist.exercises.length > 3" 
+                        class="exercise-tag more-exercises"
+                      >
+                        +{{ playlist.exercises.length - 3 }} more
+                      </span>
                     </div>
+                  </div>
+                  <div v-else class="no-exercises">
+                    <small class="text-muted">No exercises added yet</small>
                   </div>
                 </div>
               </div>
 
               <!-- Playlist Footer -->
               <div class="playlist-footer">
-                <div class="playlist-meta">
-                  <small class="text-muted">
-                    Created {{ formatDate(playlist.createdAt) }}
-                  </small>
-                  <small class="text-muted">
-                    Last used {{ formatDate(playlist.lastUsed) }}
-                  </small>
-                </div>
                 <div class="playlist-buttons">
-                  <button 
-                    @click="editPlaylistExercises(playlist)"
-                    class="btn btn-primary btn-sm"
-                  >
-                    <i class="fas fa-edit me-1"></i>Edit
-                  </button>
                   <button 
                     @click="viewPlaylist(playlist)"
                     class="btn btn-outline-primary btn-sm"
                   >
-                    <i class="fas fa-eye me-1"></i>View
+                    <p class="text-center">View</p>
                   </button>
                   <button 
                     v-if="!playlist.isPublished"
@@ -205,7 +169,7 @@
                     class="btn btn-success btn-sm"
                     title="Publish to Community Vault"
                   >
-                    <i class="fas fa-upload me-1"></i>Publish
+                    <p class="text-center">Publish</p>
                   </button>
                   <button 
                     v-else
@@ -213,7 +177,7 @@
                     class="btn btn-warning btn-sm"
                     title="Remove from Community Vault"
                   >
-                    <i class="fas fa-download me-1"></i>Unpublish
+                    <p class="text-center">Unpublish</p>
                   </button>
                 </div>
               </div>
@@ -689,6 +653,36 @@
         </div>
       </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div v-if="showDeleteModal" class="modal-overlay" @click.self="showDeleteModal = false">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Delete Workout Set</h5>
+          <button @click="showDeleteModal = false" class="btn-close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <div class="modal-body">
+          <p>Are you sure you want to delete "<strong>{{ deletingPlaylist.name }}</strong>"?</p>
+          <p class="text-danger">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            This action cannot be undone.
+          </p>
+        </div>
+        
+        <div class="modal-footer">
+          <button @click="showDeleteModal = false" class="btn btn-secondary">Cancel</button>
+          <button 
+            @click="confirmDeletePlaylist"
+            class="btn btn-danger"
+          >
+            <i class="fas fa-trash me-2"></i>Delete
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -707,11 +701,13 @@ const showEditModal = ref(false)
 const showViewModal = ref(false)
 const showPublishModal = ref(false)
 const showUnpublishModal = ref(false)
+const showDeleteModal = ref(false)
 const showEditExercisesModal = ref(false)
 const editingPlaylist = ref({})
 const viewingPlaylist = ref({})
 const publishingPlaylist = ref({})
 const unpublishingPlaylist = ref({})
+const deletingPlaylist = ref({})
 const editingExercisesPlaylist = ref({})
 const editingExercises = ref([])
 const exerciseSearchQuery = ref('')
@@ -736,6 +732,21 @@ const formatDate = (dateString) => {
   if (diffDays < 7) return `${diffDays} days ago`
   if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`
   return date.toLocaleDateString()
+}
+
+const formatDuration = (minutes) => {
+  if (!minutes || minutes === 0) return '0 min'
+  if (minutes < 60) return `${minutes} min`
+  const hours = Math.floor(minutes / 60)
+  const remainingMinutes = minutes % 60
+  return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`
+}
+
+const formatWorkoutDays = (days) => {
+  if (!days || days.length === 0) return 'No schedule'
+  if (days.length === 7) return 'Daily'
+  if (days.length === 1) return days[0]
+  return `${days.length} days/week`
 }
 
 const loadPlaylist = (playlistId) => {
@@ -784,15 +795,19 @@ const duplicatePlaylist = async (playlistId) => {
   }
 }
 
-const deletePlaylist = async (playlistId) => {
-  const playlist = savedPlaylists.value.find(p => p.id === playlistId)
-  if (playlist && confirm(`Are you sure you want to delete "${playlist.name}"?`)) {
-    try {
-      await cartStore.deletePlaylist(playlistId)
-    } catch (error) {
-      console.error('Error deleting playlist:', error)
-      alert('Error deleting workout set: ' + error.message)
-    }
+const showDeleteConfirmation = (playlist) => {
+  deletingPlaylist.value = { ...playlist }
+  showDeleteModal.value = true
+}
+
+const confirmDeletePlaylist = async () => {
+  try {
+    await cartStore.deletePlaylist(deletingPlaylist.value.id)
+    showDeleteModal.value = false
+    deletingPlaylist.value = {}
+  } catch (error) {
+    console.error('Error deleting playlist:', error)
+    alert('Error deleting workout set: ' + error.message)
   }
 }
 
