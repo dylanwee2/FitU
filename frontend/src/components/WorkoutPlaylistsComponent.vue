@@ -52,14 +52,14 @@
                     class="badge bg-success"
                     title="Published to Community Vault"
                   >
-                    <i class="fas fa-globe me-1"></i>Published
+                    Published
                   </span>
                   <span 
                     v-else 
                     class="badge bg-secondary"
                     title="Private workout set"
                   >
-                    <i class="fas fa-lock me-1"></i>Private
+                    Private
                   </span>
                 </div>
               </div>
@@ -69,7 +69,7 @@
                   class="btn btn-sm btn-outline-secondary"
                   title="Edit playlist"
                 >
-                  <i class="fas fa-edit"></i>
+                  <i class="fas fa-edit"></i>Edit Workout
                 </button>
                 <div class="dropdown">
                   <button 
@@ -149,26 +149,12 @@
 
             <!-- Playlist Footer -->
             <div class="playlist-footer">
-              <div class="playlist-meta">
-                <small class="text-muted">
-                  Created {{ formatDate(playlist.createdAt) }}
-                </small>
-                <small class="text-muted">
-                  Last used {{ formatDate(playlist.lastUsed) }}
-                </small>
-              </div>
               <div class="playlist-buttons">
-                <button 
-                  @click="editPlaylistExercises(playlist)"
-                  class="btn btn-primary btn-sm"
-                >
-                  <i class="fas fa-edit me-1"></i>Edit
-                </button>
                 <button 
                   @click="viewPlaylist(playlist)"
                   class="btn btn-outline-primary btn-sm"
                 >
-                  <i class="fas fa-eye me-1"></i>View
+                  <p class="text-center">View</p>
                 </button>
                 <button 
                   v-if="!playlist.isPublished"
@@ -176,7 +162,7 @@
                   class="btn btn-success btn-sm"
                   title="Publish to Community Vault"
                 >
-                  <i class="fas fa-upload me-1"></i>Publish
+                  <p class="text-center">Publish</p>
                 </button>
                 <button 
                   v-else
@@ -184,7 +170,7 @@
                   class="btn btn-warning btn-sm"
                   title="Remove from Community Vault"
                 >
-                  <i class="fas fa-download me-1"></i>Unpublish
+                  <p class="text-center">Unpublish</p>
                 </button>
               </div>
             </div>
@@ -470,21 +456,6 @@ const updateWorkoutDurations = async (playlists) => {
   }
 }
 
-// Utility functions
-const formatDate = (dateString) => {
-  if (!dateString) return 'Never'
-  try {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric',
-      year: date.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
-    })
-  } catch {
-    return 'Invalid date'
-  }
-}
-
 const formatDuration = (minutes) => {
   if (!minutes || minutes === 0) return '0 min'
   if (minutes < 60) return `${minutes} min`
@@ -529,7 +500,6 @@ const savePlaylistEdit = async () => {
     await cartStore.updatePlaylist(editingPlaylist.value.id, {
       name: editingPlaylist.value.name,
       description: editingPlaylist.value.description,
-      workoutDays: editingPlaylist.value.workoutDays
     })
     showEditModal.value = false
     editingPlaylist.value = {}
@@ -538,10 +508,6 @@ const savePlaylistEdit = async () => {
     console.error('Error updating playlist:', error)
     alert('Error updating workout set: ' + error.message)
   }
-}
-
-const editPlaylistExercises = (playlist) => {
-  router.push(`/workout-sets`)
 }
 
 const viewPlaylist = (playlist) => {
