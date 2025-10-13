@@ -39,7 +39,7 @@
         <div 
           v-for="playlist in savedPlaylists" 
           :key="playlist.id"
-          class="col-md-6 col-lg-4"
+          class="col-md-6 col-lg-6 col-xl-6"
         >
           <div class="playlist-card">
             <!-- Playlist Header -->
@@ -152,25 +152,25 @@
               <div class="playlist-buttons">
                 <button 
                   @click="viewPlaylist(playlist)"
-                  class="btn btn-outline-primary btn-sm"
+                  class="u-btn u-btn--primary"
                 >
-                  <p class="text-center">View</p>
+                  View
                 </button>
                 <button 
                   v-if="!playlist.isPublished"
                   @click="publishToVault(playlist)"
-                  class="btn btn-success btn-sm"
+                  class="u-btn"
                   title="Publish to Community Vault"
                 >
-                  <p class="text-center">Publish</p>
+                  Publish
                 </button>
                 <button 
                   v-else
                   @click="unpublishFromVault(playlist)"
-                  class="btn btn-warning btn-sm"
+                  class="u-btn"
                   title="Remove from Community Vault"
                 >
-                  <p class="text-center">Unpublish</p>
+                  Unpublish
                 </button>
               </div>
             </div>
@@ -211,21 +211,6 @@
               rows="3"
               maxlength="200"
             ></textarea>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Workout Days</label>
-            <div class="workout-days-selection">
-              <div 
-                v-for="day in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']" 
-                :key="day"
-                class="day-toggle"
-                :class="{ active: editingPlaylist.workoutDays?.includes(day) }"
-                @click="toggleWorkoutDay(day)"
-              >
-                {{ day }}
-              </div>
-            </div>
           </div>
         </div>
         
@@ -846,11 +831,17 @@ onUnmounted(() => {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
 }
 
-.playlist-buttons .btn {
+.playlist-buttons .u-btn {
   flex: 1;
   min-width: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 /* Modals */
@@ -997,7 +988,7 @@ onUnmounted(() => {
     flex-direction: column;
   }
   
-  .playlist-buttons .btn {
+  .playlist-buttons .u-btn {
     width: 100%;
   }
   

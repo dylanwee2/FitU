@@ -159,14 +159,14 @@
                 <div class="playlist-buttons">
                   <button 
                     @click="viewPlaylist(playlist)"
-                    class="btn btn-outline-primary btn-sm"
+                    class="u-btn u-btn--primary"
                   >
                     <p class="text-center">View</p>
                   </button>
                   <button 
                     v-if="!playlist.isPublished"
                     @click="publishToVault(playlist)"
-                    class="btn btn-success btn-sm"
+                    class="u-btn"
                     title="Publish to Community Vault"
                   >
                     <p class="text-center">Publish</p>
@@ -174,7 +174,7 @@
                   <button 
                     v-else
                     @click="unpublishFromVault(playlist)"
-                    class="btn btn-warning btn-sm"
+                    class="u-btn"
                     title="Remove from Community Vault"
                   >
                     <p class="text-center">Unpublish</p>
@@ -1300,10 +1300,15 @@ const updateWorkoutDurations = async (playlists) => {
 .playlist-buttons {
   display: flex;
   gap: 0.5rem;
+  width: 100%;
 }
 
-.playlist-buttons .btn {
-  flex: 1;
+.playlist-buttons .u-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 /* Modal */
@@ -1711,6 +1716,10 @@ const updateWorkoutDurations = async (playlists) => {
   .playlist-meta {
     flex-direction: column;
     gap: 0.25rem;
+  }
+  
+  .playlist-buttons .u-btn {
+    width: 100%;
   }
   
   .exercise-detail-item {
