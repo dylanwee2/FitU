@@ -73,7 +73,6 @@
         <!-- No Results -->
         <div v-if="exercises.length === 0" class="no-results text-center py-5">
           <div class="no-results-icon mb-3">
-            <i class="fas fa-search text-muted" style="font-size: 3rem;"></i>
           </div>
           <h4 class="no-results-title">No exercises found</h4>
           <p class="no-results-message">Try adjusting your search terms or browse all exercises</p>
@@ -105,33 +104,44 @@
 
                 <!-- Exercise Info -->
                 <div class="exercise-info">
-                  <h5 class="exercise-name">{{ exercise.name }}</h5>
-                  <div class="exercise-target">
+                  <h5 class="exercise-name">{{ formatExerciseName(exercise.name) }}</h5>
+                  <div 
+                    class="exercise-target" 
+                    @click.stop="searchByTarget(exercise.target)"
+                    :title="`Search for ${formatTarget(exercise.target)} exercises`"
+                  >
                     <i class="fas fa-crosshairs me-2"></i>
                     <span class="target-muscle">{{ formatTarget(exercise.target) || 'Full Body' }}</span>
+                    <i class="fas fa-search ms-auto search-hint"></i>
                   </div>
                   <div class="exercise-badges">
-                    <span class="badge bg-primary me-1">{{ formatBodyPart(exercise.bodyPart) || 'General' }}</span>
-                    <span class="badge bg-secondary">{{ formatEquipment(exercise.equipment) || 'Bodyweight' }}</span>
+                    <span 
+                      class="badge bg-primary me-1 clickable-badge" 
+                      @click.stop="searchByBodyPart(exercise.bodyPart)"
+                      :title="`Search for ${formatBodyPart(exercise.bodyPart)} exercises`"
+                    >
+                      {{ formatBodyPart(exercise.bodyPart) || 'General' }}
+                    </span>
+                    <span 
+                      class="badge bg-secondary clickable-badge" 
+                      @click.stop="searchByEquipment(exercise.equipment)"
+                      :title="`Search for ${formatEquipment(exercise.equipment)} exercises`"
+                    >
+                      {{ formatEquipment(exercise.equipment) || 'Bodyweight' }}
+                    </span>
                   </div>
                 </div>
 
                 <!-- Action Buttons -->
                 <div class="exercise-actions">
                   <button 
-                    @click.stop="addToCart(exercise)"
-                    class="btn btn-primary btn-sm me-2"
-                    :disabled="isInCart(exercise.id)"
-                    :title="isInCart(exercise.id) ? 'Already in cart' : 'Add to workout cart'"
+                    @click.stop="toggleCart(exercise)"
+                    class="u-btn"
+                    :class="isInCart(exercise.id) ? 'u-btn--danger' : 'u-btn--primary'"
+                    :title="isInCart(exercise.id) ? 'Remove from workout cart' : 'Add to workout cart'"
+                    style="width: 100%; text-align: center; justify-content: center;"
                   >
-              
-                    {{ isInCart(exercise.id) ? 'In Cart' : 'Add to Cart' }}
-                  </button>
-                  <button 
-                    @click.stop="viewExercise(exercise)"
-                    class="btn btn-outline-primary btn-sm"
-                  >
-                    <i class="fas fa-eye me-1"></i>View
+                    {{ isInCart(exercise.id) ? 'Remove from Cart' : 'Add to Cart' }}
                   </button>
                 </div>
               </div>
@@ -308,11 +318,51 @@ const addToCart = (exercise) => {
   cartStore.addToCart(exercise)
 }
 
+const removeFromCart = (exercise) => {
+  cartStore.removeFromCart(exercise.id)
+}
+
+const toggleCart = (exercise) => {
+  if (isInCart(exercise.id)) {
+    removeFromCart(exercise)
+  } else {
+    addToCart(exercise)
+  }
+}
+
 const isInCart = (exerciseId) => {
   return cartStore.cartItems.some(item => item.id === exerciseId)
 }
 
+// Search by category methods
+const searchByTarget = (target) => {
+  const cleanTarget = formatTarget(target)
+  searchQuery.value = cleanTarget
+  fetchExercises(cleanTarget)
+}
+
+const searchByBodyPart = (bodyPart) => {
+  const cleanBodyPart = formatBodyPart(bodyPart)
+  searchQuery.value = cleanBodyPart
+  fetchExercises(cleanBodyPart)
+}
+
+const searchByEquipment = (equipment) => {
+  const cleanEquipment = formatEquipment(equipment)
+  searchQuery.value = cleanEquipment
+  fetchExercises(cleanEquipment)
+}
+
 // Format functions to clean up array data
+const formatExerciseName = (name) => {
+  if (!name) return 'Exercise'
+  return name
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
+
 const formatTarget = (target) => {
   if (!target) return 'Full Body'
   if (Array.isArray(target)) {
@@ -513,42 +563,147 @@ onMounted(() => {
 }
 
 .exercise-name {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 0.5rem;
-  line-height: 1.3;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 0.75rem;
+  line-height: 1.4;
+  letter-spacing: -0.025em;
+  text-transform: capitalize;
 }
 
 .exercise-target {
   display: flex;
   align-items: center;
-  color: #6c757d;
+  color: #495057;
   margin-bottom: 1rem;
   font-size: 0.9rem;
-  background: #f8f9fa;
-  padding: 0.5rem 0.75rem;
-  border-radius: 20px;
-  border: 1px solid #e9ecef;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: 25px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.exercise-target:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+}
+
+.exercise-target:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.exercise-target::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.exercise-target:hover::before {
+  left: 100%;
 }
 
 .exercise-target i {
-  color: #007bff;
+  color: rgba(255, 255, 255, 0.9);
   font-size: 1rem;
 }
 
 .target-muscle {
-  font-weight: 500;
-  color: #495057;
+  font-weight: 600;
+  color: white;
   text-transform: capitalize;
+  flex-grow: 1;
+}
+
+.search-hint {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.exercise-target:hover .search-hint {
+  opacity: 1;
 }
 
 .exercise-badges {
   margin-bottom: 1rem;
 }
 
+.clickable-badge {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.clickable-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.clickable-badge:active {
+  transform: translateY(0);
+}
+
+.clickable-badge.bg-primary:hover {
+  background-color: #0056b3 !important;
+}
+
+.clickable-badge.bg-secondary:hover {
+  background-color: #495057 !important;
+}
+
 .exercise-actions {
   padding: 0 1.5rem 1.5rem;
+}
+
+.cart-toggle-btn {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.cart-toggle-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.cart-toggle-btn:active {
+  transform: translateY(0);
+}
+
+.cart-toggle-btn.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.cart-toggle-btn.btn-primary:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
+
+.cart-toggle-btn.btn-danger {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+}
+
+.cart-toggle-btn.btn-danger:hover {
+  background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
 }
 
 /* No Results */

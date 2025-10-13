@@ -1,5 +1,5 @@
 <template>
-  <footer class="mt-5" style="background-color: var(--primary-700); color:white;">
+  <footer style="background-color: var(--primary-700); color:white;">
     <div class="container">
       <div class="row footer-logo-row mb-0">
         <router-link to="/home" class="footer-logo-link">

@@ -19,11 +19,11 @@
             <div class="exercise-actions">
               <button 
                 @click="addToCart"
-                class="btn btn-success"
+                class="u-btn u-btn--primary"
                 :disabled="isInCart"
                 :title="isInCart ? 'Already in cart' : 'Add to workout cart'"
               >
-                <i class="fas fa-plus me-2"></i>
+              
                 {{ isInCart ? 'In Cart' : 'Add to Cart' }}
               </button>
             </div>
