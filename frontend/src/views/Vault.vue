@@ -306,64 +306,64 @@
           >
             <div class="workout-set-card" @click="viewWorkoutSet(workoutSet)">
               <!-- Card Header -->
-              <div class="card-header">
-                <div class="rating-display">
-                  <div class="stars">
-                    <img 
-                      v-for="star in 5" 
-                      :key="star"
-                      src="/star.png"
-                      alt="star"
-                      class="star-display"
-                      :class="{ 'star-filled': star <= Math.round(workoutSet.avgRating || 0) }"
-                    />
-                  </div>
-                  <span class="rating-text">{{ formatRating(workoutSet) }}</span>
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="workout-title mb-0">{{ workoutSet.name || workoutSet.title || 'Unnamed Workout' }}</h5>
+                <div class="exercise-count text-end">
+                    <i class="fas fa-list me-1"></i>
+                    {{ workoutSet.exercises?.length || 0 }} exercises
                 </div>
               </div>
 
               <!-- Card Body -->
-              <div class="card-body">
-                <h5 class="workout-title">{{ workoutSet.name || workoutSet.title || 'Unnamed Workout' }}</h5>
-                <p class="workout-description">{{ truncateText(workoutSet.description, 100) }}</p>
+              <div class="card-body d-flex flex-column justify-content-start">
                 
-                <div class="workout-meta">
-                  <div class="creator">
-                    <i class="fas fa-user me-1"></i>
-                    {{ getUserName(workoutSet) }}
-                  </div>
-                  <div class="exercise-count">
-                    <i class="fas fa-list me-1"></i>
-                    {{ workoutSet.exercises?.length || 0 }} exercises
+                <p class="workout-description mb-3 text-muted">{{ truncateText(workoutSet.description, 100) }}</p>
+                
+                <div class="workout-meta mb-3">
+                  <div class="creator d-flex align-items-center">
+                    <i class="text-secondary"></i>
+                    <span class="text-muted">{{ getUserName(workoutSet) }}</span>
                   </div>
                 </div>
 
                 <div class="workout-stats">
-                  <div class="stat">
-                    <i class="fas fa-comments me-1"></i>
-                    <span>{{ workoutSet.reviewsCount || 0 }} reviews</span>
+                  <div class="rating-display">
+                    <div class="stars">
+                      <img 
+                        v-for="star in 5" 
+                        :key="star"
+                        src="/star.png"
+                        alt="star"
+                        class="star-display"
+                        :class="{ 'star-filled': star <= Math.round(workoutSet.avgRating || 0) }"
+                      />
+                    </div>
+                    <span class="rating-text">{{ formatRating(workoutSet) }}</span>
                   </div>
+
                   <div class="stat">
                     <i class="fas fa-clock me-1"></i>
                     <span>{{ workoutSet.estimatedDuration || 30 }}min</span>
                   </div>
                 </div>
+
+                
               </div>
 
               <!-- Card Footer -->
-              <div class="card-footer">
+              <div class="card-footer d-flex gap-2">
                 <button 
                   @click.stop="viewWorkoutSet(workoutSet)"
-                  class="btn btn-outline-primary btn-sm me-2"
+                  class="u-btn u-btn--primary flex-fill d-flex align-items-center justify-content-center"
                 >
-                  <i class="fas fa-eye me-1"></i>View
+                  <p class="text-center footerBtn">View</p>
                 </button>
                 <button 
                   v-if="isOwner(workoutSet)"
                   @click.stop="editWorkout(workoutSet)"
-                  class="btn btn-outline-secondary btn-sm"
+                  class="u-btn flex-fill d-flex align-items-center justify-content-center"
                 >
-                  <i class="fas fa-edit me-1"></i>Edit
+                  <p class="text-center footerBtn">Edit</p>
                 </button>
               </div>
             </div>
@@ -669,9 +669,7 @@ onUnmounted(() => {
 .card-header {
   padding: 1rem;
   border-bottom: 1px solid #eee;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
+  /* Remove conflicting flex properties - let Bootstrap handle them */
 }
 
 .rating-display {
@@ -706,8 +704,7 @@ onUnmounted(() => {
 .card-body {
   padding: 1rem;
   flex-grow: 1;
-  display: flex;
-  flex-direction: column;
+  /* Remove conflicting flex properties - let Bootstrap handle them */
 }
 
 .workout-title {
@@ -730,7 +727,13 @@ onUnmounted(() => {
   margin-bottom: 1rem;
 }
 
-.creator, .exercise-count {
+.creator {
+  font-size: 0.8rem;
+  color: #666;
+  margin-bottom: 0.25rem;
+}
+
+.exercise-count {
   font-size: 0.8rem;
   color: #666;
   margin-bottom: 0.25rem;
@@ -748,15 +751,10 @@ onUnmounted(() => {
   border-top: 1px solid #eee;
   background: #f8f9fa;
   border-radius: 0 0 12px 12px;
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+  /* Remove conflicting flex properties - let Bootstrap handle them */
 }
 
-.card-footer .btn {
-  flex: 1;
-  min-width: auto;
-}
+/* Remove conflicting button styles - let Bootstrap handle them */
 
 .loading-section, .error-section, .empty-state {
   min-height: 400px;
@@ -855,6 +853,13 @@ onUnmounted(() => {
 
 .set-info div {
   margin-bottom: 0.25rem;
+}
+
+.footerBtn{
+  height: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Responsive adjustments */
