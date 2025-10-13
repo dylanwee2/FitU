@@ -5,7 +5,7 @@
       <div class="col-12 col-xxl-6 mb-3 mb-xxl-0">
         <div class="card h-100">
           <div class="card-header">
-            <h5 class="mb-0">TimeTable</h5>
+            <h5 class="mb-0">Timetable</h5>
           </div>
           <div class="card-body">
             <CalendarComponent 
@@ -52,7 +52,7 @@
             <p>You need to be logged in to use FitU. Please log in or sign up to continue.</p>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-primary" @click="redirectToLanding">OK</button>
+            <button type="button" class="u-btn u-btn--primary" @click="redirectToLanding">OK</button>
           </div>
         </div>
       </div>
@@ -75,7 +75,7 @@
           <input type="text" v-model="note" class="form-control" placeholder="e.g., Lunch sandwich">
         </div>
         <div class="col-sm-2 d-grid">
-          <button class="btn btn-primary btn-elevate" type="submit">Add</button>
+          <button class="u-btn u-btn--primary" type="submit">Add</button>
         </div>
         <div class="col-sm-2 text-sm-end">
           <small class="text-muted">Daily goal (set in Profile): {{ user.dailyGoal }} kcal</small>

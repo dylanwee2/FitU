@@ -10,11 +10,11 @@
         You need to be logged in to save and manage your workout sets.
       </p>
       <div class="d-flex gap-2 justify-content-center">
-        <router-link to="/login" class="btn btn-primary">
-          <i class="fas fa-sign-in-alt me-2"></i>Login
+        <router-link to="/signup" class="u-btn u-btn--primary">
+          Sign Up
         </router-link>
-        <router-link to="/signup" class="btn btn-outline-primary">
-          <i class="fas fa-user-plus me-2"></i>Sign Up
+        <router-link to="/login" class="u-btn" style="border: 1px solid grey;">
+          Login
         </router-link>
       </div>
     </div>

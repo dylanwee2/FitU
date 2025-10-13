@@ -623,6 +623,11 @@ defineExpose({
   min-height: 400px;
 }
 
+.fc-col-header-cell-cushion:hover, .fc-daygrid-day-number:hover {
+  cursor: pointer;
+
+}
+
 /* Modal Styles */
 .modal-backdrop {
   position: fixed;

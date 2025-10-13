@@ -5,7 +5,7 @@
       <div class="home-card p-4 text-center">
         <h2 class="h3 mb-3" style="color: var(--primary)">Welcome back to FitU!</h2>
         <p class="mb-3" style="color: var(--text)">Ready to continue your fitness journey?</p>
-        <router-link to="/home" class="btn btn-primary btn-lg btn-elevate">
+        <router-link to="/home" class="u-btn u-btn--primary" style="text-decoration: none;">
           Start Using FitU Website
         </router-link>
       </div>
@@ -17,10 +17,10 @@
         <h2 class="h3 mb-3" style="color: var(--primary)">Join FitU Today!</h2>
         <p class="mb-3" style="color: var(--text)">Start your fitness journey with our student-friendly platform</p>
         <div class="d-flex gap-3 justify-content-center">
-          <router-link to="/signup" class="btn btn-primary btn-lg btn-elevate">
+          <router-link to="/signup" class="u-btn u-btn--primary" style="text-decoration: none;">
             Sign Up
           </router-link>
-          <router-link to="/login" class="btn btn-outline-primary btn-lg">
+          <router-link to="/login" class="u-btn" style="text-decoration: none; border:1px solid grey;">
             Login
           </router-link>
         </div>
@@ -36,7 +36,7 @@
       </div>
       <div class="carousel-inner">
         <div class="carousel-item active carousel-item-tinted">
-          <img src="/junwei.png" class="d-block w-100" alt="Workout motivation" style="object-fit: cover; height: 360px;">
+          <img src="" class="d-block w-100" alt="Workout motivation" style="object-fit: cover; height: 360px;">
           <div class="carousel-caption d-none d-md-block">
             <h5 class="fw-bold">Plan. Track. Improve.</h5>
             <p>Stay consistent with your red & cream fitness dashboard.</p>
@@ -51,7 +51,7 @@
           </div>
         </div>
         <div class="carousel-item carousel-item-tinted">
-          <img src="/junwei.png" class="d-block w-100" alt="Healthy choices" style="object-fit: cover; height: 360px;">
+          <img src="" class="d-block w-100" alt="Healthy choices" style="object-fit: cover; height: 360px;">
           <div class="carousel-caption d-none d-md-block">
             <h5 class="fw-bold">Workouts Your Way</h5>
             <p>Toggle workouts and focus on today's goals.</p>
@@ -145,7 +145,7 @@
     <section class="home-card p-4 text-center" v-reveal>
       <h2 class="mb-2" style="color: var(--text)">Ready to Transform Your Campus Fitness?</h2>
       <p class="u-muted mb-3">Join thousands of students getting stronger, healthier, and more energized.</p>
-      <router-link to="/signup" class="btn btn-primary btn-elevate">Get Started Free</router-link>
+      <router-link to="/signup" class="u-btn u-btn--primary" style="text-decoration: none;">Get Started Free</router-link>
     </section>
 
   </div>
