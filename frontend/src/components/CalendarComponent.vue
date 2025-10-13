@@ -223,7 +223,7 @@ const initializeCalendar = async () => {
   calendarInstance = new Calendar(calendarRef.value, {
     plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
     initialView: props.initialView,
-    height: props.height,
+    height: props.height === 'auto' ? 600 : props.height,
     headerToolbar: props.headerToolbar,
     themeSystem: 'bootstrap5',
     navLinks: false,
@@ -617,10 +617,33 @@ defineExpose({
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-height: 70vh;
+  overflow-y: auto;
+  position: relative;
 }
 
 .calendar-element {
   min-height: 400px;
+  padding: 10px;
+}
+
+/* Custom scrollbar styling for better UX */
+.calendar-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.calendar-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.calendar-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.calendar-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }
 
 /* Modal Styles */
