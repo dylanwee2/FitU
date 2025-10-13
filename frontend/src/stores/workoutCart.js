@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
 import { db } from '@/firebase'
 import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where } from 'firebase/firestore'
+import { workoutVaultService } from '@/services/workoutVaultService.js'
 
 export const useWorkoutCartStore = defineStore('workoutCart', () => {
   // State
@@ -150,8 +151,26 @@ export const useWorkoutCartStore = defineStore('workoutCart', () => {
   }
 
   const deletePlaylist = async (playlistId) => {
+    if (!currentUser.value) {
+      throw new Error('User must be authenticated to delete workout sets')
+    }
+
     try {
-      // Delete from Firebase
+      // Find the playlist to check if it's published
+      const playlist = savedPlaylists.value.find(p => p.id === playlistId)
+      
+      // If the workout is published, delete it from the vault first
+      if (playlist && playlist.isPublished && playlist.publishedId) {
+        try {
+          await workoutVaultService.unpublishWorkout(playlist.publishedId, currentUser.value.uid)
+          console.log('Successfully deleted published workout from vault')
+        } catch (error) {
+          console.error('Error deleting from published workouts:', error)
+          // Continue with deletion even if unpublishing fails
+        }
+      }
+      
+      // Delete the document from Firebase
       const playlistRef = doc(db, "workoutSets", playlistId)
       await deleteDoc(playlistRef)
       
@@ -169,7 +188,14 @@ export const useWorkoutCartStore = defineStore('workoutCart', () => {
   }
 
   const updatePlaylist = async (playlistId, updates) => {
+    if (!currentUser.value) {
+      throw new Error('User must be authenticated to update workout sets')
+    }
+
     try {
+      // Find the local playlist to check if it's published
+      const playlist = savedPlaylists.value.find(p => p.id === playlistId)
+      
       // Update in Firebase
       const playlistRef = doc(db, "workoutSets", playlistId)
       const firebaseUpdates = {
@@ -178,11 +204,27 @@ export const useWorkoutCartStore = defineStore('workoutCart', () => {
       }
       await updateDoc(playlistRef, firebaseUpdates)
       
+      // If the workout is published, update the published version as well
+      if (playlist && playlist.isPublished && playlist.publishedId) {
+        try {
+          const publishedRef = doc(db, "publishedWorkouts", playlist.publishedId)
+          // Update the published workout with the same changes
+          const publishedUpdates = {
+            ...updates,
+            updatedAt: new Date().toISOString()
+          }
+          await updateDoc(publishedRef, publishedUpdates)
+          console.log('Successfully updated published workout in vault')
+        } catch (error) {
+          console.error('Error updating published workout:', error)
+          // Continue even if published update fails
+        }
+      }
+      
       // Update local playlist
-      const playlist = savedPlaylists.value.find(p => p.id === playlistId)
       if (playlist) {
         Object.assign(playlist, updates)
-        playlist.lastUsed = new Date().toISOString()
+        playlist.updatedAt = new Date().toISOString()
       }
       
       return true

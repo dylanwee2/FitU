@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 // Import the pages (views)
 import Home from '../views/home.vue'
+import Landing from '../views/landing.vue'
 import Signup from '../views/signup.vue'
 import Login from '../views/login.vue'
 import Profile from '../views/profile.vue'
@@ -15,7 +16,8 @@ import WorkoutPlaylists from '../views/WorkoutPlaylists.vue'
 import Vault from '../views/Vault.vue'
 
 const routes = [
-  { path: '/', name: 'Home', component: Home },
+  { path: '/', name: 'Landing', component: Landing },
+  { path: '/home', name: 'Home', component: Home },
   { path: '/signup', name: 'Signup', component: Signup },
   { path: '/login', name: 'Login', component: Login },
   { path: '/profile', name: 'Profile', component: Profile },
@@ -26,9 +28,7 @@ const routes = [
   { path: '/calendar', name: 'Calendar', component: Calendar },
   { path: '/virtual-gym', name: 'VirtualGym', component: VirtualGym },
   { path: '/workout-sets', name: 'WorkoutPlaylists', component: WorkoutPlaylists },
-  { path: '/admin/comments', name: 'CommentsAdmin', component: CommentsAdmin },
-  { path: '/vault', name: 'Vault', component: Vault }
-
+  { path: '/vault', name: 'Vault', component: Vault },  
 ]
 
 const router = createRouter({

@@ -67,7 +67,7 @@ export default {
     const login = async () => {
       try {
         const login = await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
-        router.push('/');
+        router.push('/home');
       } catch (error) {
         console.error(error.code, error.message);
         alert('Sign In failed.')
