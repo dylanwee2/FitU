@@ -91,7 +91,7 @@
                     </li>
                     <li>
                       <button 
-                        @click="deletePlaylist(playlist.id)"
+                        @click="showDeleteConfirmation(playlist)"
                         class="dropdown-item text-danger"
                       >
                         <i class="fas fa-trash me-2"></i>Delete
@@ -313,6 +313,36 @@
         </div>
       </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div v-if="showDeleteModal" class="modal-overlay" @click.self="showDeleteModal = false">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Delete Workout Set</h5>
+          <button @click="showDeleteModal = false" class="btn-close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <div class="modal-body">
+          <p>Are you sure you want to delete "<strong>{{ deletingPlaylist.name }}</strong>"?</p>
+          <p class="text-danger">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            This action cannot be undone.
+          </p>
+        </div>
+        
+        <div class="modal-footer">
+          <button @click="showDeleteModal = false" class="btn btn-secondary">Cancel</button>
+          <button 
+            @click="confirmDeletePlaylist"
+            class="btn btn-danger"
+          >
+            <i class="fas fa-trash me-2"></i>Delete
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -354,9 +384,11 @@ const cartStore = useWorkoutCartStore()
 const showEditModal = ref(false)
 const showPublishModal = ref(false)
 const showUnpublishModal = ref(false)
+const showDeleteModal = ref(false)
 const editingPlaylist = ref({})
 const publishingPlaylist = ref({})
 const unpublishingPlaylist = ref({})
+const deletingPlaylist = ref({})
 const confirmPublish = ref(false)
 const publishingInProgress = ref(false)
 const unpublishingInProgress = ref(false)
@@ -524,14 +556,19 @@ const duplicatePlaylist = async (playlistId) => {
   }
 }
 
-const deletePlaylist = async (playlistId) => {
-  if (confirm('Are you sure you want to delete this workout set? This action cannot be undone.')) {
-    try {
-      await cartStore.deletePlaylist(playlistId)
-    } catch (error) {
-      console.error('Error deleting playlist:', error)
-      alert('Error deleting workout set: ' + error.message)
-    }
+const showDeleteConfirmation = (playlist) => {
+  deletingPlaylist.value = { ...playlist }
+  showDeleteModal.value = true
+}
+
+const confirmDeletePlaylist = async () => {
+  try {
+    await cartStore.deletePlaylist(deletingPlaylist.value.id)
+    showDeleteModal.value = false
+    deletingPlaylist.value = {}
+  } catch (error) {
+    console.error('Error deleting playlist:', error)
+    alert('Error deleting workout set: ' + error.message)
   }
 }
 

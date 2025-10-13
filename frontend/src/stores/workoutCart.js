@@ -163,14 +163,16 @@ export const useWorkoutCartStore = defineStore('workoutCart', () => {
       if (playlist && playlist.isPublished && playlist.publishedId) {
         try {
           await workoutVaultService.unpublishWorkout(playlist.publishedId, currentUser.value.uid)
-          const playlistRef = doc(db, "workoutSets", playlistId)
-          await deleteDoc(playlistRef)
           console.log('Successfully deleted published workout from vault')
         } catch (error) {
           console.error('Error deleting from published workouts:', error)
           // Continue with deletion even if unpublishing fails
         }
       }
+      
+      // Delete the document from Firebase
+      const playlistRef = doc(db, "workoutSets", playlistId)
+      await deleteDoc(playlistRef)
       
       // Remove from local array
       const index = savedPlaylists.value.findIndex(p => p.id === playlistId)
