@@ -106,13 +106,13 @@
                 <!-- Exercise Info -->
                 <div class="exercise-info">
                   <h5 class="exercise-name">{{ exercise.name }}</h5>
-                  <p class="exercise-target">
-                    <i class="fas fa-bullseye me-1"></i>
-                    {{ exercise.target || 'Full Body' }}
-                  </p>
+                  <div class="exercise-target">
+                    <i class="fas fa-crosshairs me-2"></i>
+                    <span class="target-muscle">{{ formatTarget(exercise.target) || 'Full Body' }}</span>
+                  </div>
                   <div class="exercise-badges">
-                    <span class="badge bg-primary me-1">{{ exercise.bodyPart || 'General' }}</span>
-                    <span class="badge bg-secondary">{{ exercise.equipment || 'Bodyweight' }}</span>
+                    <span class="badge bg-primary me-1">{{ formatBodyPart(exercise.bodyPart) || 'General' }}</span>
+                    <span class="badge bg-secondary">{{ formatEquipment(exercise.equipment) || 'Bodyweight' }}</span>
                   </div>
                 </div>
 
@@ -120,11 +120,11 @@
                 <div class="exercise-actions">
                   <button 
                     @click.stop="addToCart(exercise)"
-                    class="btn btn-success btn-sm me-2"
+                    class="btn btn-primary btn-sm me-2"
                     :disabled="isInCart(exercise.id)"
                     :title="isInCart(exercise.id) ? 'Already in cart' : 'Add to workout cart'"
                   >
-                    <i class="fas fa-plus me-1"></i>
+              
                     {{ isInCart(exercise.id) ? 'In Cart' : 'Add to Cart' }}
                   </button>
                   <button 
@@ -312,6 +312,31 @@ const isInCart = (exerciseId) => {
   return cartStore.cartItems.some(item => item.id === exerciseId)
 }
 
+// Format functions to clean up array data
+const formatTarget = (target) => {
+  if (!target) return 'Full Body'
+  if (Array.isArray(target)) {
+    return target.join(', ')
+  }
+  return target.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', ')
+}
+
+const formatBodyPart = (bodyPart) => {
+  if (!bodyPart) return 'General'
+  if (Array.isArray(bodyPart)) {
+    return bodyPart.join(', ')
+  }
+  return bodyPart.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', ')
+}
+
+const formatEquipment = (equipment) => {
+  if (!equipment) return 'Bodyweight'
+  if (Array.isArray(equipment)) {
+    return equipment.join(', ')
+  }
+  return equipment.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', ')
+}
+
 // Lifecycle
 onMounted(() => {
   fetchExercises()
@@ -496,9 +521,26 @@ onMounted(() => {
 }
 
 .exercise-target {
+  display: flex;
+  align-items: center;
   color: #6c757d;
   margin-bottom: 1rem;
   font-size: 0.9rem;
+  background: #f8f9fa;
+  padding: 0.5rem 0.75rem;
+  border-radius: 20px;
+  border: 1px solid #e9ecef;
+}
+
+.exercise-target i {
+  color: #007bff;
+  font-size: 1rem;
+}
+
+.target-muscle {
+  font-weight: 500;
+  color: #495057;
+  text-transform: capitalize;
 }
 
 .exercise-badges {
