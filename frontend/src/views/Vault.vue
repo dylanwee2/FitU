@@ -5,7 +5,7 @@
       <div class="vault-header mb-4">
         <div class="row align-items-center">
           <div class="col-12">
-            <h1 class="page-title mb-2">🏆 Workout Vault</h1>
+            <h1 class="page-title mb-2">Workout Vault</h1>
             <p class="page-subtitle text-muted">Discover and review community-created workout sets</p>
           </div>
         </div>
