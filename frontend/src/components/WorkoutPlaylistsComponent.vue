@@ -39,7 +39,7 @@
         <div 
           v-for="playlist in savedPlaylists" 
           :key="playlist.id"
-          class="col-md-6 col-lg-6 col-xl-6"
+          class="col-md-12 col-lg-12 col-xl-12"
         >
           <div class="playlist-card">
             <!-- Playlist Header -->
@@ -234,7 +234,7 @@
                       class="btn btn-sm btn-outline-danger"
                       type="button"
                     >
-                      <i class="fas fa-times"></i>
+                    Remove 
                     </button>
                   </div>
                 </div>

@@ -241,7 +241,7 @@
                       class="btn btn-sm btn-outline-danger"
                       type="button"
                     >
-                      <i class="fas fa-times"></i>
+                      Remove
                     </button>
                   </div>
                 </div>
