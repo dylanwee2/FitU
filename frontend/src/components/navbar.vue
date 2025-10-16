@@ -49,7 +49,7 @@ export default {
   display:flex;
   align-items: center;
   justify-content: space-between; 
-  background-color: var(--primary-700);
+  background-color: rgb(14, 14, 14);
   color: white;
   padding: 10px 40px;
 }

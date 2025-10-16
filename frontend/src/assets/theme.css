@@ -1,31 +1,21 @@
 :root{
-  --brand-blue-700:#1c2733;
-  --brand-blue-600:#2c3e50;
-  --brand-blue-500:#3a5168;
   --accent-cyan-600:#0891B2;
   --accent-cyan-500:#06B6D4;
-  --accent-green-500:#10B981;
-  --text-ink:#0F172A;
-  --text-muted:#7b8085;
-  --surface:#FFFFFF;
-  --surface-subtle:#F8FAFC;
-  --border-subtle:#E2E8F0;
-  --star:#10B981;
   --focus:#22D3EE;
 
-  /* Backwards-compat for existing tokens */
-  --bg: var(--surface-subtle);
-  --surface: var(--surface);
-  --text: var(--text-ink);
-  --muted: var(--text-muted);
-  --primary: var(--brand-blue-600);
-  --primary-700: var(--brand-blue-700);
-  --secondary: var(--brand-blue-500);
+  --bg:#111111;
+  --surface-subtle: #272727;
+  --border-subtle:#202020;
+  --text: #ffffff;
+  --muted: #7b8085;
+  --primary: #2200e4;
+  --secondary: #0064c9;
+  --tertiary: #044e97;
   --danger: rgb(155, 0, 0);
-  --accent: var(--accent-green-500);
+  --accent: #10B981;
   --ring: var(--focus);
   --shadow-card: 0 10px 16px -10px rgba(2,6,23,.15);
-  --hero-gradient: linear-gradient(90deg, var(--brand-blue-600), var(--accent-green-500));
+  --hero-gradient: linear-gradient(90deg, var(--brand-secondary), var(--accent-green-500));
 }
 
 /* Theme Utility Classes */
@@ -33,19 +23,19 @@
 .u-surface { background: var(--surface); }
 .u-text { color: var(--text); }
 .u-muted { color: var(--muted); }
-.u-card { background: var(--surface); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-card); border-radius: 12px; }
+.u-card { background: var(--surface-subtle); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-card); border-radius: 12px; }
 .u-link { color: var(--primary); text-decoration: none; }
 .u-link:hover { text-decoration: underline; text-underline-offset: 3px; }
 .u-btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1rem; border-radius: 10px; font-weight: 600; outline-offset: 2px; border: none; cursor: pointer; transition: all 0.2s ease; }
 .u-btn:focus-visible { outline: 2px solid color-mix(in srgb, var(--ring) 70%, transparent); }
-.u-btn--primary { background: var(--primary); color: #fff; }
+.u-btn--primary { background: var(--primary); color: #fff; text-decoration: none;}
+.u-btn--primary:hover { background: var(--secondary); text-decoration: none;}
 .u-btn--primary:disabled { background: var(--brand-blue-500); color: #fff; cursor: default; filter: none;}
 .u-btn--primary:disabled:hover { background: var(--brand-blue-500); color: #fff; cursor: default; filter: none;}
-.u-btn--primary:hover { background: var(--primary-700); }
-.u-btn--secondary { border: 1px solid var(--primary); color: var(--text); background: transparent; }
-.u-btn--secondary:hover { background: var(--primary); color: #fff; }
+.u-btn--secondary { border: 1px solid var(--muted); color: var(--text); background: transparent; text-decoration: none;}
+.u-btn--secondary:hover { background: var(--muted); color: #fff; }
 .u-btn--danger { background: var(--danger); color: #fff; }
-.u-btn--danger:hover { filter: brightness(0.92); }
+.u-btn--danger:hover { filter: brightness(0.92); text-decoration: none;}
 .u-btn--accent { background: var(--accent); color: var(--text); }
 .u-btn--accent:hover { filter: brightness(0.92); }
 .u-hero-gradient { background: var(--hero-gradient); }
