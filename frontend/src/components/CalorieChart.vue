@@ -36,7 +36,7 @@ export default {
           {
             label: 'Calories',
             data: values,
-            backgroundColor: 'rgba(230, 57, 70, 0.8)'
+            backgroundColor: '#2200e4'
           }
         ]
       }

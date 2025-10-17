@@ -60,7 +60,7 @@ button { font: inherit; }
 .button--accent:hover, button.btn-accent:hover { filter: brightness(0.92); }
 
 /* Cards */
-.card { background: var(--surface); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-card); border-radius: 12px; padding: 1rem; }
+.card { background: var(--surface); color:white; border: 1px solid var(--border-subtle); box-shadow: var(--shadow-card); border-radius: 12px; padding: 1rem; }
 
 /* Scroll reveal */
 .reveal { opacity: 0; transform: translateY(10px); transition: opacity .4s ease, transform .4s ease; }

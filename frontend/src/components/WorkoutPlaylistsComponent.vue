@@ -28,8 +28,8 @@
       <p class="empty-state-message">
         Create your first workout set by adding exercises to your cart and saving them as a playlist.
       </p>
-      <router-link to="/exerciselibrary" class="btn btn-primary">
-        <i class="fas fa-plus me-2"></i>Browse Exercises
+      <router-link to="/exerciselibrary" class="u-btn u-btn--primary">
+        Browse Exercises
       </router-link>
     </div>
 
