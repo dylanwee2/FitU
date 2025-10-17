@@ -101,12 +101,11 @@ export default {
     display:none;
     position: absolute;
     top: 60px;
-    background: #3b536b;
+    background: var(--surface-subtle);
     padding: 20px 0;
     width: 100%;
     left: 0;
     flex-direction: column;
-    border-top: 1px solid #3b536b; 
     z-index: 1000;
   }
   .navbar .toggle {

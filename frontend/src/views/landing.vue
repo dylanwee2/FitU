@@ -47,7 +47,7 @@
           <h1 class="mb-3" style="font-size: 80px;">UNLEASH YOUR<br>BEST SELF</h1>
           <p class="mb-3 u-muted">Unlock your fitness potential with personalized workout plans, meal tracking, and expert guidance.</p>
           <div class="d-flex gap-3 justify-content-left">
-            <router-link to="/signup" class="u-btn u-btn--primary" style="text-decoration: none;">
+            <router-link to="/signup" class="u-special-btn" style="padding-left: 60px; padding-right:60px;">
               Join FitU Now!
             </router-link>
           </div>
@@ -135,7 +135,10 @@
       <section class="p-4 text-center" v-reveal>
         <h2 class="mb-2" style="color: var(--text)">Ready to Transform Your Campus Fitness?</h2>
         <p class="u-muted mb-3">Join thousands of students getting stronger, healthier, and more energized.</p>
-        <router-link to="/signup" class="u-btn u-btn--primary" style="text-decoration: none;">Get Started Free</router-link>
+        <div class="d-flex gap-3 justify-content-center">
+        <router-link to="/signup" class="u-special-btn" style="padding-left: 60px; padding-right:60px;">Get Started Free</router-link>
+
+        </div>
       </section>
 
     </div>

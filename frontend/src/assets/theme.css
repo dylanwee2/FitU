@@ -8,7 +8,7 @@
   --border-subtle:#202020;
   --text: #ffffff;
   --muted: #7b8085;
-  --primary: #2200e4;
+  --primary: #4828ff;
   --secondary: #0064c9;
   --tertiary: #044e97;
   --danger: rgb(155, 0, 0);
@@ -53,6 +53,53 @@
 .u-bg-success { background: var(--success); }
 .u-bg-warning { background: var(--warning); }
 .u-bg-danger { background: var(--danger); }
+
+/* Special button */
+.u-special-btn {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
+  background: linear-gradient(135deg, var(--primary) 0%, #7083eb 100%);
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: 25px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  font-weight: bold;
+}
+
+.u-special-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  background: linear-gradient(135deg, var(--primary) 0%, #7083eb 100%);
+  text-decoration: none;
+}
+
+.u-special-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.u-special-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.u-special-btn:hover::before {
+  left: 100%;
+}
 
 /* CTA gradient like UniGym (blue → green) */
 .btn-gradient {
