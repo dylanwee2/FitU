@@ -68,14 +68,28 @@ button { font: inherit; }
 
 /* Forms */
 input, select, textarea {
-  background: var(--surface); color: var(--text); border: 1px solid var(--border-subtle);
-  border-radius: 10px; padding: 0.55rem 0.75rem; font: inherit; transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background: var(--surface-subtle) !important;
+  color: rgb(223, 223, 223) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 10px; padding: 0.55rem 0.75rem; font: inherit; transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
 }
 input:focus, select:focus, textarea:focus {
-  outline: 2px solid color-mix(in srgb, var(--ring) 70%, transparent);
-  outline-offset: 2px; border-color: var(--primary);
+  outline: 2px solid color-mix(in srgb, var(--ring) 70%, transparent) !important;
+  outline-offset: 2px; border-color: var(--muted) !important;
 }
+input::placeholder, textarea::placeholder {
+  color: var(--muted) !important; /* Set placeholder text to white */
+  opacity: 0.7 !important; /* Optional: Slightly reduce opacity for distinction */
+}
+
+
+
 label { font-weight: 600; color: var(--text); margin-bottom: 0.25rem; display: block; }
+
+/* Checkbox */
+input[type="checkbox"] {
+  accent-color: var(--primary) !important;
+}
 
 /* Container */
 .container { width: min(100%, 1200px); margin-inline: auto; padding-inline: 1rem; }

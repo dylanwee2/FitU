@@ -7,7 +7,7 @@
           
           <div class="file-upload-container info-icon-tooltip-wrapper">
             <input type="file" class="upload-box visually-hidden" accept=".ics" @change="handleIcsUpload" ref="fileInput" id="icsFileInput" />
-            <label for="icsFileInput" class="custom-upload-btn">Import ICS File</label>
+            <label for="icsFileInput" class="custom-upload-btn u-btn u-btn--primary">Import ICS File</label>
             <span class="ics-info-icon-btn" tabindex="0" @mouseenter="showTooltip = true" @mouseleave="showTooltip = false" @focus="showTooltip = true" @blur="showTooltip = false">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
                 <circle cx="8" cy="8" r="8" fill="var(--primary)"/>
@@ -37,14 +37,13 @@
       <div class="event-form-modal">
         <div class="modal-header">
           <h5 class="modal-title">{{ editingEvent ? 'Edit Event' : 'Add Event' }}</h5>
-          <button @click="closeEventForm" class="btn-close">
-            x
+          <button @click="closeEventForm" class="btn-close btn-close-white">
           </button>
         </div>
         
         <div class="modal-body">
           <div class="form-group">
-            <label class="form-label">Title</label>
+            <label class="u-muted">Title</label>
             <input 
               v-model="newEvent.title" 
               class="form-control" 
@@ -54,7 +53,7 @@
           </div>
           
           <div class="form-group">
-            <label class="form-label">Start Date & Time</label>
+            <label class="u-muted">Start Date & Time</label>
             <input 
               v-model="newEvent.start" 
               type="datetime-local" 
@@ -64,7 +63,7 @@
           </div>
           
           <div class="form-group">
-            <label class="form-label">End Date & Time</label>
+            <label class="u-muted">End Date & Time</label>
             <input 
               v-model="newEvent.end" 
               type="datetime-local" 
@@ -73,21 +72,14 @@
           </div>
           
           <div class="form-group">
-            <div class="form-check">
-              <input 
-                v-model="newEvent.allDay"
-                class="form-check-input" 
-                type="checkbox" 
-                id="allDayCheck"
-              />
-              <label class="form-check-label" for="allDayCheck">
-                All Day Event
-              </label>
-            </div>
+            <label class="u-muted" >
+              <input v-model="newEvent.allDay" type="checkbox" id="allDayCheck"/>
+              All Day Event
+            </label>
           </div> 
           
           <div class="form-group">
-            <label class="form-label">Description</label>
+            <label class="u-muted">Description</label>
             <textarea 
               v-model="newEvent.description" 
               class="form-control" 
@@ -100,13 +92,14 @@
         </div>
         
         <div class="modal-footer">
-          <button @click="closeEventForm" class="btn btn-secondary">Cancel</button>
-          <button @click="submitEvent" class="u-btn u-btn--primary" :disabled="!newEvent.title">
-            {{ editingEvent ? 'Update' : 'Add' }} Event
-          </button>
+          <button @click="closeEventForm" class="u-btn u-btn--secondary">Cancel</button>
           <button v-if="editingEvent" @click="deleteEvent" class="u-btn u-btn--danger ms-2">
             Delete
           </button>
+          <button @click="submitEvent" class="u-btn u-btn--primary" :disabled="!newEvent.title">
+            {{ editingEvent ? 'Update' : 'Add' }} Event
+          </button>
+          
         </div>
       </div>
     </div>
@@ -231,7 +224,9 @@ const initializeCalendar = async () => {
     selectable: props.selectable,
     nowIndicator: true,
     events: props.events,
-    eventColor: getComputedStyle(document.documentElement).getPropertyValue('--primary').trim(),
+    eventColor: getComputedStyle(document.documentElement).getPropertyValue('--muted').trim(),
+
+    //eventColor: getComputedStyle(document.documentElement).getPropertyValue('--primary').trim(),
     // eventContent: function(arg) {
     //   // Only show the event title, not the time
     //   return { domNodes: [document.createTextNode(arg.event.title)] };
@@ -502,7 +497,7 @@ defineExpose({
 })
 </script>
 
-<style scoped>
+<style>
 .info-icon-tooltip-wrapper {
   position: relative;
   display: flex;
@@ -537,7 +532,7 @@ defineExpose({
   top: 100%;
   transform: translateX(-50%);
   margin-top: 0.5em;
-  background: var(--primary-700);
+  background: var(--surface-subtle);
   color: #fff;
   padding: 0.5em 1em;
   border-radius: 6px;
@@ -549,15 +544,16 @@ defineExpose({
 }
 
 /* Global FullCalendar styles */
-.fc-daygrid-day-frame, 
-.fc-scrollgrid-sync-inner {
-  background-color: white;
-}
 
 .fc a, 
 .fc-daygrid-day-number, 
 .fc-event {
   text-decoration: none !important;
+  color: white !important;
+}
+
+.fc-toolbar-title { /*Month Year color*/
+  color: white;
 }
 
 .fc-event {
@@ -565,17 +561,11 @@ defineExpose({
   margin: 1px 0;
 }
 
-.fc-day-today {
-  background-color: rgba(0, 123, 255, 0.1) !important;
-}
-
-
 .calendar-component {
   width: 100%;
 }
 
 .calendar-controls {
-  background: #f8f9fa;
   padding: 1rem;
   border-radius: 8px;
   margin-bottom: 1rem;
@@ -597,23 +587,7 @@ defineExpose({
   border: 0;
 }
 
-.custom-upload-btn {
-  display: inline-block;
-  background: var(--primary);
-  color: #fff;
-  padding: 0.5rem 1.25rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-  margin-right: 0.5rem;
-  transition: background 0.2s;
-}
-.custom-upload-btn:hover {
-  background: var(--primary-700);
-}
-
 .calendar-container {
-  background: white;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -648,6 +622,7 @@ defineExpose({
 
 .fc-col-header-cell-cushion:hover, .fc-daygrid-day-number:hover {
   cursor: pointer;
+  
 
 }
 
@@ -659,15 +634,16 @@ defineExpose({
   width: 100vw;
   height: 100vh;
   z-index: 1050;
-  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: rgba(0, 0, 0, 0.6) !important; /* Set a translucent black background */
 }
 
 .event-form-modal {
-  background: white;
+  background: var(--bg);
   border-radius: 12px;
+  padding: 20px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
   max-width: 500px;
   width: 90%;
@@ -687,26 +663,8 @@ defineExpose({
 .modal-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #2c3e50;
   margin: 0;
-}
-
-.btn-close {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: #adb5bd;
-  cursor: pointer;
-  padding: 0;
-  width: 1.5rem;
-  height: 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-close:hover {
-  color: #495057;
+  color: white;
 }
 
 .modal-body {
@@ -725,42 +683,8 @@ defineExpose({
   margin-bottom: 1rem;
 }
 
-.form-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: #495057;
-}
-
-.form-control {
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #ced4da;
-  border-radius: 6px;
-  font-size: 0.9rem;
-}
-
-.form-control:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-}
-
-.form-check {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.form-check-input {
-  width: 1rem;
-  height: 1rem;
-}
-
 .form-check-label {
-  font-size: 0.9rem;
-  color: #495057;
-  cursor: pointer;
+  margin-left: 0.5rem;
 }
 
 /* Responsive */

@@ -1,7 +1,7 @@
 :root{
   --accent-cyan-600:#0891B2;
   --accent-cyan-500:#06B6D4;
-  --focus:#22D3EE;
+  --focus:#616161;
 
   --bg:#111111;
   --surface-subtle: #272727;
@@ -16,6 +16,8 @@
   --ring: var(--focus);
   --shadow-card: 0 10px 16px -10px rgba(2,6,23,.15);
   --hero-gradient: linear-gradient(90deg, var(--brand-secondary), var(--accent-green-500));
+
+  --fc-border-color: rgb(12, 12, 12);
 }
 
 /* Theme Utility Classes */
