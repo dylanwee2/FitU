@@ -334,7 +334,7 @@
                         src="/star.png"
                         alt="star"
                         class="star-display"
-                        :class="{ 'star-filled': star <= Math.round(workoutSet.avgRating || 0) }"
+                        :class="{ 'star-filled': star <= Math.ceil(workoutSet.avgRating || 0) }"
                       />
                     </div>
                     <span class="rating-text">{{ formatRating(workoutSet) }}</span>
@@ -579,7 +579,7 @@ const isOwner = (workoutSet) => {
 
 const getUserName = (workoutSet) => {
   // Try to get user name from workout data
-  return workoutSet.userName || workoutSet.creatorName || 'Anonymous'
+  return workoutSet.authorDisplayName  
 }
 
 // Utility functions

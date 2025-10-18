@@ -855,7 +855,14 @@ const confirmPublishToVault = async () => {
   publishingInProgress.value = true
 
   try {
-    const result = await workoutVaultService.publishWorkout(publishingPlaylist.value.id, auth.currentUser.uid)
+    // Get the user's display name from Firebase Auth
+    const userDisplayName = auth.currentUser?.displayName || 'Anonymous'
+    
+    const result = await workoutVaultService.publishWorkout(
+      publishingPlaylist.value.id, 
+      auth.currentUser.uid, 
+      userDisplayName
+    )
     
     // Update the local playlist to reflect published status
     await cartStore.updatePlaylist(publishingPlaylist.value.id, {

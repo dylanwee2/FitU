@@ -173,7 +173,7 @@
                   <button 
                     v-else
                     @click="unpublishFromVault(playlist)"
-                    class="u-btn u-btn--secondary"
+                    class="u-btn u-btn--danger"
                     title="Remove from Community Vault"
                   >
                     <p class="text-center">Unpublish</p>
@@ -839,18 +839,6 @@ const savedPlaylists = computed(() => cartStore.savedPlaylists)
 const isAuthenticated = computed(() => cartStore.isAuthenticated)
 
 // Methods
-const formatDate = (dateString) => {
-  const date = new Date(dateString)
-  const now = new Date()
-  const diffTime = Math.abs(now - date)
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-  
-  if (diffDays === 1) return 'yesterday'
-  if (diffDays < 7) return `${diffDays} days ago`
-  if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`
-  return date.toLocaleDateString()
-}
-
 const formatDuration = (minutes) => {
   if (!minutes || minutes === 0) return '0 min'
   if (minutes < 60) return `${minutes} min`
@@ -1090,7 +1078,14 @@ const confirmPublishToVault = async () => {
   publishingInProgress.value = true
 
   try {
-    const result = await workoutVaultService.publishWorkout(publishingPlaylist.value.id, auth.currentUser.uid)
+    // Get the user's display name from Firebase Auth
+    const userDisplayName = auth.currentUser?.displayName || 'Anonymous'
+    
+    const result = await workoutVaultService.publishWorkout(
+      publishingPlaylist.value.id, 
+      auth.currentUser.uid, 
+      userDisplayName
+    )
     
     // Update the local playlist to reflect published status
     await cartStore.updatePlaylist(publishingPlaylist.value.id, {
@@ -1148,13 +1143,6 @@ const confirmUnpublishFromVault = async () => {
   }
 }
 
-const editPlaylistExercises = (playlist) => {
-  editingExercisesPlaylist.value = { ...playlist }
-  editingExercises.value = [...(playlist.exercises || [])]
-  exerciseSearchQuery.value = ''
-  exerciseSearchResults.value = []
-  showEditExercisesModal.value = true
-}
 
 const removeExerciseFromEdit = (index) => {
   editingExercises.value.splice(index, 1)
@@ -1183,11 +1171,8 @@ const searchExercises = async () => {
   }
 
   try {
-    // This assumes you have an exercise API service available
-    // You might need to import this from your existing exercise service
     const response = await fetch(`https://exercisedb.p.rapidapi.com/exercises/name/${encodeURIComponent(exerciseSearchQuery.value)}`, {
       headers: {
-        'X-RapidAPI-Key': 'your-api-key', // You'll need to use your actual API key
         'X-RapidAPI-Host': 'exercisedb.p.rapidapi.com'
       }
     })

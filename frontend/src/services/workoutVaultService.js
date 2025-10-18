@@ -91,7 +91,7 @@ class WorkoutVaultService {
   }
 
   // Publish workout to vault
-  async publishWorkout(workoutId, userId) {
+  async publishWorkout(workoutId, userId, userDisplayName = null) {
     try {
       // Get the user workout
       const userWorkoutDoc = await getDoc(doc(db, this.userWorkoutsCollection, workoutId));
@@ -113,7 +113,8 @@ class WorkoutVaultService {
         publishedAt: serverTimestamp(),
         avgRating: 0,
         reviewsCount: 0,
-        totalRating: 0
+        totalRating: 0,
+        authorDisplayName: userDisplayName || 'Anonymous' // Add the display name
       };
 
       const vaultDocRef = await addDoc(collection(db, this.vaultWorkoutsCollection), publishedWorkout);
