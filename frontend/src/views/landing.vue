@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- Carousel: moved outside container for full width -->
-    <div id="homeCarousel" class="carousel slide mb-4 home-carousel" data-bs-ride="carousel" v-reveal
+    <!-- <div id="homeCarousel" class="carousel slide mb-4 home-carousel" data-bs-ride="carousel" v-reveal
       style="width: 100vw; margin-left: calc(-50vw + 50%); border-radius: 0; box-shadow: none;">
       <div class="carousel-inner">
         <div class="carousel-item active">
@@ -27,63 +27,64 @@
         <span class="carousel-control-next-icon" aria-hidden="true"></span>
         <span class="visually-hidden">Next</span>
       </button>
-    </div>
+    </div> -->
 
     <div class="container mt-4">
       <!-- Logged In User Section -->
-      <div v-if="isAuthenticated" class="welcome-section mb-4" v-reveal>
-        <div class="home-card p-4 text-center">
-          <h2 class="h3 mb-3" style="color: var(--primary)">Welcome back to FitU!</h2>
-          <p class="mb-3" style="color: var(--text)">Ready to continue your fitness journey?</p>
-          <router-link to="/home" class="u-btn u-btn--primary" style="text-decoration: none;">
+      <div v-if="isAuthenticated" class="mb-4" v-reveal>
+        <div class="p-4 text-center">
+          <h2 class="h3 mb-3">Welcome back to FitU!</h2>
+          <p class="mb-3">Ready to continue your fitness journey?</p>
+          <router-link to="/home" class="u-btn u-btn--primary">
             Start Using FitU Website
           </router-link>
         </div>
       </div>
 
       <!-- Not Logged In - Show Sign Up/Login Section -->
-      <div v-if="!isAuthenticated" class="auth-section mb-4" v-reveal>
-        <div class="home-card p-4 text-center">
-          <h2 class="h3 mb-3" style="color: var(--primary)">Join FitU Today!</h2>
-          <p class="mb-3" style="color: var(--text)">Start your fitness journey with our student-friendly platform</p>
-          <div class="d-flex gap-3 justify-content-center">
-            <router-link to="/signup" class="u-btn u-btn--primary" style="text-decoration: none;">
-              Sign Up
-            </router-link>
-            <router-link to="/login" class="u-btn" style="text-decoration: none; border:1px solid grey;">
-              Login
+      <div v-if="!isAuthenticated" class="hero row mb-4" v-reveal>
+        <div class="hero-content col-lg-6 p-4 text-left">
+          <h1 class="mb-3" style="font-size: 80px;">UNLEASH YOUR<br>BEST SELF</h1>
+          <p class="mb-3 u-muted">Unlock your fitness potential with personalized workout plans, meal tracking, and expert guidance.</p>
+          <div class="d-flex gap-3 justify-content-left">
+            <router-link to="/signup" class="u-special-btn" style="padding-left: 60px; padding-right:60px;">
+              Join FitU Now!
             </router-link>
           </div>
+        </div>
+
+        <div class="hero-image col-lg-6">
+          <img src="../assets/img/bodybuilder.png" alt="Workout"  style="max-width: 100%;"/>
         </div>
       </div>
 
       <!-- Feature Highlights (moved above today's calories) -->
-      <section class="home-card p-3 mb-4" v-reveal>
-        <h2 class="h4 mb-3" style="color: var(--text)">Built for Student Life</h2>
+      <section class="p-3 mb-4" v-reveal>
+        <h2 class="h4 mb-3">Built for Student Life</h2>
         <div class="row g-3">
           <div class="col-12 col-md-6 col-lg-3">
-            <div class="p-3 feature-card h-100">
+            <div class="p-3 u-card h-100">
               <div class="feature-icon">⏱️</div>
               <h6 class="mb-1">15-Minute Workouts</h6>
               <small class="u-muted">Fit exercise between lectures</small>
             </div>
           </div>
           <div class="col-12 col-md-6 col-lg-3">
-            <div class="p-3 feature-card h-100">
+            <div class="p-3 u-card h-100">
               <div class="feature-icon">💪</div>
               <h6 class="mb-1">No Equipment</h6>
               <small class="u-muted">Bodyweight exercises anywhere</small>
             </div>
           </div>
           <div class="col-12 col-md-6 col-lg-3">
-            <div class="p-3 feature-card h-100">
+            <div class="p-3 u-card h-100">
               <div class="feature-icon">👥</div>
               <h6 class="mb-1">Student Community</h6>
               <small class="u-muted">Connect with campus fitness groups</small>
             </div>
           </div>
           <div class="col-12 col-md-6 col-lg-3">
-            <div class="p-3 feature-card h-100">
+            <div class="p-3 u-card h-100">
               <div class="feature-icon">⚡</div>
               <h6 class="mb-1">Quick Results</h6>
               <small class="u-muted">See progress in just weeks</small>
@@ -93,36 +94,36 @@
       </section>
 
       <!-- Stats Section -->
-      <div class="home-card p-3 mb-4" v-reveal>
+      <div class="p-3 mb-4" v-reveal>
         <div class="row text-center">
           <div class="col-12 col-md-4 mb-3 mb-md-0">
-            <div class="h3 m-0" style="color: var(--primary)">500K+</div>
+            <div class="h3 m-0">500K+</div>
             <div class="u-muted">Active Students</div>
           </div>
           <div class="col-12 col-md-4 mb-3 mb-md-0">
-            <div class="h3 m-0" style="color: var(--primary)">200+</div>
+            <div class="h3 m-0">200+</div>
             <div class="u-muted">Workouts</div>
           </div>
           <div class="col-12 col-md-4">
-            <div class="h3 m-0" style="color: var(--primary)">★ 4.9</div>
+            <div class="h3 m-0">★ 4.9</div>
             <div class="u-muted">App Rating</div>
           </div>
         </div>
       </div>
 
       <!-- Reviews Section -->
-      <div class="home-card p-3 mb-4" v-reveal>
-        <h5 class="mb-3" style="color: var(--secondary)">Student Reviews</h5>
+      <div class="p-3 mb-4" v-reveal>
+        <h5 class="mb-3">Student Reviews</h5>
         <div v-if="reviews.length === 0" class="u-muted">No reviews yet.</div>
         <div class="row">
           <div v-for="r in reviews" :key="r.id" class="col-12 col-md-6 col-lg-6 mb-3">
-            <div class="p-3 h-100" style="background: var(--surface); border: 1px solid var(--border-subtle); border-radius: 12px;">
+            <div class="p-3 h-100 u-card">
               <div class="d-flex justify-content-between align-items-center mb-1">
                 <strong>{{ r.name }}</strong>
                 <span class="u-muted">{{ r.course }} • {{ r.year }}</span>
               </div>
               <div class="mb-1" :aria-label="`Rating ${r.rating} out of 5`">
-                <span v-for="n in 5" :key="n" :style="{ color: n <= r.rating ? 'var(--primary)' : '#d9d9d9' }">★</span>
+                <span v-for="n in 5" :key="n" :style="{ color: n <= r.rating ? 'gold' : '#d9d9d9' }">★</span>
               </div>
               <p class="m-0">{{ r.comment }}</p>
             </div>
@@ -131,10 +132,13 @@
       </div>
 
       <!-- Bottom CTA -->
-      <section class="home-card p-4 text-center" v-reveal>
+      <section class="p-4 text-center" v-reveal>
         <h2 class="mb-2" style="color: var(--text)">Ready to Transform Your Campus Fitness?</h2>
         <p class="u-muted mb-3">Join thousands of students getting stronger, healthier, and more energized.</p>
-        <router-link to="/signup" class="u-btn u-btn--primary" style="text-decoration: none;">Get Started Free</router-link>
+        <div class="d-flex gap-3 justify-content-center">
+        <router-link to="/signup" class="u-special-btn" style="padding-left: 60px; padding-right:60px;">Get Started Free</router-link>
+
+        </div>
       </section>
 
     </div>
@@ -214,23 +218,14 @@ export default {
 </script>
 
 <style scoped>
+
+
 input.form-control {
   max-width: 100%;
 }
 
-.home-card { background: var(--surface); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-card); border-radius: 12px; }
 .btn-elevate { box-shadow: 0 6px 18px rgba(230, 57, 70, 0.25); }
 .btn-elevate:active { transform: translateY(1px); }
-
-/* Welcome and Auth sections */
-.welcome-section .home-card {
-  background: linear-gradient(135deg, var(--surface) 0%, #f8f9fa 100%);
-  border: 2px solid var(--primary);
-}
-
-.auth-section .home-card {
-  background: linear-gradient(135deg, var(--surface) 0%, #fff7e6 100%);
-}
 
 /* Carousel theming */
 .carousel-item-tinted::after {
@@ -244,7 +239,6 @@ input.form-control {
 .carousel .carousel-caption p { color: #FFF7E6; text-shadow: 0 1px 4px rgba(0,0,0,.3); }
 
 /* Feature cards */
-.feature-card { background: #fff; border: 1px solid var(--border-subtle); border-radius: 12px; box-shadow: var(--shadow-card); }
 .feature-icon { font-size: 1.5rem; color: var(--primary); margin-bottom: .25rem; }
 
 /* Make carousel full width and remove border radius/shadow */

@@ -1,5 +1,5 @@
 <template>
-  <footer style="background-color: var(--primary-700); color:white;">
+  <footer style="background-color: rgb(14, 14, 14);">
     <div class="container">
       <div class="row footer-logo-row mb-0">
         <router-link to="/home" class="footer-logo-link">
@@ -69,7 +69,9 @@ export default {
 </script>
 
 <style scoped>
+
 /* center all the unordered list in the center, when the screen becomes really small*/
+
 @media (max-width: 575px) {
   .footer-list-col-align,
   .footer-list-col-align ul,

@@ -2,9 +2,9 @@
   <div class="exercise-browser">
     <div class="container mt-4">
       <!-- Header -->
-      <div class="header-section mb-4">
-        <h1 class="page-title">Exercise Library</h1>
-        <p class="page-subtitle">Discover thousands of exercises to reach your fitness goals</p>
+      <div class="text-center mb-4 pt-4">
+        <h1 >Exercise Library</h1>
+        <p class="u-muted">Discover thousands of exercises to reach your fitness goals</p>
       </div>
 
       <!-- Search Bar -->
@@ -20,9 +20,6 @@
                 placeholder="Search exercises by name (e.g., push-up, squat, bicep)..."
                 :disabled="loading"
               >
-              <div class="search-icon">
-                <i class="fas fa-search"></i>
-              </div>
             </div>
           </div>
         </div>
@@ -54,9 +51,9 @@
         <div class="results-info mb-4">
           <div class="row align-items-center">
             <div class="col">
-              <p class="results-count mb-0">
+              <p class="u-muted mb-0">
                 {{ exercises.length }} exercise{{ exercises.length !== 1 ? 's' : '' }} found
-                <span v-if="totalExercises > 0" class="text-muted">
+                <span v-if="totalExercises > 0" class="u-muted">
                   ({{ totalExercises }} total available)
                 </span>
                 <span v-if="searchQuery" class="search-query">for "{{ searchQuery }}"</span>
@@ -87,7 +84,7 @@
               :key="exercise.id"
               class="col-sm-6 col-md-4 col-lg-3"
             >
-              <div class="exercise-card" @click="viewExercise(exercise)">
+              <div class="exercise-card u-card" @click="viewExercise(exercise)">
                 <!-- Exercise Image -->
                 <div class="exercise-image-container">
                   <img 
@@ -97,24 +94,20 @@
                     @error="handleImageError"
                     loading="lazy"
                   >
-                  <div class="exercise-overlay">
-                    <i class="fas fa-play-circle"></i>
-                  </div>
                 </div>
 
                 <!-- Exercise Info -->
                 <div class="exercise-info">
                   <h5 class="exercise-name">{{ formatExerciseName(exercise.name) }}</h5>
-                  <div 
-                    class="exercise-target" 
+                  
+                  <div class="exercise-badges">
+                    <div 
+                    class="badge bg-primary me-1 clickable-badge" 
                     @click.stop="searchByTarget(exercise.target)"
                     :title="`Search for ${formatTarget(exercise.target)} exercises`"
-                  >
-                    <i class="fas fa-crosshairs me-2"></i>
-                    <span class="target-muscle">{{ formatTarget(exercise.target) || 'Full Body' }}</span>
-                    <i class="fas fa-search ms-auto search-hint"></i>
-                  </div>
-                  <div class="exercise-badges">
+                    >
+                      <span class="target-muscle">{{ formatTarget(exercise.target) || 'Full Body' }}</span>
+                    </div>
                     <span 
                       class="badge bg-primary me-1 clickable-badge" 
                       @click.stop="searchByBodyPart(exercise.bodyPart)"
@@ -137,7 +130,7 @@
                   <button 
                     @click.stop="toggleCart(exercise)"
                     class="u-btn"
-                    :class="isInCart(exercise.id) ? 'u-btn--danger' : 'u-btn--primary'"
+                    :class="isInCart(exercise.id) ? 'u-btn--danger' : 'u-special-btn'"
                     :title="isInCart(exercise.id) ? 'Remove from workout cart' : 'Add to workout cart'"
                     style="width: 100%; text-align: center; justify-content: center;"
                   >
@@ -397,31 +390,12 @@ onMounted(() => {
 <style scoped>
 .exercise-browser {
   min-height: 100vh;
-  background: #f8f9fa;
 }
 
 .container {
   max-width: 1200px;
 }
 
-/* Header */
-.header-section {
-  text-align: center;
-  padding: 2rem 0;
-}
-
-.page-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #2c3e50;
-  margin-bottom: 0.5rem;
-}
-
-.page-subtitle {
-  font-size: 1.1rem;
-  color: #6c757d;
-  margin-bottom: 0;
-}
 
 /* Search */
 .search-container {
@@ -436,19 +410,6 @@ onMounted(() => {
   transition: all 0.3s ease;
 }
 
-.search-input:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-}
-
-.search-icon {
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #6c757d;
-  font-size: 1.2rem;
-}
 
 /* Loading */
 .loading-section {
@@ -485,10 +446,6 @@ onMounted(() => {
 }
 
 /* Results */
-.results-count {
-  font-weight: 500;
-  color: #495057;
-}
 
 .search-query {
   color: #007bff;
@@ -501,7 +458,6 @@ onMounted(() => {
 }
 
 .exercise-card {
-  background: white;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -535,25 +491,9 @@ onMounted(() => {
   transform: scale(1.05);
 }
 
-.exercise-overlay {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
 
-.exercise-card:hover .exercise-overlay {
+
+.exercise-card:hover {
   opacity: 1;
 }
 
@@ -565,7 +505,7 @@ onMounted(() => {
 .exercise-name {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #1a202c;
+  color: white;
   margin-bottom: 0.75rem;
   line-height: 1.4;
   letter-spacing: -0.025em;
@@ -578,7 +518,8 @@ onMounted(() => {
   color: #495057;
   margin-bottom: 1rem;
   font-size: 0.9rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
+  background: linear-gradient(135deg, var(--primary) 0%, #7083eb 100%);
   color: white;
   padding: 0.75rem 1rem;
   border-radius: 25px;
@@ -593,7 +534,7 @@ onMounted(() => {
 .exercise-target:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, #7083eb 100%);
 }
 
 .exercise-target:active {
@@ -616,10 +557,6 @@ onMounted(() => {
   left: 100%;
 }
 
-.exercise-target i {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 1rem;
-}
 
 .target-muscle {
   font-weight: 600;
@@ -732,9 +669,7 @@ onMounted(() => {
 
 /* Responsive */
 @media (max-width: 768px) {
-  .page-title {
-    font-size: 2rem;
-  }
+
   
   .exercise-image-container {
     height: 150px;
@@ -754,9 +689,6 @@ onMounted(() => {
     padding: 1rem 0;
   }
   
-  .page-title {
-    font-size: 1.75rem;
-  }
   
   .search-input {
     padding: 0.75rem 0.75rem 0.75rem 2.5rem;

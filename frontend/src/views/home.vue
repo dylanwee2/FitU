@@ -60,7 +60,7 @@
 
     
   
-    <h1 class="mb-1" style="color: var(--primary); font-weight: 800">Today's Calories</h1>
+    <h1 class="mb-1" >Today's Calories</h1>
     <p class="u-muted mb-4">Quickly log your intake and visualize your last 7 days.</p>
 
     <!-- Quick Add Form -->
@@ -78,7 +78,7 @@
           <button class="u-btn u-btn--primary" type="submit">Add</button>
         </div>
         <div class="col-sm-2 text-sm-end">
-          <small class="text-muted">Daily goal (set in Profile): {{ calorieData.dailyGoal }} kcal</small>
+          <small class="u-muted">Daily goal (set in Profile): {{ calorieData.dailyGoal }} kcal</small>
         </div>
       </form>
     </div>
@@ -94,7 +94,7 @@
       Goal met. Great job!
     </div>
 
-    <h5 class="mb-2" style="color: var(--secondary)">Last 7 days</h5>
+    <h5 class="mb-2 u-muted">Last 7 days</h5>
     <div class="card p-3 mb-4 home-card" v-reveal>
       <CalorieChart :series="weekSeries" />
     </div>

@@ -6,7 +6,7 @@
       class="cart-toggle-btn"
       :class="{ 'has-items': cartItemCount > 0 }"
     >
-      <i class="fas fa-shopping-cart"></i>
+      <img src="../assets/logo.png" width="100%">
       <span v-if="cartItemCount > 0" class="cart-badge">{{ cartItemCount }}</span>
     </button>
 
@@ -16,11 +16,9 @@
         <!-- Cart Header -->
         <div class="cart-header">
           <h5 class="cart-title">
-            <i class="fas fa-shopping-cart me-2"></i>
             Workout Cart
           </h5>
-          <button @click="closeCart" class="btn-close">
-            <i class="fas fa-times"></i>
+          <button @click="closeCart" class="btn-close-white btn-close">
           </button>
         </div>
 
@@ -52,8 +50,8 @@
               <!-- Exercise Info -->
               <div class="cart-item-info">
                 <h6 class="cart-item-name">{{ item.name }}</h6>
-                <p class="cart-item-target">{{ item.target }}</p>
                 <div class="cart-item-badges">
+                  <span class="badge bg-primary">{{ item.target }}</span>
                   <span class="badge bg-primary">{{ item.bodyPart }}</span>
                   <span class="badge bg-secondary">{{ item.equipment }}</span>
                 </div>
@@ -103,7 +101,7 @@
                 class="btn-remove"
                 title="Remove from cart"
               >
-                <i class="fas fa-trash"></i>
+                X
               </button>
             </div>
           </div>
@@ -144,16 +142,14 @@
             @click="clearCart"
             class="btn btn-outline-danger btn-sm"
           >
-            <i class="fas fa-trash me-1"></i>
             Clear Cart
           </button>
           
           <button 
             v-if="cartItemCount > 0 && isAuthenticated"
             @click="showSavePlaylistModal = true"
-            class="btn btn-primary btn-sm"
+            class="u-btn u-btn--primary"
           >
-            <i class="fas fa-save me-1"></i>
             Save Workout
           </button>
           
@@ -345,7 +341,7 @@ const handleImageError = (event) => {
 }
 
 .cart-toggle-btn.has-items {
-  background: #28a745;
+  background: var(--primary);
   animation: pulse 2s infinite;
 }
 
@@ -353,7 +349,7 @@ const handleImageError = (event) => {
   position: absolute;
   top: -5px;
   right: -5px;
-  background: #dc3545;
+  background: var(--tertiary);
   color: white;
   border-radius: 50%;
   width: 24px;
@@ -388,7 +384,7 @@ const handleImageError = (event) => {
   width: 400px;
   max-width: 90vw;
   height: 100%;
-  background: white;
+  background: var(--bg);
   box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
@@ -397,30 +393,16 @@ const handleImageError = (event) => {
 /* Cart Header */
 .cart-header {
   padding: 1.5rem;
-  border-bottom: 1px solid #dee2e6;
+  border-bottom: 1px solid var(--border-subtle);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #f8f9fa;
+  background: var(--bg);
 }
 
 .cart-title {
   margin: 0;
-  color: #2c3e50;
   font-weight: 600;
-}
-
-.btn-close {
-  background: none;
-  border: none;
-  font-size: 1.2rem;
-  color: #6c757d;
-  cursor: pointer;
-  padding: 0.25rem;
-}
-
-.btn-close:hover {
-  color: #dc3545;
 }
 
 /* Cart Items */
@@ -463,9 +445,9 @@ const handleImageError = (event) => {
   display: flex;
   gap: 1rem;
   padding: 1rem;
-  background: #f8f9fa;
+  background: var(--surface-subtle);
   border-radius: 8px;
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--border-subtle);
   position: relative;
 }
 
@@ -492,7 +474,6 @@ const handleImageError = (event) => {
   font-size: 0.9rem;
   font-weight: 600;
   margin: 0 0 0.25rem 0;
-  color: #2c3e50;
   line-height: 1.2;
 }
 
@@ -529,7 +510,7 @@ const handleImageError = (event) => {
 .control-label {
   font-size: 0.7rem;
   font-weight: 500;
-  color: #495057;
+  color: var(--muted);
   margin: 0;
 }
 
@@ -565,8 +546,8 @@ const handleImageError = (event) => {
 /* Cart Summary */
 .cart-summary {
   padding: 1rem;
-  border-top: 1px solid #dee2e6;
-  background: #f8f9fa;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--surface-subtle);
 }
 
 .summary-stats {
@@ -582,7 +563,7 @@ const handleImageError = (event) => {
 .stat-label {
   display: block;
   font-size: 0.8rem;
-  color: #6c757d;
+  color: var(--muted);
   margin-bottom: 0.25rem;
 }
 
@@ -590,7 +571,7 @@ const handleImageError = (event) => {
   display: block;
   font-size: 1.1rem;
   font-weight: 600;
-  color: #2c3e50;
+  color: white;
 }
 
 .muscle-groups {
@@ -600,8 +581,8 @@ const handleImageError = (event) => {
 }
 
 .muscle-badge {
-  background: #e9ecef;
-  color: #495057;
+  background: var(--muted);;
+  color: rgb(228, 228, 228);
   padding: 0.25rem 0.5rem;
   border-radius: 12px;
   font-size: 0.7rem;
@@ -611,13 +592,13 @@ const handleImageError = (event) => {
 /* Cart Actions */
 .cart-actions {
   padding: 1rem;
-  border-top: 1px solid #dee2e6;
   display: flex;
   gap: 0.5rem;
 }
 
-.cart-actions .btn {
+.cart-actions .u-btn {
   flex: 1;
+  justify-content: center;
 }
 
 /* Modal */
