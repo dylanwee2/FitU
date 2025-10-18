@@ -39,7 +39,7 @@
         <div 
           v-for="playlist in savedPlaylists" 
           :key="playlist.id"
-          class="col-md-6 col-lg-6 col-xl-6"
+          class="col-md-12 col-lg-12 col-xl-12"
         >
           <div class="playlist-card">
             <!-- Playlist Header -->
@@ -189,26 +189,148 @@
         </div>
         
         <div class="modal-body">
-          <div class="form-group">
-            <label for="editPlaylistName" class="form-label">Set Name</label>
-            <input 
-              v-model="editingPlaylist.name"
-              type="text" 
-              id="editPlaylistName"
-              class="form-control"
-              maxlength="50"
-            >
-          </div>
-          
-          <div class="form-group">
-            <label for="editPlaylistDescription" class="form-label">Description</label>
-            <textarea 
-              v-model="editingPlaylist.description"
-              id="editPlaylistDescription"
-              class="form-control"
-              rows="3"
-              maxlength="200"
-            ></textarea>
+          <div class="row">
+            <!-- Left Column - Basic Info -->
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="editPlaylistName" class="form-label">Set Name</label>
+                <input 
+                  v-model="editingPlaylist.name"
+                  type="text" 
+                  id="editPlaylistName"
+                  class="form-control"
+                  maxlength="50"
+                >
+              </div>
+              
+              <div class="form-group">
+                <label for="editPlaylistDescription" class="form-label">Description</label>
+                <textarea 
+                  v-model="editingPlaylist.description"
+                  id="editPlaylistDescription"
+                  class="form-control"
+                  rows="3"
+                  maxlength="200"
+                ></textarea>
+              </div>
+
+              <!-- Current Exercises -->
+              <div class="form-group">
+                <label class="form-label">Current Exercises ({{ editingPlaylist.exercises?.length || 0 }})</label>
+                <div v-if="editingPlaylist.exercises && editingPlaylist.exercises.length > 0" class="current-exercises">
+                  <div 
+                    v-for="(exercise, index) in editingPlaylist.exercises" 
+                    :key="exercise.id || index"
+                    class="exercise-item"
+                  >
+                    <div class="exercise-info">
+                      <h6 class="exercise-name">{{ formatExerciseName(exercise.name) }}</h6>
+                      <p class="exercise-target">{{ formatTarget(exercise.target) }}</p>
+                    </div>
+                    <button 
+                      @click="removeExerciseFromPlaylist(index)"
+                      class="btn btn-sm btn-outline-danger"
+                      type="button"
+                    >
+                    Remove 
+                    </button>
+                  </div>
+                </div>
+                <div v-else class="text-muted">
+                  No exercises in this workout set yet.
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column - Exercise Search -->
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label">Add Exercises</label>
+                <div class="search-container">
+                  <div class="input-group">
+                    <input
+                      v-model="searchQuery"
+                      @input="handleSearch"
+                      type="text"
+                      class="form-control"
+                      placeholder="Search exercises by name (e.g., push-up, squat, bicep)..."
+                    >
+                    <button 
+                      v-if="searchQuery" 
+                      @click="clearSearch" 
+                      class="btn btn-outline-secondary"
+                      type="button"
+                    >
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Search Results -->
+                <div v-if="searchLoading" class="search-loading text-center py-3">
+                  <div class="spinner-border spinner-border-sm me-2"></div>
+                  Searching exercises...
+                </div>
+
+                <div v-else-if="searchError" class="alert alert-danger mt-2">
+                  {{ searchError }}
+                </div>
+
+                <div v-else-if="searchedExercises.length > 0" class="search-results mt-3">
+                  <div 
+                    v-for="exercise in searchedExercises.slice(0, 8)" 
+                    :key="exercise.id"
+                    class="search-result-item"
+                  >
+                    <div class="exercise-info">
+                      <h6 class="exercise-name">{{ formatExerciseName(exercise.name) }}</h6>
+                      <p class="exercise-target">{{ formatTarget(exercise.target) }} • {{ formatBodyPart(exercise.bodyPart) }}</p>
+                      <p class="exercise-equipment">{{ formatEquipment(exercise.equipment) }}</p>
+                    </div>
+                    <button 
+                      @click="addExerciseToPlaylist(exercise)"
+                      :disabled="isExerciseInPlaylist(exercise.id)"
+                      class="btn btn-sm btn-primary"
+                      type="button"
+                    >
+                      <i class="fas fa-plus me-1"></i>
+                      {{ isExerciseInPlaylist(exercise.id) ? 'Added' : 'Add' }}
+                    </button>
+                  </div>
+                  <div v-if="searchedExercises.length > 8" class="text-muted text-center mt-2">
+                    Showing first 8 results. Refine search for more specific results.
+                  </div>
+                </div>
+
+                <div v-else-if="!searchQuery && !searchLoading && searchedExercises.length === 0" class="default-exercises">
+                  <h6 class="text-muted">Popular Exercises</h6>
+                  <div 
+                    v-for="exercise in searchedExercises.slice(0, 8)" 
+                    :key="exercise.id"
+                    class="search-result-item"
+                  >
+                    <div class="exercise-info">
+                      <h6 class="exercise-name">{{ formatExerciseName(exercise.name) }}</h6>
+                      <p class="exercise-target">{{ formatTarget(exercise.target) }} • {{ formatBodyPart(exercise.bodyPart) }}</p>
+                      <p class="exercise-equipment">{{ formatEquipment(exercise.equipment) }}</p>
+                    </div>
+                    <button 
+                      @click="addExerciseToPlaylist(exercise)"
+                      :disabled="isExerciseInPlaylist(exercise.id)"
+                      class="btn btn-sm btn-primary"
+                      type="button"
+                    >
+                      <i class="fas fa-plus me-1"></i>
+                      {{ isExerciseInPlaylist(exercise.id) ? 'Added' : 'Add' }}
+                    </button>
+                  </div>
+                </div>
+
+                <div v-else-if="searchQuery && !searchLoading && searchedExercises.length === 0" class="text-muted text-center py-3">
+                  No exercises found for "{{ searchQuery }}". Try different keywords.
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         
@@ -375,6 +497,17 @@ const unpublishingInProgress = ref(false)
 const isAuthenticated = ref(!!auth.currentUser)
 const authUnsubscribe = ref(null)
 
+// Exercise search state for edit modal
+const searchQuery = ref('')
+const searchedExercises = ref([])
+const searchLoading = ref(false)
+const searchTimeout = ref(null)
+const searchError = ref('')
+
+// API Configuration
+const API_BASE_URL = 'https://www.exercisedb.dev/api/v1'
+const EXERCISES_PER_PAGE = 12
+
 // Computed properties
 const savedPlaylists = computed(() => {
   const playlists = cartStore.savedPlaylists || []
@@ -489,9 +622,156 @@ const calculateWorkoutDuration = (exercises) => {
   return exercises.length * 4
 }
 
+// Exercise search functions for edit modal
+const fetchExercises = async (query = '') => {
+  if (searchLoading.value) return
+  
+  searchLoading.value = true
+  searchError.value = ''
+  
+  try {
+    const baseUrl = `${API_BASE_URL}/exercises`
+    const params = new URLSearchParams({
+      limit: EXERCISES_PER_PAGE,
+      offset: 0
+    })
+    
+    if (query.trim()) {
+      params.append('search', query.trim())
+    }
+    
+    const response = await fetch(`${baseUrl}?${params}`)
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch exercises: ${response.status} ${response.statusText}`)
+    }
+    
+    const data = await response.json()
+    
+    // Handle ExerciseDB API response structure
+    if (data.success && data.data) {
+      const mappedExercises = data.data.map(exercise => ({
+        id: exercise.exerciseId,
+        name: exercise.name,
+        target: exercise.targetMuscles,
+        bodyPart: exercise.bodyParts,
+        equipment: exercise.equipments,
+        gifUrl: exercise.gifUrl,
+        instructions: exercise.instructions ? (
+          typeof exercise.instructions === 'string' 
+            ? exercise.instructions.split('Step:').filter(step => step.trim()).map(step => step.trim())
+            : exercise.instructions
+        ) : [],
+        secondaryMuscles: exercise.secondaryMuscles ? (
+          typeof exercise.secondaryMuscles === 'string'
+            ? exercise.secondaryMuscles.split(' ')
+            : exercise.secondaryMuscles
+        ) : []
+      }))
+      
+      searchedExercises.value = mappedExercises
+    } else {
+      searchedExercises.value = Array.isArray(data) ? data : (data.exercises || [])
+    }
+    
+  } catch (err) {
+    console.error('Error fetching exercises:', err)
+    searchError.value = err.message || 'Failed to load exercises. Please check your internet connection and try again.'
+    searchedExercises.value = []
+  } finally {
+    searchLoading.value = false
+  }
+}
+
+const handleSearch = () => {
+  clearTimeout(searchTimeout.value)
+  
+  searchTimeout.value = setTimeout(() => {
+    if (searchQuery.value.trim()) {
+      fetchExercises(searchQuery.value.trim())
+    } else {
+      clearSearch()
+    }
+  }, 500)
+}
+
+const clearSearch = () => {
+  searchQuery.value = ''
+  searchedExercises.value = []
+  searchError.value = ''
+}
+
+// Format functions for exercise data
+const formatExerciseName = (name) => {
+  if (!name) return 'Exercise'
+  return name
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
+
+const formatTarget = (target) => {
+  if (!target) return 'Full Body'
+  if (Array.isArray(target)) {
+    return target.join(', ')
+  }
+  return target.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', ')
+}
+
+const formatBodyPart = (bodyPart) => {
+  if (!bodyPart) return 'General'
+  if (Array.isArray(bodyPart)) {
+    return bodyPart.join(', ')
+  }
+  return bodyPart.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', ')
+}
+
+const formatEquipment = (equipment) => {
+  if (!equipment) return 'Bodyweight'
+  if (Array.isArray(equipment)) {
+    return equipment.join(', ')
+  }
+  return equipment.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', ')
+}
+
+// Exercise management functions for edit modal
+const addExerciseToPlaylist = (exercise) => {
+  if (!editingPlaylist.value.exercises) {
+    editingPlaylist.value.exercises = []
+  }
+  
+  // Check if exercise is already in playlist
+  const exists = editingPlaylist.value.exercises.some(ex => ex.id === exercise.id)
+  if (!exists) {
+    editingPlaylist.value.exercises.push({
+      id: exercise.id,
+      name: exercise.name,
+      target: exercise.target,
+      bodyPart: exercise.bodyPart,
+      equipment: exercise.equipment,
+      gifUrl: exercise.gifUrl,
+      instructions: exercise.instructions,
+      secondaryMuscles: exercise.secondaryMuscles
+    })
+  }
+}
+
+const removeExerciseFromPlaylist = (index) => {
+  if (editingPlaylist.value.exercises && index >= 0 && index < editingPlaylist.value.exercises.length) {
+    editingPlaylist.value.exercises.splice(index, 1)
+  }
+}
+
+const isExerciseInPlaylist = (exerciseId) => {
+  return editingPlaylist.value.exercises?.some(ex => ex.id === exerciseId) || false
+}
+
 // CRUD operations
 const editPlaylist = (playlist) => {
-  editingPlaylist.value = { ...playlist }
+  editingPlaylist.value = { ...playlist, exercises: [...(playlist.exercises || [])] }
+  clearSearch() // Clear any previous search state
+  fetchExercises() // Preload popular exercises
   showEditModal.value = true
 }
 
@@ -509,11 +789,17 @@ const toggleWorkoutDay = (day) => {
 
 const savePlaylistEdit = async () => {
   try {
+    // Calculate updated duration based on exercises
+    const updatedDuration = calculateWorkoutDuration(editingPlaylist.value.exercises || [])
+    
     await cartStore.updatePlaylist(editingPlaylist.value.id, {
       name: editingPlaylist.value.name,
       description: editingPlaylist.value.description,
+      exercises: editingPlaylist.value.exercises || [],
+      totalDuration: updatedDuration
     })
     showEditModal.value = false
+    clearSearch() // Clear search state
     editingPlaylist.value = {}
     emit('playlist-edited', editingPlaylist.value)
   } catch (error) {
@@ -963,6 +1249,112 @@ onUnmounted(() => {
   cursor: pointer;
 }
 
+/* Exercise Search Styles */
+.exercise-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  background: #f8f9fa;
+}
+
+.exercise-item:last-child {
+  margin-bottom: 0;
+}
+
+.exercise-info {
+  flex: 1;
+}
+
+.exercise-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: #2c3e50;
+}
+
+.exercise-target {
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin: 0;
+}
+
+.exercise-equipment {
+  font-size: 0.75rem;
+  color: #868e96;
+  margin: 0;
+}
+
+.search-container {
+  margin-bottom: 1rem;
+}
+
+.search-result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.search-result-item:hover {
+  background: #f8f9fa;
+  border-color: #007bff;
+}
+
+.search-result-item:last-child {
+  margin-bottom: 0;
+}
+
+.search-loading {
+  color: #6c757d;
+  font-style: italic;
+}
+
+.modal-content {
+  max-width: 1200px;
+  width: 95%;
+  max-height: 95vh;
+  overflow-y: auto;
+}
+
+.modal-body {
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 2rem;
+}
+
+.current-exercises {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 0.5rem;
+}
+
+.search-results {
+  max-height: 500px;
+  overflow-y: auto;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 0.5rem;
+}
+
+.default-exercises {
+  max-height: 500px;
+  overflow-y: auto;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 0.5rem;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .playlist-buttons {
@@ -974,8 +1366,23 @@ onUnmounted(() => {
   }
   
   .modal-content {
-    margin: 1rem;
-    width: calc(100% - 2rem);
+    margin: 0.5rem;
+    width: calc(100% - 1rem);
+    max-width: none;
+  }
+
+  .modal-body {
+    padding: 1rem;
+  }
+
+  .modal-body .row > .col-md-6 {
+    margin-bottom: 2rem;
+  }
+
+  .current-exercises,
+  .search-results,
+  .default-exercises {
+    max-height: 300px;
   }
 }
 </style>
