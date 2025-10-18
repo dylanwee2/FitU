@@ -375,8 +375,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useUser } from '@/stores/user';
-import { useMeals } from '@/stores/meals';
+import caloriesService from '@/services/caloriesService.js';
 import Chart from 'chart.js/auto';
 import { getAuth, onAuthStateChanged, signOut, updateProfile, deleteUser, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp, deleteDoc } from 'firebase/firestore';
@@ -426,13 +425,12 @@ const workoutStreak = ref(4);
 const timeBalance = ref(65);
 
 // Calorie Goal Editor
-const user = useUser()
-const goalInput = ref(user.dailyGoal)
+const goalInput = ref(2000)
 const calorieChartRef = ref(null);
 const chartInstance = ref(null);
 
-// Meals store for weekly calories (reuse Home data)
-const meals = useMeals();
+// Calorie data for weekly chart
+const weeklyCalorieData = ref([]);
 
 // Computed Properties
 const calculatedBMI = computed(() => {
@@ -457,8 +455,10 @@ onMounted(() => {
     if (user) {
       currentUser.value = user;
       await loadUserData(user.uid);
-      await meals.init();
-      initializeCharts();
+      // Charts will be initialized after data is loaded in loadUserData
+      setTimeout(() => {
+        initializeCharts();
+      }, 100);
     } else {
       router.push('/login');
     }
@@ -509,8 +509,21 @@ async function loadUserData(uid) {
         workoutFrequency: data.workoutFrequency || 3
       };
       
-      // Sync the calorie goal with the goalInput
-      goalInput.value = data.dailyGoal || 2000;
+      // Load calorie data from caloriesService to get the actual daily goal
+      try {
+        const calorieData = await caloriesService.getUserCalories();
+        if (calorieData && calorieData.dailyGoal) {
+          goalsData.value.dailyGoal = calorieData.dailyGoal;
+          goalInput.value = calorieData.dailyGoal;
+          // Get weekly data for chart
+          weeklyCalorieData.value = caloriesService.getWeekSeries(calorieData.entries || [], 7);
+        } else {
+          goalInput.value = data.dailyGoal || 2000;
+        }
+      } catch (error) {
+        console.error('Error loading calorie data:', error);
+        goalInput.value = data.dailyGoal || 2000;
+      }
 
       // Load preferences
       preferences.value = {
@@ -811,15 +824,8 @@ async function saveCalorieGoal() {
     isSaving.value = true;
     errorMessage.value = '';
     
-    // Update in the user store
-    await user.setDailyGoal(g)
-    
-    // ALSO update in Firestore under the user's document
-    const userDocRef = doc(db, 'users', currentUser.value.uid);
-    await setDoc(userDocRef, {
-      dailyGoal: g,
-      updatedAt: serverTimestamp()
-    }, { merge: true });
+    // Update daily goal using caloriesService
+    await caloriesService.updateDailyGoal(g)
     
     // Update local state to match
     goalsData.value.dailyGoal = g;
@@ -844,7 +850,7 @@ async function saveCalorieGoal() {
 function initializeCharts() {
   if (!calorieChartRef.value) return
   const ctx = calorieChartRef.value.getContext('2d')
-  const series = meals.weekSeries(7)
+  const series = weeklyCalorieData.value
   const labels = series.map(s => formatLabel(s.date))
   const values = series.map(s => s.consumed || 0)
   const maxVal = Math.max(0, ...values)
