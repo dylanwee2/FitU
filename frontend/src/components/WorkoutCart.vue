@@ -170,14 +170,13 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Save Workout</h5>
-          <button @click="showSavePlaylistModal = false" class="btn-close">
-            <i class="fas fa-times"></i>
+          <button @click="showSavePlaylistModal = false" class="btn-close-white btn-close">
           </button>
         </div>
         
         <div class="modal-body">
           <div class="form-group">
-            <label for="playlistName" class="form-label">Workout Name</label>
+            <label for="playlistName" class="u-muted">Workout Name</label>
             <input 
               v-model="newPlaylistName"
               type="text" 
@@ -189,7 +188,7 @@
           </div>
           
           <div class="form-group">
-            <label for="playlistDescription" class="form-label">Description (Optional)</label>
+            <label for="playlistDescription" class="u-muted">Description (Optional)</label>
             <textarea 
               v-model="newPlaylistDescription"
               id="playlistDescription"
@@ -213,16 +212,15 @@
         <div class="modal-footer">
           <button 
             @click="showSavePlaylistModal = false"
-            class="btn btn-secondary"
+            class="u-btn u-btn--secondary"
           >
             Cancel
           </button>
           <button 
             @click="savePlaylist"
-            class="btn btn-primary"
+            class="u-btn u-btn--primary"
             :disabled="!newPlaylistName.trim()"
           >
-            <i class="fas fa-save me-1"></i>
             Save Workout
           </button>
         </div>
@@ -617,7 +615,7 @@ const handleImageError = (event) => {
 }
 
 .modal-content {
-  background: white;
+  background: var(--bg);
   border-radius: 8px;
   width: 100%;
   max-width: 500px;
@@ -627,7 +625,7 @@ const handleImageError = (event) => {
 
 .modal-header {
   padding: 1.5rem;
-  border-bottom: 1px solid #dee2e6;
+  border-bottom: 1px solid var(--border-subtle);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -635,7 +633,6 @@ const handleImageError = (event) => {
 
 .modal-title {
   margin: 0;
-  color: #2c3e50;
   font-weight: 600;
 }
 
@@ -654,7 +651,6 @@ const handleImageError = (event) => {
 }
 
 .playlist-preview {
-  background: #f8f9fa;
   padding: 1rem;
   border-radius: 6px;
   margin-top: 1rem;
@@ -675,7 +671,7 @@ const handleImageError = (event) => {
 
 .modal-footer {
   padding: 1rem 1.5rem;
-  border-top: 1px solid #dee2e6;
+  border-top: 1px solid var(--border-subtle);
   display: flex;
   gap: 0.5rem;
   justify-content: flex-end;

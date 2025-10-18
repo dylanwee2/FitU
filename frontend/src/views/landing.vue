@@ -35,9 +35,12 @@
         <div class="p-4 text-center">
           <h2 class="h3 mb-3">Welcome back to FitU!</h2>
           <p class="mb-3">Ready to continue your fitness journey?</p>
-          <router-link to="/home" class="u-btn u-btn--primary">
+          <div class="d-flex gap-3 justify-content-center">
+            <router-link to="/home" class="u-special-btn">
             Start Using FitU Website
-          </router-link>
+            </router-link>
+          </div>
+          
         </div>
       </div>
 

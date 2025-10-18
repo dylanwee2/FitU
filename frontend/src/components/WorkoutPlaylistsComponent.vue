@@ -66,10 +66,10 @@
               <div class="playlist-actions">
                 <button 
                   @click="editPlaylist(playlist)"
-                  class="btn btn-sm btn-outline-secondary"
+                  class="u-btn u-btn--secondary"
                   title="Edit playlist"
                 >
-                  <i class="fas fa-edit"></i>Edit Workout
+                  Edit Workout
                 </button>
                 <div class="dropdown">
                   <button 
@@ -78,15 +78,14 @@
                     data-bs-toggle="dropdown"
                     title="More options"
                   >
-                    <i class="fas fa-ellipsis-v"></i>
                   </button>
-                  <ul class="dropdown-menu">
+                  <ul class="dropdown-menu u-card">
                     <li>
                       <button 
                         @click="duplicatePlaylist(playlist.id)"
-                        class="dropdown-item"
+                        class="dropdown-item u-muted"
                       >
-                        <i class="fas fa-copy me-2"></i>Duplicate
+                        Duplicate
                       </button>
                     </li>
                     <li>
@@ -94,7 +93,7 @@
                         @click="showDeleteConfirmation(playlist)"
                         class="dropdown-item text-danger"
                       >
-                        <i class="fas fa-trash me-2"></i>Delete
+                        Delete
                       </button>
                     </li>
                   </ul>
@@ -159,7 +158,7 @@
                 <button 
                   v-if="!playlist.isPublished"
                   @click="publishToVault(playlist)"
-                  class="u-btn"
+                  class="u-btn u-btn--close"
                   title="Publish to Community Vault"
                 >
                   Publish
@@ -167,7 +166,7 @@
                 <button 
                   v-else
                   @click="unpublishFromVault(playlist)"
-                  class="u-btn"
+                  class="u-btn u-btn--danger"
                   title="Remove from Community Vault"
                 >
                   Unpublish
@@ -182,11 +181,10 @@
     <!-- All the modals from the original component would go here -->
     <!-- Edit Playlist Modal -->
     <div v-if="showEditModal" class="modal-overlay" @click.self="showEditModal = false">
-      <div class="modal-content">
+      <div class="modal-content" style="background-color: var(--bg);">
         <div class="modal-header">
           <h5 class="modal-title">Edit Workout Set</h5>
-          <button @click="showEditModal = false" class="btn-close">
-            <i class="fas fa-times"></i>
+          <button @click="showEditModal = false" class="btn-close-white btn-close">
           </button>
         </div>
         
@@ -215,30 +213,29 @@
         </div>
         
         <div class="modal-footer">
-          <button @click="showEditModal = false" class="btn btn-secondary">Cancel</button>
-          <button @click="savePlaylistEdit" class="btn btn-primary">Save Changes</button>
+          <button @click="showEditModal = false" class="u-btn u-btn--secondary">Cancel</button>
+          <button @click="savePlaylistEdit" class="u-btn u-btn--primary">Save Changes</button>
         </div>
       </div>
     </div>
 
     <!-- Publish Confirmation Modal -->
     <div v-if="showPublishModal" class="modal-overlay" @click.self="showPublishModal = false">
-      <div class="modal-content">
+      <div class="modal-content" style="background-color: var(--bg);">
         <div class="modal-header">
           <h5 class="modal-title">Publish to Community Vault</h5>
-          <button @click="showPublishModal = false" class="btn-close">
-            <i class="fas fa-times"></i>
+          <button @click="showPublishModal = false" class="btn-close-white btn-close">
           </button>
         </div>
         
         <div class="modal-body">
           <p>Are you sure you want to publish "<strong>{{ publishingPlaylist.name }}</strong>" to the Community Vault?</p>
-          <p class="text-muted">Other users will be able to see and copy your workout set.</p>
+          <p class="u-muted">Other users will be able to see and copy your workout set.</p>
           
           <div class="form-check">
             <input 
               v-model="confirmPublish"
-              class="form-check-input" 
+              class="" 
               type="checkbox" 
               id="confirmPublishCheck"
             >
@@ -249,17 +246,17 @@
         </div>
         
         <div class="modal-footer">
-          <button @click="showPublishModal = false" class="btn btn-secondary">Cancel</button>
+          <button @click="showPublishModal = false" class="u-btn u-btn--secondary">Cancel</button>
           <button 
             @click="confirmPublishToVault"
             class="btn btn-success"
             :disabled="!confirmPublish || publishingInProgress"
           >
             <span v-if="publishingInProgress">
-              <i class="fas fa-spinner fa-spin me-2"></i>Publishing...
+              Publishing...
             </span>
             <span v-else>
-              <i class="fas fa-upload me-2"></i>Publish
+              Publish
             </span>
           </button>
         </div>
@@ -268,31 +265,31 @@
 
     <!-- Unpublish Confirmation Modal -->
     <div v-if="showUnpublishModal" class="modal-overlay" @click.self="showUnpublishModal = false">
-      <div class="modal-content">
+      <div class="modal-content" style="background-color: var(--bg);">
         <div class="modal-header">
           <h5 class="modal-title">Remove from Community Vault</h5>
-          <button @click="showUnpublishModal = false" class="btn-close">
+          <button @click="showUnpublishModal = false" class="btn-close-white btn-close">
             <i class="fas fa-times"></i>
           </button>
         </div>
         
         <div class="modal-body">
           <p>Are you sure you want to remove "<strong>{{ unpublishingPlaylist.name }}</strong>" from the Community Vault?</p>
-          <p class="text-muted">This action will make your workout set private again.</p>
+          <p class="u-muted">This action will make your workout set private again.</p>
         </div>
         
         <div class="modal-footer">
-          <button @click="showUnpublishModal = false" class="btn btn-secondary">Cancel</button>
+          <button @click="showUnpublishModal = false" class="u-btn u-btn--secondary">Cancel</button>
           <button 
             @click="confirmUnpublishFromVault"
-            class="btn btn-warning"
+            class="u-btn u-btn--danger"
             :disabled="unpublishingInProgress"
           >
             <span v-if="unpublishingInProgress">
-              <i class="fas fa-spinner fa-spin me-2"></i>Removing...
+              Removing...
             </span>
             <span v-else>
-              <i class="fas fa-download me-2"></i>Remove
+              Remove
             </span>
           </button>
         </div>
@@ -301,29 +298,27 @@
 
     <!-- Delete Confirmation Modal -->
     <div v-if="showDeleteModal" class="modal-overlay" @click.self="showDeleteModal = false">
-      <div class="modal-content">
+      <div class="modal-content" style="background-color: var(--bg);">
         <div class="modal-header">
           <h5 class="modal-title">Delete Workout Set</h5>
-          <button @click="showDeleteModal = false" class="btn-close">
-            <i class="fas fa-times"></i>
+          <button @click="showDeleteModal = false" class="btn-close-white btn-close">
           </button>
         </div>
         
         <div class="modal-body">
           <p>Are you sure you want to delete "<strong>{{ deletingPlaylist.name }}</strong>"?</p>
           <p class="text-danger">
-            <i class="fas fa-exclamation-triangle me-2"></i>
             This action cannot be undone.
           </p>
         </div>
         
         <div class="modal-footer">
-          <button @click="showDeleteModal = false" class="btn btn-secondary">Cancel</button>
+          <button @click="showDeleteModal = false" class="u-btn u-btn--secondary">Cancel</button>
           <button 
             @click="confirmDeletePlaylist"
             class="btn btn-danger"
           >
-            <i class="fas fa-trash me-2"></i>Delete
+            Delete
           </button>
         </div>
       </div>
@@ -703,8 +698,7 @@ onUnmounted(() => {
 
 /* Playlist Cards */
 .playlist-card {
-  background: white;
-  border: 1px solid #dee2e6;
+  background: var(--surface-subtle);
   border-radius: 12px;
   overflow: hidden;
   transition: all 0.3s ease;
@@ -716,12 +710,11 @@ onUnmounted(() => {
 .playlist-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  border-color: #007bff;
 }
 
 .playlist-header {
   padding: 1rem;
-  border-bottom: 1px solid #f1f3f4;
+  border-bottom: 1px solid var(--border-subtle);
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -735,7 +728,6 @@ onUnmounted(() => {
   font-size: 1.1rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
-  color: #2c3e50;
   line-height: 1.3;
 }
 
@@ -775,7 +767,7 @@ onUnmounted(() => {
   align-items: center;
   gap: 0.5rem;
   font-size: 0.85rem;
-  color: #495057;
+  color: var(--muted);
 }
 
 .stat-item i {
@@ -794,12 +786,11 @@ onUnmounted(() => {
 }
 
 .exercise-tag {
-  background: #f8f9fa;
-  color: #495057;
+  background: #171717;
+  color: var(--muted);
   padding: 0.25rem 0.5rem;
   border-radius: 6px;
   font-size: 0.75rem;
-  border: 1px solid #e9ecef;
 }
 
 .exercise-tag.more-exercises {
@@ -816,8 +807,8 @@ onUnmounted(() => {
 
 .playlist-footer {
   padding: 1rem;
-  border-top: 1px solid #f1f3f4;
-  background: #f8f9fa;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--surface-subtle);
 }
 
 .playlist-meta {
@@ -878,23 +869,13 @@ onUnmounted(() => {
 .modal-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #2c3e50;
   margin: 0;
 }
 
-.btn-close {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: #adb5bd;
-  cursor: pointer;
-  padding: 0;
-  width: 1.5rem;
-  height: 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.dropdown-item:hover {
+  background-color:  rgb(80, 80, 80);;
 }
+
 
 .btn-close:hover {
   color: #495057;

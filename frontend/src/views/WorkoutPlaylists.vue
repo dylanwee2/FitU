@@ -3,8 +3,8 @@
     <div class="container mt-4">
       <!-- Header -->
       <div class="header-section mb-4">
-        <h1 class="page-title">My Workout Sets</h1>
-        <p class="page-subtitle">Manage your saved workout collections</p>
+        <h1 class="">My Workout Sets</h1>
+        <p class="u-muted">Manage your saved workout collections</p>
       </div>
 
       <!-- Not Authenticated State -->
@@ -36,7 +36,7 @@
           Create your first workout set by adding exercises to your cart and saving them as a playlist.
         </p>
         <router-link to="/exerciselibrary" class="u-btn u-btn--primary">
-          <i class="fas fa-plus me-2"></i>Browse Exercises
+          Browse Exercises
         </router-link>
       </div>
 
@@ -48,7 +48,7 @@
             :key="playlist.id"
             class="col-md-6 col-lg-4"
           >
-            <div class="playlist-card">
+            <div class="playlist-card u-card">
               <!-- Playlist Header -->
               <div class="playlist-header">
                 <div class="playlist-title-section">
@@ -76,7 +76,7 @@
                     class="btn btn-sm btn-outline-secondary"
                     title="Edit playlist"
                   >
-                    <i class="fas fa-edit"></i>Edit Workout
+                    Edit Workout
                   </button>
                   <div class="dropdown">
                     <button 
@@ -85,15 +85,14 @@
                       data-bs-toggle="dropdown"
                       title="More options"
                     >
-                      <i class="fas fa-ellipsis-v"></i>
                     </button>
-                    <ul class="dropdown-menu">
+                    <ul class="dropdown-menu u-card">
                       <li>
                         <button 
                           @click="duplicatePlaylist(playlist.id)"
-                          class="dropdown-item"
+                          class="dropdown-item u-muted"
                         >
-                          <i class="fas fa-copy me-2"></i>Duplicate
+                          Duplicate
                         </button>
                       </li>
                       <li>
@@ -101,7 +100,7 @@
                           @click="showDeleteConfirmation(playlist)"
                           class="dropdown-item text-danger"
                         >
-                          <i class="fas fa-trash me-2"></i>Delete
+                          Delete
                         </button>
                       </li>
                     </ul>
@@ -174,7 +173,7 @@
                   <button 
                     v-else
                     @click="unpublishFromVault(playlist)"
-                    class="u-btn"
+                    class="u-btn u-btn--secondary"
                     title="Remove from Community Vault"
                   >
                     <p class="text-center">Unpublish</p>
@@ -192,8 +191,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Edit Workout Set</h5>
-          <button @click="showEditModal = false" class="btn-close">
-            <i class="fas fa-times"></i>
+          <button @click="showEditModal = false" class="btn-close-white btn-close">
           </button>
         </div>
         
@@ -224,16 +222,15 @@
         <div class="modal-footer">
           <button 
             @click="showEditModal = false"
-            class="btn btn-secondary"
+            class="u-btn u-btn--secondary"
           >
             Cancel
           </button>
           <button 
             @click="savePlaylistChanges"
-            class="btn btn-primary"
+            class="u-btn u-btn--primary"
             :disabled="!editingPlaylist.name.trim()"
-          >
-            <i class="fas fa-save me-1"></i>Save Changes
+          >Save Changes
           </button>
         </div>
       </div>
@@ -244,8 +241,7 @@
       <div class="modal-content large">
         <div class="modal-header">
           <h5 class="modal-title">{{ viewingPlaylist.name }}</h5>
-          <button @click="showViewModal = false" class="btn-close">
-            <i class="fas fa-times"></i>
+          <button @click="showViewModal = false" class="btn-close-white btn-close">
           </button>
         </div>
         
@@ -277,7 +273,7 @@
             </div>
           </div>
 
-          <div class="muscle-groups mb-4">
+          <div class="muscle-groups u-muted mb-4">
             <h6>Targeted Muscle Groups:</h6>
             <div class="muscle-badges">
               <span 
@@ -329,15 +325,15 @@
         <div class="modal-footer">
           <button 
             @click="showViewModal = false"
-            class="btn btn-secondary"
+            class="u-btn u-btn--secondary"
           >
             Close
           </button>
           <button 
             @click="loadPlaylist(viewingPlaylist.id)"
-            class="btn btn-primary"
+            class="u-btn u-btn--primary"
           >
-            <i class="fas fa-play me-1"></i>Load into Cart
+            Load into Cart
           </button>
         </div>
       </div>
@@ -351,8 +347,7 @@
             <i class="fas fa-upload me-2 text-success"></i>
             Publish to Community Vault
           </h5>
-          <button @click="showPublishModal = false" class="btn-close">
-            <i class="fas fa-times"></i>
+          <button @click="showPublishModal = false" class="btn-close-white btn-close">
           </button>
         </div>
         
@@ -365,15 +360,15 @@
               </p>
               <div class="workout-stats-preview">
                 <div class="stat">
-                  <i class="fas fa-dumbbell me-1"></i>
+                  
                   {{ publishingPlaylist.exercises?.length || 0 }} exercises
                 </div>
                 <div class="stat">
-                  <i class="fas fa-clock me-1"></i>
+                  
                   {{ Math.round(publishingPlaylist.totalDuration || 0) }} min
                 </div>
                 <div class="stat">
-                  <i class="fas fa-muscle me-1"></i>
+                  
                   {{ publishingPlaylist.muscleGroups?.length || 0 }} muscle groups
                 </div>
               </div>
@@ -381,7 +376,7 @@
           </div>
           
           <div class="publish-info">
-            <h6><i class="fas fa-info-circle me-2 text-info"></i>What happens when you publish?</h6>
+            <h6>What happens when you publish?</h6>
             <ul class="publish-benefits">
               <li>Your workout becomes visible to the entire FitU community</li>
               <li>Other users can discover, rate, and review your workout</li>
@@ -391,9 +386,9 @@
           </div>
 
           <div class="confirmation-section">
-            <div class="form-check">
+            <div class="form-check align-checkbox">
               <input 
-                class="form-check-input" 
+                class="" 
                 type="checkbox" 
                 id="confirmPublish"
                 v-model="confirmPublish"
@@ -408,9 +403,9 @@
         <div class="modal-footer">
           <button 
             @click="showPublishModal = false"
-            class="btn btn-secondary"
+            class="u-btn u-btn--secondary"
           >
-            <i class="fas fa-times me-1"></i>Cancel
+            Cancel
           </button>
           <button 
             @click="confirmPublishToVault"
@@ -418,10 +413,10 @@
             :disabled="!confirmPublish || publishingInProgress"
           >
             <span v-if="publishingInProgress">
-              <i class="fas fa-spinner fa-spin me-1"></i>Publishing...
+              Publishing...
             </span>
             <span v-else>
-              <i class="fas fa-upload me-1"></i>Publish to Vault
+              Publish to Vault
             </span>
           </button>
         </div>
@@ -433,18 +428,15 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">
-            <i class="fas fa-download me-2 text-warning"></i>
             Remove from Community Vault
           </h5>
-          <button @click="showUnpublishModal = false" class="btn-close">
-            <i class="fas fa-times"></i>
+          <button @click="showUnpublishModal = false" class="btn-close btn-close-white">
           </button>
         </div>
         
         <div class="modal-body">
           <div class="unpublish-warning">
-            <div class="alert alert-warning">
-              <i class="fas fa-exclamation-triangle me-2"></i>
+            <div class="alert alert-warning u-card text-white">
               <strong>Are you sure you want to remove "{{ unpublishingPlaylist.name }}" from the community vault?</strong>
             </div>
             
@@ -463,20 +455,20 @@
         <div class="modal-footer">
           <button 
             @click="showUnpublishModal = false"
-            class="btn btn-secondary"
+            class="u-btn u-btn--secondary"
           >
-            <i class="fas fa-times me-1"></i>Cancel
+            Cancel
           </button>
           <button 
             @click="confirmUnpublishFromVault"
-            class="btn btn-warning"
+            class="u-btn u-btn--danger"
             :disabled="unpublishingInProgress"
           >
             <span v-if="unpublishingInProgress">
-              <i class="fas fa-spinner fa-spin me-1"></i>Removing...
+              Removing...
             </span>
             <span v-else>
-              <i class="fas fa-download me-1"></i>Remove from Vault
+              Remove from Vault
             </span>
           </button>
         </div>
@@ -491,8 +483,7 @@
             <i class="fas fa-edit me-2"></i>
             Edit Exercises - {{ editingExercisesPlaylist.name }}
           </h5>
-          <button @click="showEditExercisesModal = false" class="btn-close">
-            <i class="fas fa-times"></i>
+          <button @click="showEditExercisesModal = false" class="btn-close-white btn-close">
           </button>
         </div>
         
@@ -659,26 +650,24 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Delete Workout Set</h5>
-          <button @click="showDeleteModal = false" class="btn-close">
-            <i class="fas fa-times"></i>
+          <button @click="showDeleteModal = false" class="btn-close-white btn-close">
           </button>
         </div>
         
         <div class="modal-body">
           <p>Are you sure you want to delete "<strong>{{ deletingPlaylist.name }}</strong>"?</p>
           <p class="text-danger">
-            <i class="fas fa-exclamation-triangle me-2"></i>
             This action cannot be undone.
           </p>
         </div>
         
         <div class="modal-footer">
-          <button @click="showDeleteModal = false" class="btn btn-secondary">Cancel</button>
+          <button @click="showDeleteModal = false" class="u-btn u-btn--secondary">Cancel</button>
           <button 
             @click="confirmDeletePlaylist"
-            class="btn btn-danger"
+            class="u-btn u-btn--danger"
           >
-            <i class="fas fa-trash me-2"></i>Delete
+            Delete
           </button>
         </div>
       </div>
@@ -1081,7 +1070,6 @@ const updateWorkoutDurations = async (playlists) => {
 <style scoped>
 .workout-playlists {
   min-height: 100vh;
-  background: #f8f9fa;
 }
 
 .container {
@@ -1094,18 +1082,6 @@ const updateWorkoutDurations = async (playlists) => {
   padding: 2rem 0;
 }
 
-.page-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #2c3e50;
-  margin-bottom: 0.5rem;
-}
-
-.page-subtitle {
-  font-size: 1.1rem;
-  color: #6c757d;
-  margin-bottom: 0;
-}
 
 /* Empty State */
 .empty-state {
@@ -1129,7 +1105,6 @@ const updateWorkoutDurations = async (playlists) => {
 
 /* Playlist Cards */
 .playlist-card {
-  background: white;
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -1159,7 +1134,6 @@ const updateWorkoutDurations = async (playlists) => {
 .playlist-name {
   font-size: 1.2rem;
   font-weight: 600;
-  color: #2c3e50;
   margin: 0 0 0.5rem 0;
 }
 
@@ -1179,7 +1153,7 @@ const updateWorkoutDurations = async (playlists) => {
 }
 
 .playlist-description {
-  color: #6c757d;
+  color: var(--muted);
   font-size: 0.9rem;
   margin-bottom: 1rem;
   line-height: 1.4;
@@ -1191,7 +1165,6 @@ const updateWorkoutDurations = async (playlists) => {
   justify-content: space-between;
   margin-bottom: 1rem;
   padding: 1rem;
-  background: #f8f9fa;
   border-radius: 8px;
 }
 
@@ -1287,7 +1260,6 @@ const updateWorkoutDurations = async (playlists) => {
 .playlist-footer {
   margin-top: auto;
   padding-top: 1rem;
-  border-top: 1px solid #dee2e6;
 }
 
 .playlist-meta {
@@ -1327,7 +1299,7 @@ const updateWorkoutDurations = async (playlists) => {
 }
 
 .modal-content {
-  background: white;
+  background: var(--bg);
   border-radius: 8px;
   width: 100%;
   max-width: 500px;
@@ -1341,7 +1313,7 @@ const updateWorkoutDurations = async (playlists) => {
 
 .modal-header {
   padding: 1.5rem;
-  border-bottom: 1px solid #dee2e6;
+  border-bottom: 1px solid var(--border-subtle);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1349,21 +1321,7 @@ const updateWorkoutDurations = async (playlists) => {
 
 .modal-title {
   margin: 0;
-  color: #2c3e50;
   font-weight: 600;
-}
-
-.btn-close {
-  background: none;
-  border: none;
-  font-size: 1.2rem;
-  color: #6c757d;
-  cursor: pointer;
-  padding: 0.25rem;
-}
-
-.btn-close:hover {
-  color: #dc3545;
 }
 
 .modal-body {
@@ -1382,7 +1340,6 @@ const updateWorkoutDurations = async (playlists) => {
 
 .modal-footer {
   padding: 1rem 1.5rem;
-  border-top: 1px solid #dee2e6;
   display: flex;
   gap: 0.5rem;
   justify-content: flex-end;
@@ -1396,7 +1353,6 @@ const updateWorkoutDurations = async (playlists) => {
 .stat-number {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #007bff;
 }
 
 .stat-label {
@@ -1422,9 +1378,8 @@ const updateWorkoutDurations = async (playlists) => {
   align-items: center;
   gap: 1rem;
   padding: 1rem;
-  background: #f8f9fa;
+  background: var(--surface-subtle);
   border-radius: 8px;
-  border: 1px solid #dee2e6;
 }
 
 .exercise-number {
@@ -1460,13 +1415,13 @@ const updateWorkoutDurations = async (playlists) => {
 .exercise-info .exercise-name {
   font-size: 1rem;
   font-weight: 600;
-  color: #2c3e50;
+  color: white;
   margin: 0 0 0.25rem 0;
 }
 
 .exercise-info .exercise-target {
   font-size: 0.9rem;
-  color: #6c757d;
+  color: var(--muted);
   margin: 0 0 0.5rem 0;
 }
 
@@ -1484,7 +1439,7 @@ const updateWorkoutDurations = async (playlists) => {
   flex-direction: column;
   gap: 0.25rem;
   font-size: 0.9rem;
-  color: #495057;
+  color: var(--muted);
 }
 
 .sets, .reps, .weight {
@@ -1531,7 +1486,6 @@ const updateWorkoutDurations = async (playlists) => {
 }
 
 .publish-info h6 {
-  color: #2c3e50;
   margin-bottom: 0.75rem;
 }
 
@@ -1542,18 +1496,18 @@ const updateWorkoutDurations = async (playlists) => {
 
 .publish-benefits li {
   margin-bottom: 0.5rem;
-  color: #495057;
+  color: var(--muted);
 }
 
 .confirmation-section {
-  background: #f8f9fa;
+  background: var(--surface-subtle);
   border-radius: 8px;
   padding: 1rem;
   border-left: 4px solid #28a745;
 }
 
 .form-check-label {
-  color: #495057;
+  color: var(--muted);
   cursor: pointer;
 }
 
@@ -1562,7 +1516,6 @@ const updateWorkoutDurations = async (playlists) => {
 }
 
 .unpublish-consequences h6 {
-  color: #2c3e50;
   margin-bottom: 0.75rem;
 }
 
@@ -1573,7 +1526,7 @@ const updateWorkoutDurations = async (playlists) => {
 
 .unpublish-consequences li {
   margin-bottom: 0.5rem;
-  color: #495057;
+  color: var(--muted);
 }
 
 /* Exercise Editing Modal Styles */
@@ -1736,5 +1689,19 @@ const updateWorkoutDurations = async (playlists) => {
     justify-content: center;
     gap: 1rem;
   }
+}
+
+.dropdown-item:hover {
+  background-color:  rgb(80, 80, 80);;
+}
+
+.align-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* Adjust spacing between checkbox and label */
+}
+
+.align-checkbox .form-check-input {
+  margin-top: 0; /* Remove default margin */
 }
 </style>
