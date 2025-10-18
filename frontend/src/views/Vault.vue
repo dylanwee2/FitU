@@ -123,9 +123,9 @@
                           <h6 class="exercise-name mb-1" style="text-transform: capitalize;">{{ exercise.name }}</h6>
                           <p class="exercise-target mb-1 u-muted">{{ exercise.target }}</p>
                           <div class="exercise-badges">
-                            <span class="badge target-muscle-badge me-1">{{ capitalizeFirstLetter(exercise.target) }}</span>
-                            <span class="badge body-part-badge me-1">{{ capitalizeFirstLetter(exercise.bodyPart) }}</span>
-                            <span class="badge equipment-badge">{{ capitalizeFirstLetter(exercise.equipment) }}</span>
+                            <span class="badge target-muscle-badge me-1">{{ exercise.target }}</span>
+                            <span class="badge body-part-badge me-1">{{ exercise.bodyPart }}</span>
+                            <span class="badge equipment-badge">{{ exercise.equipment }}</span>
                           </div>
                         </div>
                       </div>
@@ -523,15 +523,6 @@ const editWorkout = (workoutSet) => {
 
 const handleImageError = (event) => {
   event.target.src = '/images/exercise-placeholder.png'
-}
-
-const capitalizeFirstLetter = (text) => {
-  if (!text) return ''
-  return text
-    .toLowerCase()
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ')
 }
 
 const filteredWorkoutSets = computed(() => {
