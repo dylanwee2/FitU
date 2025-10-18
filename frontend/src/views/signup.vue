@@ -342,6 +342,11 @@ export default {
   text-decoration: underline;
 }
 
+input {
+  border-top-right-radius: 2 !important; 
+  border-bottom-right-radius: 2 !important;
+}
+
 /* Responsive Design */
 @media (max-width: 480px) {
   .auth-container {
