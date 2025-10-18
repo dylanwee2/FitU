@@ -229,7 +229,7 @@
                     </div>
                     <button 
                       @click="removeExerciseFromPlaylist(index)"
-                      class="btn btn-sm btn-outline-danger"
+                      class="btn btn-sm btn-danger"
                       type="button"
                     >
                     Remove 
@@ -290,10 +290,9 @@
                     <button 
                       @click="addExerciseToPlaylist(exercise)"
                       :disabled="isExerciseInPlaylist(exercise.id)"
-                      class="btn btn-sm btn-primary"
+                      class="btn btn-sm u-btn--primary"
                       type="button"
                     >
-                      <i class="fas fa-plus me-1"></i>
                       {{ isExerciseInPlaylist(exercise.id) ? 'Added' : 'Add' }}
                     </button>
                   </div>
@@ -1255,10 +1254,8 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem;
-  border: 1px solid #e9ecef;
   border-radius: 6px;
   margin-bottom: 0.5rem;
-  background: #f8f9fa;
 }
 
 .exercise-item:last-child {
@@ -1273,12 +1270,10 @@ onUnmounted(() => {
   font-size: 0.9rem;
   font-weight: 600;
   margin-bottom: 0.25rem;
-  color: #2c3e50;
 }
 
 .exercise-target {
   font-size: 0.8rem;
-  color: #6c757d;
   margin: 0;
 }
 
@@ -1297,15 +1292,13 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem;
-  border: 1px solid #e9ecef;
   border-radius: 6px;
   margin-bottom: 0.5rem;
-  background: white;
   transition: all 0.2s ease;
 }
 
 .search-result-item:hover {
-  background: #f8f9fa;
+  background: grey;
   border-color: #007bff;
 }
 
@@ -1334,7 +1327,6 @@ onUnmounted(() => {
 .current-exercises {
   max-height: 400px;
   overflow-y: auto;
-  border: 1px solid #dee2e6;
   border-radius: 8px;
   padding: 0.5rem;
 }
@@ -1342,7 +1334,6 @@ onUnmounted(() => {
 .search-results {
   max-height: 500px;
   overflow-y: auto;
-  border: 1px solid #dee2e6;
   border-radius: 8px;
   padding: 0.5rem;
 }
@@ -1350,7 +1341,6 @@ onUnmounted(() => {
 .default-exercises {
   max-height: 500px;
   overflow-y: auto;
-  border: 1px solid #dee2e6;
   border-radius: 8px;
   padding: 0.5rem;
 }

@@ -188,7 +188,7 @@
 
     <!-- Edit Playlist Modal -->
     <div v-if="showEditModal" class="modal-overlay" @click.self="showEditModal = false">
-      <div class="modal-content large-modal">
+      <div class="modal-content large-modal" style="background-color: var(--bg);">
         <div class="modal-header">
           <h5 class="modal-title">Edit Workout Set</h5>
           <button @click="showEditModal = false" class="btn-close-white btn-close">
@@ -236,7 +236,7 @@
                     </div>
                     <button 
                       @click="removeExerciseFromPlaylist(index)"
-                      class="btn btn-sm btn-outline-danger"
+                      class="btn btn-sm btn-danger"
                       type="button"
                     >
                       Remove
@@ -297,10 +297,9 @@
                     <button 
                       @click="addExerciseToPlaylist(exercise)"
                       :disabled="isExerciseInPlaylist(exercise.id)"
-                      class="btn btn-sm btn-primary"
+                      class="btn btn-sm u-btn--primary"
                       type="button"
                     >
-                      <i class="fas fa-plus me-1"></i>
                       {{ isExerciseInPlaylist(exercise.id) ? 'Added' : 'Add' }}
                     </button>
                   </div>
@@ -360,7 +359,7 @@
 
     <!-- View Playlist Modal -->
     <div v-if="showViewModal" class="modal-overlay" @click.self="showViewModal = false">
-      <div class="modal-content large">
+      <div class="modal-content large" style="background-color: var(--bg);">
         <div class="modal-header">
           <h5 class="modal-title">{{ viewingPlaylist.name }}</h5>
           <button @click="showViewModal = false" class="btn-close-white btn-close">
@@ -463,7 +462,7 @@
 
     <!-- Publish to Vault Modal -->
     <div v-if="showPublishModal" class="modal-overlay" @click.self="showPublishModal = false">
-      <div class="modal-content">
+      <div class="modal-content" style="background-color: var(--bg);">
         <div class="modal-header">
           <h5 class="modal-title">
             <i class="fas fa-upload me-2 text-success"></i>
@@ -547,7 +546,7 @@
 
     <!-- Unpublish Confirmation Modal -->
     <div v-if="showUnpublishModal" class="modal-overlay" @click.self="showUnpublishModal = false">
-      <div class="modal-content">
+      <div class="modal-content" style="background-color: var(--bg);">
         <div class="modal-header">
           <h5 class="modal-title">
             Remove from Community Vault
@@ -599,7 +598,7 @@
 
     <!-- Edit Exercises Modal -->
     <div v-if="showEditExercisesModal" class="modal-overlay" @click.self="showEditExercisesModal = false">
-      <div class="modal-content large">
+      <div class="modal-content large" style="background-color: var(--bg);">
         <div class="modal-header">
           <h5 class="modal-title">
             <i class="fas fa-edit me-2"></i>
@@ -769,7 +768,7 @@
 
     <!-- Delete Confirmation Modal -->
     <div v-if="showDeleteModal" class="modal-overlay" @click.self="showDeleteModal = false">
-      <div class="modal-content">
+      <div class="modal-content" style="background-color: var(--bg);">
         <div class="modal-header">
           <h5 class="modal-title">Delete Workout Set</h5>
           <button @click="showDeleteModal = false" class="btn-close-white btn-close">
@@ -1512,7 +1511,6 @@ const updateWorkoutDurations = async (playlists) => {
   align-items: center;
   gap: 0.75rem;
   padding: 0.5rem;
-  background: #f8f9fa;
   border-radius: 6px;
 }
 
@@ -1614,7 +1612,6 @@ const updateWorkoutDurations = async (playlists) => {
 .current-exercises {
   max-height: 400px;
   overflow-y: auto;
-  border: 1px solid #dee2e6;
   border-radius: 8px;
   padding: 0.5rem;
 }
@@ -1624,10 +1621,8 @@ const updateWorkoutDurations = async (playlists) => {
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem;
-  border: 1px solid #e9ecef;
   border-radius: 6px;
   margin-bottom: 0.5rem;
-  background: #f8f9fa;
 }
 
 .exercise-item:last-child {
@@ -1664,7 +1659,6 @@ const updateWorkoutDurations = async (playlists) => {
 .search-results {
   max-height: 500px;
   overflow-y: auto;
-  border: 1px solid #dee2e6;
   border-radius: 8px;
   padding: 0.5rem;
 }
@@ -1672,7 +1666,6 @@ const updateWorkoutDurations = async (playlists) => {
 .default-exercises {
   max-height: 500px;
   overflow-y: auto;
-  border: 1px solid #dee2e6;
   border-radius: 8px;
   padding: 0.5rem;
 }
@@ -1682,15 +1675,13 @@ const updateWorkoutDurations = async (playlists) => {
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem;
-  border: 1px solid #e9ecef;
   border-radius: 6px;
   margin-bottom: 0.5rem;
-  background: white;
   transition: all 0.2s ease;
 }
 
 .search-result-item:hover {
-  background: #f8f9fa;
+  background: grey;
   border-color: #007bff;
 }
 
