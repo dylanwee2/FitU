@@ -520,16 +520,16 @@ const checkPublishedStatus = async () => {
     return
   }
 
-  console.log('Checking published status for user:', auth.currentUser.uid)
+  // console.log('Checking published status for user:', auth.currentUser.uid)
 
   try {
     // Get user's workout sets from 'workoutSets' collection
     const userWorkouts = await workoutVaultService.getUserWorkouts(auth.currentUser.uid)
-    console.log('User workouts from workoutSets:', userWorkouts)
+    // console.log('User workouts from workoutSets:', userWorkouts)
     
     // Get user's published workouts from 'publishedWorkouts' collection
     const publishedWorkouts = await workoutVaultService.getPublishedWorkoutsByUser(auth.currentUser.uid)
-    console.log('Published workouts from publishedWorkouts:', publishedWorkouts)
+    // console.log('Published workouts from publishedWorkouts:', publishedWorkouts)
     
     // Create a map of originalId -> publishedWorkout for quick lookup
     const publishedMap = new Map()
@@ -547,16 +547,16 @@ const checkPublishedStatus = async () => {
         const isActuallyPublished = publishedMap.has(userWorkout.id)
         const publishedWorkout = publishedMap.get(userWorkout.id)
         
-        console.log(`Checking workout ${userWorkout.id}:`, {
-          localPublished: localPlaylist.isPublished,
-          firebaseUserWorkoutPublished: userWorkout.isPublished,
-          actuallyPublished: isActuallyPublished,
-          publishedWorkout: publishedWorkout
-        })
+        // console.log(`Checking workout ${userWorkout.id}:`, {
+        //   localPublished: localPlaylist.isPublished,
+        //   firebaseUserWorkoutPublished: userWorkout.isPublished,
+        //   actuallyPublished: isActuallyPublished,
+        //   publishedWorkout: publishedWorkout
+        // })
         
         // Update the status based on whether it's actually in the publishedWorkouts collection
         if (localPlaylist.isPublished !== isActuallyPublished) {
-          console.log(`Updating playlist ${userWorkout.id} published status to ${isActuallyPublished}`)
+          // console.log(`Updating playlist ${userWorkout.id} published status to ${isActuallyPublished}`)
           await cartStore.updatePlaylist(userWorkout.id, {
             isPublished: isActuallyPublished,
             publishedId: publishedWorkout?.id || null,
@@ -587,7 +587,7 @@ const updateWorkoutDurations = async (playlists) => {
       
       // Update if duration is significantly different (accounting for old calculation method)
       if (Math.abs(currentDuration - calculatedDuration) > 5) {
-        console.log(`Updating duration for ${playlist.name}: ${currentDuration} -> ${calculatedDuration}`)
+        // console.log(`Updating duration for ${playlist.name}: ${currentDuration} -> ${calculatedDuration}`)
         try {
           await cartStore.updatePlaylist(playlist.id, {
             totalDuration: calculatedDuration

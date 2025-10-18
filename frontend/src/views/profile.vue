@@ -851,7 +851,7 @@ function initializeCharts() {
   if (!calorieChartRef.value) return
   const ctx = calorieChartRef.value.getContext('2d')
   const series = weeklyCalorieData.value
-  const labels = series.map(s => formatLabel(s.date))
+  const labels = series.map(s => (s.date))
   const values = series.map(s => s.consumed || 0)
   const maxVal = Math.max(0, ...values)
   const paddedMax = maxVal > 0 ? Math.ceil(maxVal * 1.2) : 100
@@ -889,14 +889,7 @@ function initializeCharts() {
   })
 }
 
-/**
- * Format date label for chart
- */
-function formatLabel(ymd) {
-  const [y, m, d] = ymd.split('-').map(Number)
-  const date = new Date(y, m - 1, d)
-  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
-}
+
 </script>
 
 <style scoped>

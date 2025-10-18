@@ -1326,7 +1326,7 @@ const updateWorkoutDurations = async (playlists) => {
       
       // Update if duration is significantly different (accounting for old calculation method)
       if (Math.abs(currentDuration - calculatedDuration) > 5) {
-        console.log(`Updating duration for ${playlist.name}: ${currentDuration} -> ${calculatedDuration}`)
+        // console.log(`Updating duration for ${playlist.name}: ${currentDuration} -> ${calculatedDuration}`)
         try {
           await cartStore.updatePlaylist(playlist.id, {
             totalDuration: calculatedDuration
