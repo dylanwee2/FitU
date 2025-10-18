@@ -427,9 +427,9 @@
                   <h6 class="exercise-name">{{ exercise.name }}</h6>
                   <p class="exercise-target">{{ exercise.target }}</p>
                   <div class="exercise-badges">
-                    <span class="badge target-muscle-badge">{{ capitalizeFirstLetter(exercise.target) }}</span>
-                    <span class="badge body-part-badge">{{ capitalizeFirstLetter(exercise.bodyPart) }}</span>
-                    <span class="badge equipment-badge">{{ capitalizeFirstLetter(exercise.equipment) }}</span>
+                    <span class="badge target-muscle-badge">{{ exercise.target }}</span>
+                    <span class="badge body-part-badge">{{ exercise.bodyPart }}</span>
+                    <span class="badge equipment-badge">{{ exercise.equipment }}</span>
                   </div>
                 </div>
                 <div class="exercise-sets">
@@ -450,12 +450,6 @@
             class="u-btn u-btn--secondary"
           >
             Close
-          </button>
-          <button 
-            @click="loadPlaylist(viewingPlaylist.id)"
-            class="u-btn u-btn--primary"
-          >
-            Load into Cart
           </button>
         </div>
       </div>
@@ -872,14 +866,6 @@ const formatWorkoutDays = (days) => {
   return `${days.length} days/week`
 }
 
-const loadPlaylist = (playlistId) => {
-  const success = cartStore.loadPlaylist(playlistId)
-  if (success) {
-    // Navigate to exercises page to show the loaded cart
-    router.push('/exercises')
-  }
-}
-
 const viewPlaylist = (playlist) => {
   viewingPlaylist.value = { ...playlist }
   showViewModal.value = true
@@ -1266,15 +1252,6 @@ const saveExerciseChanges = async () => {
 
 const handleImageError = (event) => {
   event.target.src = '/images/exercise-placeholder.png'
-}
-
-const capitalizeFirstLetter = (text) => {
-  if (!text) return ''
-  return text
-    .toLowerCase()
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ')
 }
 
 onMounted(() => {

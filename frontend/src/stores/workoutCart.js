@@ -214,7 +214,7 @@ export const useWorkoutCartStore = defineStore('workoutCart', () => {
             updatedAt: new Date().toISOString()
           }
           await updateDoc(publishedRef, publishedUpdates)
-          console.log('Successfully updated published workout in vault')
+          // console.log('Successfully updated published workout in vault')
         } catch (error) {
           console.error('Error updating published workout:', error)
           // Continue even if published update fails

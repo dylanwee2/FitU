@@ -6,9 +6,11 @@
     <!-- Main content area -->
     <main id="main" class="flex-grow-1" tabindex="-1">
       <!-- Route transitions -->
-      <transition name="route" mode="out-in">
-        <router-view />
-      </transition>
+      <router-view v-slot="{ Component }">
+        <transition name="route" mode="out-in">
+          <component :is="Component" />
+        </transition>
+      </router-view>
     </main>
 
     <!-- Global Footer Component -->
