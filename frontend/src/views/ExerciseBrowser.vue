@@ -102,21 +102,21 @@
                   
                   <div class="exercise-badges">
                     <div 
-                    class="badge bg-primary me-1 clickable-badge" 
+                    class="badge target-muscle-badge me-1 clickable-badge" 
                     @click.stop="searchByTarget(exercise.target)"
                     :title="`Search for ${formatTarget(exercise.target)} exercises`"
                     >
                       <span class="target-muscle">{{ formatTarget(exercise.target) || 'Full Body' }}</span>
                     </div>
                     <span 
-                      class="badge bg-primary me-1 clickable-badge" 
+                      class="badge body-part-badge me-1 clickable-badge" 
                       @click.stop="searchByBodyPart(exercise.bodyPart)"
                       :title="`Search for ${formatBodyPart(exercise.bodyPart)} exercises`"
                     >
                       {{ formatBodyPart(exercise.bodyPart) || 'General' }}
                     </span>
                     <span 
-                      class="badge bg-secondary clickable-badge" 
+                      class="badge equipment-badge clickable-badge" 
                       @click.stop="searchByEquipment(exercise.equipment)"
                       :title="`Search for ${formatEquipment(exercise.equipment)} exercises`"
                     >
@@ -222,9 +222,9 @@ const fetchExercises = async (query = '', append = false) => {
       const mappedExercises = data.data.map(exercise => ({
         id: exercise.exerciseId,
         name: exercise.name,
-        target: exercise.targetMuscles,
-        bodyPart: exercise.bodyParts,
-        equipment: exercise.equipments,
+        target: Array.isArray(exercise.targetMuscles) ? exercise.targetMuscles.join(', ') : exercise.targetMuscles,
+        bodyPart: Array.isArray(exercise.bodyParts) ? exercise.bodyParts.join(', ') : exercise.bodyParts,
+        equipment: Array.isArray(exercise.equipments) ? exercise.equipments.join(', ') : exercise.equipments,
         gifUrl: exercise.gifUrl,
         instructions: exercise.instructions ? (
           typeof exercise.instructions === 'string' 
@@ -359,25 +359,34 @@ const formatExerciseName = (name) => {
 const formatTarget = (target) => {
   if (!target) return 'Full Body'
   if (Array.isArray(target)) {
-    return target.join(', ')
+    return target.map(item => capitalizeFirstLetter(item)).join(', ')
   }
-  return target.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', ')
+  return capitalizeFirstLetter(target.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', '))
 }
 
 const formatBodyPart = (bodyPart) => {
   if (!bodyPart) return 'General'
   if (Array.isArray(bodyPart)) {
-    return bodyPart.join(', ')
+    return bodyPart.map(item => capitalizeFirstLetter(item)).join(', ')
   }
-  return bodyPart.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', ')
+  return capitalizeFirstLetter(bodyPart.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', '))
 }
 
 const formatEquipment = (equipment) => {
   if (!equipment) return 'Bodyweight'
   if (Array.isArray(equipment)) {
-    return equipment.join(', ')
+    return equipment.map(item => capitalizeFirstLetter(item)).join(', ')
   }
-  return equipment.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', ')
+  return capitalizeFirstLetter(equipment.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', '))
+}
+
+const capitalizeFirstLetter = (text) => {
+  if (!text) return ''
+  return text
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
 }
 
 // Lifecycle
@@ -601,6 +610,43 @@ onMounted(() => {
 
 .clickable-badge.bg-secondary:hover {
   background-color: #495057 !important;
+}
+
+/* Color-coded badge styles */
+.target-muscle-badge {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
+  color: white !important;
+  border: none;
+}
+
+.target-muscle-badge:hover {
+  background: linear-gradient(135deg, #c0392b 0%, #a93226 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+.body-part-badge {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
+  color: white !important;
+  border: none;
+}
+
+.body-part-badge:hover {
+  background: linear-gradient(135deg, #2980b9 0%, #21618c 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.equipment-badge {
+  background: linear-gradient(135deg, #27ae60 0%, #229954 100%) !important;
+  color: white !important;
+  border: none;
+}
+
+.equipment-badge:hover {
+  background: linear-gradient(135deg, #229954 0%, #1e8449 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
 }
 
 .exercise-actions {

@@ -49,11 +49,11 @@
 
               <!-- Exercise Info -->
               <div class="cart-item-info">
-                <h6 class="cart-item-name">{{ item.name }}</h6>
+                <h6 class="cart-item-name">{{ capitalizeFirstLetter(item.name) }}</h6>
                 <div class="cart-item-badges">
-                  <span class="badge bg-primary">{{ item.target }}</span>
-                  <span class="badge bg-primary">{{ item.bodyPart }}</span>
-                  <span class="badge bg-secondary">{{ item.equipment }}</span>
+                  <span class="badge target-muscle-badge">{{ capitalizeFirstLetter(item.target) }}</span>
+                  <span class="badge body-part-badge">{{ capitalizeFirstLetter(item.bodyPart) }}</span>
+                  <span class="badge equipment-badge">{{ capitalizeFirstLetter(item.equipment) }}</span>
                 </div>
               </div>
 
@@ -128,10 +128,48 @@
             <span 
               v-for="muscle in cartMuscleGroups" 
               :key="muscle"
-              class="muscle-badge"
+              class="muscle-badge target-muscle-badge"
             >
-              {{ muscle }}
+              {{ capitalizeFirstLetter(muscle) }}
             </span>
+          </div>
+
+          <!-- Equipment Icons Bar -->
+          <div v-if="cartEquipment.length > 0" class="equipment-section-container">
+            <!-- Pull-up Tab -->
+            <div class="equipment-pull-tab u-btn u-btn--secondary" @click="toggleEquipmentSection">
+              <div class="pull-tab-content">
+                <i class="fas fa-dumbbell pull-tab-icon"></i>
+                <span class="pull-tab-text">Equipment ({{ cartEquipment.length }})</span>
+                <i 
+                  class="fas pull-tab-arrow" 
+                  :class="showEquipmentSection ? 'fa-chevron-up' : 'fa-chevron-down'"
+                ></i>
+              </div>
+            </div>
+            
+            <!-- Collapsible Equipment Content -->
+            <div 
+              class="equipment-icons-section" 
+              :class="{ 'equipment-expanded': showEquipmentSection }"
+            >
+              <div class="equipment-icons-scroll">
+                <div 
+                  v-for="equipment in cartEquipment" 
+                  :key="equipment"
+                  class="equipment-icon-item"
+                  :title="capitalizeFirstLetter(equipment)"
+                >
+                  <img 
+                    :src="getEquipmentIcon(equipment)" 
+                    :alt="capitalizeFirstLetter(equipment)"
+                    class="equipment-icon"
+                    @error="handleEquipmentIconError"
+                  />
+                  <span class="equipment-label">{{ capitalizeFirstLetter(equipment) }}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -243,6 +281,7 @@ const isOpen = ref(false)
 const showSavePlaylistModal = ref(false)
 const newPlaylistName = ref('')
 const newPlaylistDescription = ref('')
+const showEquipmentSection = ref(false)
 
 // Computed properties from store
 const cartItems = computed(() => cartStore.cartItems)
@@ -250,6 +289,24 @@ const cartItemCount = computed(() => cartStore.cartItemCount)
 const cartTotalDuration = computed(() => cartStore.cartTotalDuration)
 const cartMuscleGroups = computed(() => cartStore.cartMuscleGroups)
 const isAuthenticated = computed(() => cartStore.isAuthenticated)
+
+// Get unique equipment from cart items
+const cartEquipment = computed(() => {
+  const equipmentSet = new Set()
+  cartItems.value.forEach(item => {
+    if (item.equipment) {
+      const equipmentList = Array.isArray(item.equipment) 
+        ? item.equipment 
+        : item.equipment.split(', ')
+      equipmentList.forEach(eq => {
+        if (eq.trim()) {
+          equipmentSet.add(eq.trim().toLowerCase())
+        }
+      })
+    }
+  })
+  return Array.from(equipmentSet)
+})
 
 // Methods
 const toggleCart = () => {
@@ -305,6 +362,52 @@ const promptLogin = () => {
 
 const handleImageError = (event) => {
   event.target.src = '/images/exercise-placeholder.png'
+}
+
+const capitalizeFirstLetter = (text) => {
+  if (!text) return ''
+  return text
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
+
+// Equipment icon mapping
+const getEquipmentIcon = (equipment) => {
+  const equipmentIcons = {
+    'body weight': '/images/equipment/bodyweight.svg',
+    'dumbbell': '/images/equipment/dumbbell.svg',
+    'barbell': '/images/equipment/barbell.svg',
+    'kettlebell': '/images/equipment/kettlebell.svg',
+    'resistance band': '/images/equipment/default.svg',
+    'cable': '/images/equipment/default.svg',
+    'machine': '/images/equipment/default.svg',
+    'bench': '/images/equipment/default.svg',
+    'pull-up bar': '/images/equipment/default.svg',
+    'medicine ball': '/images/equipment/default.svg',
+    'trx': '/images/equipment/default.svg',
+    'yoga mat': '/images/equipment/default.svg',
+    'stability ball': '/images/equipment/default.svg',
+    'foam roller': '/images/equipment/default.svg',
+    'weight plate': '/images/equipment/default.svg',
+    'ez bar': '/images/equipment/default.svg',
+    'trap bar': '/images/equipment/default.svg',
+    'suspension trainer': '/images/equipment/default.svg',
+    'box': '/images/equipment/default.svg',
+    'step': '/images/equipment/default.svg'
+  }
+  
+  const normalizedEquipment = equipment.toLowerCase().trim()
+  return equipmentIcons[normalizedEquipment] || '/images/equipment/default.svg'
+}
+
+const handleEquipmentIconError = (event) => {
+  event.target.src = '/images/equipment/default.svg'
+}
+
+const toggleEquipmentSection = () => {
+  showEquipmentSection.value = !showEquipmentSection.value
 }
 </script>
 
@@ -710,5 +813,211 @@ const handleImageError = (event) => {
     display: flex;
     justify-content: space-between;
   }
+  
+  .equipment-section-container {
+    margin-top: 0.75rem;
+  }
+  
+  .equipment-pull-tab {
+    padding: 0.5rem 0.75rem !important;
+  }
+  
+  .pull-tab-text {
+    font-size: 0.8rem;
+  }
+  
+  .equipment-icons-section.equipment-expanded {
+    max-height: 150px;
+    padding: 0.75rem;
+  }
+}
+
+/* Color-coded badge styles */
+.target-muscle-badge {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
+  color: white !important;
+  border: none;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.target-muscle-badge:hover {
+  background: linear-gradient(135deg, #c0392b 0%, #a93226 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+.body-part-badge {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
+  color: white !important;
+  border: none;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.body-part-badge:hover {
+  background: linear-gradient(135deg, #2980b9 0%, #21618c 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.equipment-badge {
+  background: linear-gradient(135deg, #27ae60 0%, #229954 100%) !important;
+  color: white !important;
+  border: none;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.equipment-badge:hover {
+  background: linear-gradient(135deg, #229954 0%, #1e8449 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+}
+
+/* Equipment Section Container */
+.equipment-section-container {
+  margin-top: 1rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* Pull-up Tab - Override button styles for tab appearance */
+.equipment-pull-tab {
+  width: 100%;
+  border-radius: 8px 8px 0 0 !important;
+  border-bottom: none !important;
+  margin: 0 !important;
+  justify-content: space-between !important;
+  padding: 0.75rem 1rem !important;
+  background: var(--surface-subtle) !important;
+  border: 1px solid var(--border-subtle) !important;
+  color: var(--text) !important;
+  cursor: pointer;
+  user-select: none;
+}
+
+.equipment-pull-tab:hover {
+  background: var(--muted) !important;
+  color: var(--text) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.pull-tab-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 0.5rem;
+}
+
+.pull-tab-icon {
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+.pull-tab-text {
+  flex: 1;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pull-tab-arrow {
+  color: var(--muted);
+  font-size: 0.875rem;
+  transition: transform 0.3s ease;
+}
+
+/* Equipment Icons Section */
+.equipment-icons-section {
+  max-height: 0;
+  overflow: hidden;
+  background: var(--bg);
+  border: 1px solid var(--border-subtle);
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+}
+
+.equipment-icons-section.equipment-expanded {
+  max-height: 200px;
+  padding: 1rem;
+}
+
+.equipment-icons-scroll {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--muted) var(--border-subtle);
+}
+
+.equipment-icons-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.equipment-icons-scroll::-webkit-scrollbar-track {
+  background: var(--border-subtle);
+  border-radius: 3px;
+}
+
+.equipment-icons-scroll::-webkit-scrollbar-thumb {
+  background: var(--muted);
+  border-radius: 3px;
+}
+
+.equipment-icons-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--text);
+}
+
+.equipment-icon-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 60px;
+  padding: 0.5rem;
+  background: var(--surface-subtle);
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.equipment-icon-item:hover {
+  background: var(--muted);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.equipment-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  margin-bottom: 0.25rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.equipment-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--text);
+  text-align: center;
+  line-height: 1.2;
+  word-break: break-word;
 }
 </style>
