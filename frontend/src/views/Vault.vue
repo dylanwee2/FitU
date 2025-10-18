@@ -5,8 +5,8 @@
       <div class="vault-header mb-4">
         <div class="row align-items-center">
           <div class="col-12">
-            <h1 class="page-title mb-2">Workout Vault</h1>
-            <p class="page-subtitle text-muted">Discover and review community-created workout sets</p>
+            <h1 class="mb-2">Workout Vault</h1>
+            <p class="u-muted">Discover and review community-created workout sets</p>
           </div>
         </div>
       </div>
@@ -15,7 +15,7 @@
       <div class="filters-section mb-4">
         <div class="row g-3">
           <div class="col-md-6">
-            <label class="form-label">Sort by:</label>
+            <label class="form-label u-muted">Sort by:</label>
             <select v-model="sortBy" @change="loadWorkouts" class="form-select">
               <option value="newest">Newest</option>
               <option value="rating">Highest Rating</option>
@@ -23,7 +23,7 @@
             </select>
           </div>
           <div class="col-md-6">
-            <label class="form-label">Search:</label>
+            <label class="form-label u-muted">Search:</label>
             <input 
               v-model="searchQuery" 
               @input="handleSearch"
@@ -44,18 +44,18 @@
         @click.self="showViewModal = false"
       >
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
-          <div class="modal-content">
+          <div class="modal-content u-bg">
             <div class="modal-header">
               <h5 class="modal-title">{{ viewingPlaylist?.name || 'Workout Details' }}</h5>
               <button 
                 type="button" 
-                class="btn-close" 
+                class="btn-close-white btn-close" 
                 @click="showViewModal = false"
               ></button>
             </div>
             
             <div class="modal-body">
-              <div v-if="viewingPlaylist?.description" class="playlist-description mb-3">
+              <div v-if="viewingPlaylist?.description" class="playlist-description mb-3 text-white">
                 <p>{{ viewingPlaylist.description }}</p>
               </div>
 
@@ -63,19 +63,19 @@
                 <div class="row text-center">
                   <div class="col-4">
                     <div class="stat-item">
-                      <div class="stat-number">{{ viewingPlaylist?.exercises?.length || 0 }}</div>
+                      <div class="stat-number text-white">{{ viewingPlaylist?.exercises?.length || 0 }}</div>
                       <div class="stat-label">Exercises</div>
                     </div>
                   </div>
                   <div class="col-4">
                     <div class="stat-item">
-                      <div class="stat-number">{{ Math.round(viewingPlaylist?.totalDuration || 0) }}</div>
+                      <div class="stat-number text-white">{{ Math.round(viewingPlaylist?.totalDuration || 0) }}</div>
                       <div class="stat-label">Minutes</div>
                     </div>
                   </div>
                   <div class="col-4">
                     <div class="stat-item">
-                      <div class="stat-number">{{ viewingPlaylist?.reviewsCount || 0 }}</div>
+                      <div class="stat-number text-white">{{ viewingPlaylist?.reviewsCount || 0 }}</div>
                       <div class="stat-label">Reviews</div>
                     </div>
                   </div>
@@ -83,7 +83,7 @@
               </div>
 
               <div class="muscle-groups mb-4" v-if="viewingPlaylist?.muscleGroups?.length">
-                <h6>Targeted Muscle Groups:</h6>
+                <h6 class="u-muted">Targeted Muscle Groups:</h6>
                 <div class="muscle-badges">
                   <span 
                     v-for="muscle in viewingPlaylist.muscleGroups" 
@@ -96,7 +96,7 @@
               </div>
 
               <div class="exercises-list" v-if="viewingPlaylist?.exercises?.length">
-                <h6>Exercises in this set:</h6>
+                <h6 class="u-muted">Exercises in this set:</h6>
                 <div class="exercise-detail-list">
                   <div 
                     v-for="(exercise, index) in viewingPlaylist.exercises" 
@@ -120,8 +120,8 @@
                       </div>
                       <div class="col-6">
                         <div class="exercise-info">
-                          <h6 class="exercise-name mb-1">{{ exercise.name }}</h6>
-                          <p class="exercise-target mb-1 text-muted">{{ exercise.target }}</p>
+                          <h6 class="exercise-name mb-1" style="text-transform: capitalize;">{{ exercise.name }}</h6>
+                          <p class="exercise-target mb-1 u-muted">{{ exercise.target }}</p>
                           <div class="exercise-badges">
                             <span class="badge bg-primary me-1">{{ exercise.bodyPart }}</span>
                             <span class="badge bg-secondary">{{ exercise.equipment }}</span>
@@ -130,7 +130,7 @@
                       </div>
                       <div class="col-3">
                         <div class="exercise-sets text-end">
-                          <div class="set-info">
+                          <div class="set-info u-muted">
                             <div class="sets"><strong>{{ exercise.sets || 3 }}</strong> sets</div>
                             <div class="reps"><strong>{{ exercise.reps || 10 }}</strong> reps</div>
                             <div v-if="exercise.weight" class="weight"><strong>{{ exercise.weight }}</strong> lbs</div>
@@ -146,17 +146,17 @@
             <div class="modal-footer">
               <button 
                 type="button"
-                class="btn btn-secondary"
+                class="u-btn u-btn--secondary"
                 @click="showViewModal = false"
               >
                 Close
               </button>
               <button 
                 type="button"
-                class="btn btn-primary"
+                class="u-btn u-btn--primary"
                 @click="openRatingModal"
               >
-                <i class="fas fa-star me-1"></i>Rate Workout
+                Rate Workout
               </button>
             </div>
           </div>
@@ -172,18 +172,18 @@
         @click.self="showRatingModal = false"
       >
         <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
+          <div class="modal-content u-bg">
             <div class="modal-header">
               <h5 class="modal-title">Rate "{{ viewingPlaylist?.name || 'Workout' }}"</h5>
               <button 
                 type="button" 
-                class="btn-close" 
+                class="btn-close btn-close-white" 
                 @click="showRatingModal = false"
               ></button>
             </div>
             
             <div class="modal-body text-center py-4">
-              <p class="mb-4 text-muted">How would you rate this workout?</p>
+              <p class="mb-4 u-muted">How would you rate this workout?</p>
               
               <div class="stars-rating-container mb-4">
                 <img 
@@ -212,14 +212,14 @@
             <div class="modal-footer justify-content-center">
               <button 
                 type="button"
-                class="btn btn-secondary me-2"
+                class="u-btn u-btn--secondary me-2"
                 @click="showRatingModal = false"
               >
                 Cancel
               </button>
               <button 
                 type="button"
-                class="btn btn-primary"
+                class="u-btn u-btn--primary"
                 @click="submitRating"
                 :disabled="userRating === 0 || submittingRating"
               >
@@ -239,12 +239,12 @@
         @click.self="showThankYouModal = false"
       >
         <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
+          <div class="modal-content u-bg u-muted">
             <div class="modal-header border-0">
               <h5 class="modal-title">Thank You!</h5>
               <button 
                 type="button" 
-                class="btn-close" 
+                class="btn-close btn-close-white" 
                 @click="showThankYouModal = false"
               ></button>
             </div>
@@ -252,13 +252,13 @@
               <div class="mb-3">
                 <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
               </div>
-              <h6 class="mb-3">Thank you for rating this workout!</h6>
-              <p class="text-muted mb-0">Your feedback helps the community discover great workouts.</p>
+              <h6 class="mb-3 ">Thank you for rating this workout!</h6>
+              <p class="mb-0">Your feedback helps the community discover great workouts.</p>
             </div>
             <div class="modal-footer border-0 justify-content-center">
               <button 
                 type="button"
-                class="btn btn-primary"
+                class="u-btn u-btn--primary"
                 @click="showThankYouModal = false"
               >
                 Close
@@ -304,12 +304,11 @@
             :key="workoutSet.id"
             class="col-sm-6 col-lg-4 col-xl-3"
           >
-            <div class="workout-set-card" @click="viewWorkoutSet(workoutSet)">
+            <div class="workout-set-card u-card" @click="viewWorkoutSet(workoutSet)">
               <!-- Card Header -->
               <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="workout-title mb-0">{{ workoutSet.name || workoutSet.title || 'Unnamed Workout' }}</h5>
-                <div class="exercise-count text-end">
-                    <i class="fas fa-list me-1"></i>
+                <div class="exercise-count u-muted text-end">
                     {{ workoutSet.exercises?.length || 0 }} exercises
                 </div>
               </div>
@@ -317,17 +316,16 @@
               <!-- Card Body -->
               <div class="card-body d-flex flex-column justify-content-start">
                 
-                <p class="workout-description mb-3 text-muted">{{ truncateText(workoutSet.description, 100) }}</p>
+                <p class="workout-description mb-3 u-muted">{{ truncateText(workoutSet.description, 100) }}</p>
                 
                 <div class="workout-meta mb-3">
                   <div class="creator d-flex align-items-center">
-                    <i class="text-secondary"></i>
-                    <span class="text-muted">{{ getUserName(workoutSet) }}</span>
+                    <span class="">{{ getUserName(workoutSet) }}</span>
                   </div>
                 </div>
 
                 <div class="workout-stats">
-                  <div class="rating-display">
+                  <div class="rating-display u-muted">
                     <div class="stars">
                       <img 
                         v-for="star in 5" 
@@ -342,8 +340,7 @@
                   </div>
 
                   <div class="stat">
-                    <i class="fas fa-clock me-1"></i>
-                    <span>{{ workoutSet.estimatedDuration || 30 }}min</span>
+                    <span class="u-muted">{{ workoutSet.estimatedDuration || 30 }}min</span>
                   </div>
                 </div>
 
@@ -625,23 +622,12 @@ onUnmounted(() => {
 <style scoped>
 .vault-page {
   min-height: 100vh;
-  background: #f8f9fa;
-}
-
-.page-title {
-  color: #2c3e50;
-  font-weight: 700;
-  font-size: 2.5rem;
-}
-
-.page-subtitle {
-  font-size: 1.1rem;
 }
 
 .filters-section {
-  background: white;
   border-radius: 12px;
   padding: 1.5rem;
+  border: 1px solid var(--border-subtle);
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
@@ -650,7 +636,6 @@ onUnmounted(() => {
 }
 
 .workout-set-card {
-  background: white;
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   transition: all 0.3s ease;
@@ -668,7 +653,7 @@ onUnmounted(() => {
 
 .card-header {
   padding: 1rem;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-subtle);
   /* Remove conflicting flex properties - let Bootstrap handle them */
 }
 
@@ -697,7 +682,6 @@ onUnmounted(() => {
 
 .rating-text {
   font-size: 0.8rem;
-  color: #666;
   margin-left: 0.25rem;
 }
 
@@ -710,13 +694,11 @@ onUnmounted(() => {
 .workout-title {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #2c3e50;
   margin-bottom: 0.5rem;
   line-height: 1.3;
 }
 
 .workout-description {
-  color: #666;
   font-size: 0.9rem;
   line-height: 1.4;
   margin-bottom: 1rem;
@@ -729,13 +711,11 @@ onUnmounted(() => {
 
 .creator {
   font-size: 0.8rem;
-  color: #666;
   margin-bottom: 0.25rem;
 }
 
 .exercise-count {
   font-size: 0.8rem;
-  color: #666;
   margin-bottom: 0.25rem;
 }
 
@@ -743,13 +723,11 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   font-size: 0.8rem;
-  color: #666;
 }
 
 .card-footer {
   padding: 1rem;
-  border-top: 1px solid #eee;
-  background: #f8f9fa;
+  border-top: 1px solid var(--border-subtle);
   border-radius: 0 0 12px 12px;
   /* Remove conflicting flex properties - let Bootstrap handle them */
 }
@@ -823,12 +801,13 @@ onUnmounted(() => {
 }
 
 .exercise-detail-item {
-  background: #f8f9fa;
+  background: var(--surface-subtle);
   transition: all 0.2s ease;
+  border: 1px solid var(--border-subtle) !important;
 }
 
 .exercise-detail-item:hover {
-  background: #e9ecef;
+  background: #4c4c4c;
 }
 
 .exercise-number {
@@ -839,7 +818,7 @@ onUnmounted(() => {
 .exercise-name {
   font-size: 1rem;
   font-weight: 600;
-  color: #2c3e50;
+  color: white;
 }
 
 .exercise-target {
@@ -860,6 +839,14 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.modal-header {
+  border-bottom: black;
+}
+
+.modal-footer {
+  border-top: black !important;
 }
 
 /* Responsive adjustments */

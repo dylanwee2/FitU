@@ -3,11 +3,11 @@
     <div class="card-body">
       <div class="d-flex justify-content-between align-items-end mb-2">
         <div>
-          <div class="text-muted">Consumed</div>
+          <div class="u-muted">Consumed</div>
           <div class="display-6 fw-bold">{{ consumed }} kcal</div>
         </div>
         <div class="text-end">
-          <div class="text-muted">Left to hit today's goal</div>
+          <div class="u-muted">Left to hit today's goal</div>
           <div class="h4 m-0">{{ left }} kcal</div>
         </div>
       </div>
@@ -23,7 +23,7 @@
           :style="{ width: clamped + '%', background: 'var(--primary)' }"
         ></div>
       </div>
-      <small class="text-muted d-block mt-2">Daily goal (set in Profile): {{ goalToUse }} kcal</small>
+      <small class="u-muted d-block mt-2">Daily goal (set in Profile): {{ goalToUse }} kcal</small>
     </div>
   </div>
   <div v-if="showGoalHint" class="alert alert-warning alert-dismissible fade show" role="alert">

@@ -1,7 +1,7 @@
 ﻿<template>
   <div class="exercise-detail">
     <div class="container">
-      <button @click="goBack" class="btn btn-secondary mb-3"> Back</button>
+      <button @click="goBack" class="u-btn u-btn--secondary mb-3">Back</button>
       
       <div v-if="loading">Loading...</div>
       <div v-else-if="error">Error: {{ error }}</div>
@@ -155,7 +155,6 @@ onMounted(() => {
 }
 
 .exercise-header h1 {
-  color: #2c3e50;
   font-weight: 700;
   text-transform: capitalize;
   margin-bottom: 1rem;
@@ -185,14 +184,13 @@ onMounted(() => {
 }
 
 .exercise-details {
-  background: #f8f9fa;
   padding: 1.5rem;
   border-radius: 8px;
   height: 100%;
 }
 
 .exercise-details h5 {
-  color: #495057;
+  color: var(--muted);
   margin-bottom: 1rem;
   font-weight: 600;
 }
@@ -203,14 +201,14 @@ onMounted(() => {
 }
 
 .instructions-section {
-  background: white;
-  border: 1px solid #dee2e6;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-subtle);
   border-radius: 8px;
   padding: 2rem;
 }
 
 .instructions-section h5 {
-  color: #495057;
+  color: var(--muted);
   margin-bottom: 1.5rem;
   font-weight: 600;
 }

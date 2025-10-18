@@ -48,24 +48,15 @@
           </button>
         </div>
 
-        <!-- Terms & Conditions -->
-        <div class="terms-section">
-          <label class="remember-me">
-            <input type="checkbox" class="remember-checkbox" required>
-            <span class="checkmark"></span>
-            I agree to the <a href="#" class="terms-link">Terms & Conditions</a>
-          </label>
-        </div>
-
         <!-- Sign Up Button -->
-        <button type="submit" class="auth-button">
+        <button type="submit" class="u-btn u-btn--primary" style="height: 50px; display: flex; justify-content: center;">
           Create Account
         </button>
 
         <!-- Login Link -->
         <p class="register-link">
           Already have an account? 
-          <router-link to="/login" class="register-text">Sign in</router-link>
+          <router-link to="/login" class="register-text" style="color: black;" >Sign in</router-link>
         </p>
       </form>
     </div>
@@ -209,7 +200,7 @@ export default {
   padding: 1rem 1.25rem;
   background: white;
   border: 1px solid #d1d5db;
-  border-radius: 16px;
+  border-radius: 16px !important;
   color: black;
   font-size: 1rem;
   outline: none;
@@ -241,85 +232,6 @@ export default {
 
 .password-toggle:hover {
   color: rgba(0, 0, 0, 0.7);
-}
-
-.terms-section {
-  margin: 0.5rem 0;
-}
-
-.remember-me {
-  display: flex;
-  align-items: flex-start;
-  color: rgba(0, 0, 0, 0.7);
-  font-size: 0.9rem;
-  cursor: pointer;
-  user-select: none;
-  line-height: 1.4;
-}
-
-.remember-checkbox {
-  display: none;
-}
-
-.checkmark {
-  width: 18px;
-  height: 18px;
-  background: white;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
-  margin-right: 0.5rem;
-  margin-top: 2px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  flex-shrink: 0;
-}
-
-.remember-checkbox:checked + .checkmark {
-  background: #3b82f6;
-  border-color: #3b82f6;
-}
-
-.remember-checkbox:checked + .checkmark::after {
-  content: '✓';
-  color: white;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.terms-link {
-  color: #22d3ee;
-  text-decoration: none;
-  transition: color 0.3s ease;
-}
-
-.terms-link:hover {
-  color: #67e8f9;
-  text-decoration: underline;
-}
-
-.auth-button {
-  width: 100%;
-  padding: 1.25rem;
-  background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
-  border: none;
-  border-radius: 16px;
-  color: white;
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-top: 0.5rem;
-}
-
-.auth-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
-}
-
-.auth-button:active {
-  transform: translateY(0);
 }
 
 .register-link {

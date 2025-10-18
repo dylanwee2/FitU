@@ -60,7 +60,7 @@
 
     
   
-    <h1 class="mb-1" style="color: var(--primary); font-weight: 800">Today's Calories</h1>
+    <h1 class="mb-1" >Today's Calories</h1>
     <p class="u-muted mb-4">Quickly log your intake and visualize your last 7 days.</p>
 
     <!-- Quick Add Form -->
@@ -78,36 +78,35 @@
           <button class="u-btn u-btn--primary" type="submit">Add</button>
         </div>
         <div class="col-sm-2 text-sm-end">
-          <small class="text-muted">Daily goal (set in Profile): {{ user.dailyGoal }} kcal</small>
+          <small class="u-muted">Daily goal (set in Profile): {{ calorieData.dailyGoal }} kcal</small>
         </div>
       </form>
     </div>
 
     <div class="card p-3 mb-3 home-card" v-reveal>
-      <CalorieProgress :consumed="meals.todayConsumed" :goal="user.dailyGoal" />
+      <CalorieProgress :consumed="todayConsumed" :goal="calorieData.dailyGoal" />
     </div>
 
-    <div class="mb-4" v-if="meals.todayConsumed < user.dailyGoal">
-      You're <strong>{{ user.dailyGoal - meals.todayConsumed }} kcal</strong> away from today's goal.
+    <div class="mb-4" v-if="todayConsumed < calorieData.dailyGoal">
+      You're <strong>{{ calorieData.dailyGoal - todayConsumed }} kcal</strong> away from today's goal.
     </div>
     <div class="mb-4" v-else>
       Goal met. Great job!
     </div>
 
-    <h5 class="mb-2" style="color: var(--secondary)">Last 7 days</h5>
+    <h5 class="mb-2 u-muted">Last 7 days</h5>
     <div class="card p-3 mb-4 home-card" v-reveal>
-      <CalorieChart :series="meals.weekSeries(7)" />
+      <CalorieChart :series="weekSeries" />
     </div>
   </div>
 
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, reactive, computed } from "vue";
 import CalorieProgress from '@/components/CalorieProgress.vue'
 import CalorieChart from '@/components/CalorieChart.vue'
-import { useUser } from '@/stores/user'
-import { useMeals } from '@/stores/meals'
+import caloriesService from '@/services/caloriesService.js'
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { useRouter } from 'vue-router'
 import WorkoutPlaylistsComponent from '@/components/WorkoutPlaylistsComponent.vue'
@@ -122,12 +121,39 @@ export default {
     CalendarComponent
   },
   setup() {
-
-    const user = useUser();
-    const meals = useMeals();
     const router = useRouter()
     const auth = getAuth();
     const showAuthModal = ref(false);
+
+    // Reactive state for calorie data
+    const calorieData = reactive({
+      dailyGoal: 2000,
+      entries: [],
+      todayConsumed: 0,
+      weekSeries: []
+    });
+
+    // Computed properties
+    const todayConsumed = computed(() => {
+      return caloriesService.getTodayConsumed(calorieData.entries);
+    });
+
+    const weekSeries = computed(() => {
+      return caloriesService.getWeekSeries(calorieData.entries, 7);
+    });
+
+    // Load user calorie data
+    const loadCalorieData = async () => {
+      try {
+        const data = await caloriesService.getUserCalories();
+        calorieData.dailyGoal = data.dailyGoal || 2000;
+        calorieData.entries = data.entries || [];
+        calorieData.todayConsumed = todayConsumed.value;
+        calorieData.weekSeries = weekSeries.value;
+      } catch (error) {
+        console.error('Error loading calorie data:', error);
+      }
+    };
 
     const redirectToLanding = () => {
       showAuthModal.value = false;
@@ -135,16 +161,26 @@ export default {
     };
 
     onMounted(async () => {
-      await user.loadUser();
-      await meals.init();
-
       onAuthStateChanged(auth, async (userCredential) => {
           if (userCredential) {
-            // User is logged in, hide modal if it was shown
+            // User is logged in, hide modal and load data
             showAuthModal.value = false;
+            await loadCalorieData();
+            
+            // Set up real-time listener for calorie data
+            caloriesService.subscribeToUserCalories((data) => {
+              if (data) {
+                calorieData.dailyGoal = data.dailyGoal || 2000;
+                calorieData.entries = data.entries || [];
+                calorieData.todayConsumed = todayConsumed.value;
+                calorieData.weekSeries = weekSeries.value;
+              }
+            });
           } else {
             // User is not logged in, show modal
             showAuthModal.value = true;
+            // Clean up listeners
+            caloriesService.unsubscribeAll();
           }
       });
     })
@@ -154,14 +190,20 @@ export default {
     const note = ref('')
     const onAdd = async () => {
       if (!Number.isFinite(amount.value) || amount.value <= 0) return
-      await meals.addCalories(amount.value, note.value)
-      amount.value = 0
-      note.value = ''
+      try {
+        await caloriesService.addCalorieEntry(amount.value, note.value)
+        amount.value = 0
+        note.value = ''
+        // Data will be updated automatically via the real-time listener
+      } catch (error) {
+        console.error('Error adding calorie entry:', error);
+      }
     }
 
     return { 
-      user,
-      meals,
+      calorieData,
+      todayConsumed,
+      weekSeries,
       amount,
       note,
       onAdd,

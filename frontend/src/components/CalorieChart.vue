@@ -36,7 +36,7 @@ export default {
           {
             label: 'Calories',
             data: values,
-            backgroundColor: 'rgba(230, 57, 70, 0.8)'
+            backgroundColor: '#2200e4'
           }
         ]
       }
@@ -60,10 +60,10 @@ export default {
     },
   },
   methods: {
-    formatLabel(ymd) {
-      const [y, m, d] = ymd.split('-').map(Number)
-      const date = new Date(y, m - 1, d)
-      return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+    formatLabel(date) {
+      // Handle both Date objects and string dates
+      const dateObj = date instanceof Date ? date : new Date(date)
+      return dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
     }
   }
 }

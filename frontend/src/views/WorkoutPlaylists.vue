@@ -3,8 +3,8 @@
     <div class="container mt-4">
       <!-- Header -->
       <div class="header-section mb-4">
-        <h1 class="page-title">My Workout Sets</h1>
-        <p class="page-subtitle">Manage your saved workout collections</p>
+        <h1 class="">My Workout Sets</h1>
+        <p class="u-muted">Manage your saved workout collections</p>
       </div>
 
       <!-- Not Authenticated State -->
@@ -35,8 +35,8 @@
         <p class="empty-state-message">
           Create your first workout set by adding exercises to your cart and saving them as a playlist.
         </p>
-        <router-link to="/exerciselibrary" class="btn btn-primary">
-          <i class="fas fa-plus me-2"></i>Browse Exercises
+        <router-link to="/exerciselibrary" class="u-btn u-btn--primary">
+          Browse Exercises
         </router-link>
       </div>
 
@@ -48,7 +48,7 @@
             :key="playlist.id"
             class="col-md-6 col-lg-4"
           >
-            <div class="playlist-card">
+            <div class="playlist-card u-card">
               <!-- Playlist Header -->
               <div class="playlist-header">
                 <div class="playlist-title-section">
@@ -76,7 +76,7 @@
                     class="btn btn-sm btn-outline-secondary"
                     title="Edit playlist"
                   >
-                    <i class="fas fa-edit"></i>Edit Workout
+                    Edit Workout
                   </button>
                   <div class="dropdown">
                     <button 
@@ -85,15 +85,14 @@
                       data-bs-toggle="dropdown"
                       title="More options"
                     >
-                      <i class="fas fa-ellipsis-v"></i>
                     </button>
-                    <ul class="dropdown-menu">
+                    <ul class="dropdown-menu u-card">
                       <li>
                         <button 
                           @click="duplicatePlaylist(playlist.id)"
-                          class="dropdown-item"
+                          class="dropdown-item u-muted"
                         >
-                          <i class="fas fa-copy me-2"></i>Duplicate
+                          Duplicate
                         </button>
                       </li>
                       <li>
@@ -101,7 +100,7 @@
                           @click="showDeleteConfirmation(playlist)"
                           class="dropdown-item text-danger"
                         >
-                          <i class="fas fa-trash me-2"></i>Delete
+                          Delete
                         </button>
                       </li>
                     </ul>
@@ -174,7 +173,7 @@
                   <button 
                     v-else
                     @click="unpublishFromVault(playlist)"
-                    class="u-btn"
+                    class="u-btn u-btn--secondary"
                     title="Remove from Community Vault"
                   >
                     <p class="text-center">Unpublish</p>
@@ -189,51 +188,171 @@
 
     <!-- Edit Playlist Modal -->
     <div v-if="showEditModal" class="modal-overlay" @click.self="showEditModal = false">
-      <div class="modal-content">
+      <div class="modal-content large-modal">
         <div class="modal-header">
           <h5 class="modal-title">Edit Workout Set</h5>
-          <button @click="showEditModal = false" class="btn-close">
-            <i class="fas fa-times"></i>
+          <button @click="showEditModal = false" class="btn-close-white btn-close">
           </button>
         </div>
         
         <div class="modal-body">
-          <div class="form-group">
-            <label for="editPlaylistName" class="form-label">Set Name</label>
-            <input 
-              v-model="editingPlaylist.name"
-              type="text" 
-              id="editPlaylistName"
-              class="form-control"
-              maxlength="50"
-            >
-          </div>
-          
-          <div class="form-group">
-            <label for="editPlaylistDescription" class="form-label">Description</label>
-            <textarea 
-              v-model="editingPlaylist.description"
-              id="editPlaylistDescription"
-              class="form-control"
-              rows="3"
-              maxlength="200"
-            ></textarea>
+          <div class="row">
+            <!-- Left Column - Basic Info -->
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="editPlaylistName" class="form-label">Set Name</label>
+                <input 
+                  v-model="editingPlaylist.name"
+                  type="text" 
+                  id="editPlaylistName"
+                  class="form-control"
+                  maxlength="50"
+                >
+              </div>
+              
+              <div class="form-group">
+                <label for="editPlaylistDescription" class="form-label">Description</label>
+                <textarea 
+                  v-model="editingPlaylist.description"
+                  id="editPlaylistDescription"
+                  class="form-control"
+                  rows="3"
+                  maxlength="200"
+                ></textarea>
+              </div>
+
+              <!-- Current Exercises -->
+              <div class="form-group">
+                <label class="form-label">Current Exercises ({{ editingPlaylist.exercises?.length || 0 }})</label>
+                <div v-if="editingPlaylist.exercises && editingPlaylist.exercises.length > 0" class="current-exercises">
+                  <div 
+                    v-for="(exercise, index) in editingPlaylist.exercises" 
+                    :key="exercise.id || index"
+                    class="exercise-item"
+                  >
+                    <div class="exercise-info">
+                      <h6 class="exercise-name">{{ formatExerciseName(exercise.name) }}</h6>
+                      <p class="exercise-target">{{ formatTarget(exercise.target) }}</p>
+                    </div>
+                    <button 
+                      @click="removeExerciseFromPlaylist(index)"
+                      class="btn btn-sm btn-outline-danger"
+                      type="button"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+                <div v-else class="text-muted">
+                  No exercises in this workout set yet.
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column - Exercise Search -->
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label">Add Exercises</label>
+                <div class="search-container">
+                  <div class="input-group">
+                    <input
+                      v-model="searchQuery"
+                      @input="handleSearch"
+                      type="text"
+                      class="form-control"
+                      placeholder="Search exercises by name (e.g., push-up, squat, bicep)..."
+                    >
+                    <button 
+                      v-if="searchQuery" 
+                      @click="clearSearch" 
+                      class="btn btn-outline-secondary"
+                      type="button"
+                    >
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Search Results -->
+                <div v-if="searchLoading" class="search-loading text-center py-3">
+                  <div class="spinner-border spinner-border-sm me-2"></div>
+                  Searching exercises...
+                </div>
+
+                <div v-else-if="searchError" class="alert alert-danger mt-2">
+                  {{ searchError }}
+                </div>
+
+                <div v-else-if="searchedExercises.length > 0" class="search-results mt-3">
+                  <div 
+                    v-for="exercise in searchedExercises.slice(0, 8)" 
+                    :key="exercise.id"
+                    class="search-result-item"
+                  >
+                    <div class="exercise-info">
+                      <h6 class="exercise-name">{{ formatExerciseName(exercise.name) }}</h6>
+                      <p class="exercise-target">{{ formatTarget(exercise.target) }} • {{ formatBodyPart(exercise.bodyPart) }}</p>
+                      <p class="exercise-equipment">{{ formatEquipment(exercise.equipment) }}</p>
+                    </div>
+                    <button 
+                      @click="addExerciseToPlaylist(exercise)"
+                      :disabled="isExerciseInPlaylist(exercise.id)"
+                      class="btn btn-sm btn-primary"
+                      type="button"
+                    >
+                      <i class="fas fa-plus me-1"></i>
+                      {{ isExerciseInPlaylist(exercise.id) ? 'Added' : 'Add' }}
+                    </button>
+                  </div>
+                  <div v-if="searchedExercises.length > 8" class="text-muted text-center mt-2">
+                    Showing first 8 results. Refine search for more specific results.
+                  </div>
+                </div>
+
+                <div v-else-if="!searchQuery && !searchLoading && searchedExercises.length === 0" class="default-exercises">
+                  <h6 class="text-muted">Popular Exercises</h6>
+                  <div 
+                    v-for="exercise in searchedExercises.slice(0, 8)" 
+                    :key="exercise.id"
+                    class="search-result-item"
+                  >
+                    <div class="exercise-info">
+                      <h6 class="exercise-name">{{ formatExerciseName(exercise.name) }}</h6>
+                      <p class="exercise-target">{{ formatTarget(exercise.target) }} • {{ formatBodyPart(exercise.bodyPart) }}</p>
+                      <p class="exercise-equipment">{{ formatEquipment(exercise.equipment) }}</p>
+                    </div>
+                    <button 
+                      @click="addExerciseToPlaylist(exercise)"
+                      :disabled="isExerciseInPlaylist(exercise.id)"
+                      class="btn btn-sm btn-primary"
+                      type="button"
+                    >
+                      <i class="fas fa-plus me-1"></i>
+                      {{ isExerciseInPlaylist(exercise.id) ? 'Added' : 'Add' }}
+                    </button>
+                  </div>
+                </div>
+
+                <div v-else-if="searchQuery && !searchLoading && searchedExercises.length === 0" class="text-muted text-center py-3">
+                  No exercises found for "{{ searchQuery }}". Try different keywords.
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         
         <div class="modal-footer">
           <button 
             @click="showEditModal = false"
-            class="btn btn-secondary"
+            class="u-btn u-btn--secondary"
           >
             Cancel
           </button>
           <button 
             @click="savePlaylistChanges"
-            class="btn btn-primary"
+            class="u-btn u-btn--primary"
             :disabled="!editingPlaylist.name.trim()"
-          >
-            <i class="fas fa-save me-1"></i>Save Changes
+          >Save Changes
           </button>
         </div>
       </div>
@@ -244,8 +363,7 @@
       <div class="modal-content large">
         <div class="modal-header">
           <h5 class="modal-title">{{ viewingPlaylist.name }}</h5>
-          <button @click="showViewModal = false" class="btn-close">
-            <i class="fas fa-times"></i>
+          <button @click="showViewModal = false" class="btn-close-white btn-close">
           </button>
         </div>
         
@@ -277,7 +395,7 @@
             </div>
           </div>
 
-          <div class="muscle-groups mb-4">
+          <div class="muscle-groups u-muted mb-4">
             <h6>Targeted Muscle Groups:</h6>
             <div class="muscle-badges">
               <span 
@@ -329,15 +447,15 @@
         <div class="modal-footer">
           <button 
             @click="showViewModal = false"
-            class="btn btn-secondary"
+            class="u-btn u-btn--secondary"
           >
             Close
           </button>
           <button 
             @click="loadPlaylist(viewingPlaylist.id)"
-            class="btn btn-primary"
+            class="u-btn u-btn--primary"
           >
-            <i class="fas fa-play me-1"></i>Load into Cart
+            Load into Cart
           </button>
         </div>
       </div>
@@ -351,8 +469,7 @@
             <i class="fas fa-upload me-2 text-success"></i>
             Publish to Community Vault
           </h5>
-          <button @click="showPublishModal = false" class="btn-close">
-            <i class="fas fa-times"></i>
+          <button @click="showPublishModal = false" class="btn-close-white btn-close">
           </button>
         </div>
         
@@ -365,15 +482,15 @@
               </p>
               <div class="workout-stats-preview">
                 <div class="stat">
-                  <i class="fas fa-dumbbell me-1"></i>
+                  
                   {{ publishingPlaylist.exercises?.length || 0 }} exercises
                 </div>
                 <div class="stat">
-                  <i class="fas fa-clock me-1"></i>
+                  
                   {{ Math.round(publishingPlaylist.totalDuration || 0) }} min
                 </div>
                 <div class="stat">
-                  <i class="fas fa-muscle me-1"></i>
+                  
                   {{ publishingPlaylist.muscleGroups?.length || 0 }} muscle groups
                 </div>
               </div>
@@ -381,7 +498,7 @@
           </div>
           
           <div class="publish-info">
-            <h6><i class="fas fa-info-circle me-2 text-info"></i>What happens when you publish?</h6>
+            <h6>What happens when you publish?</h6>
             <ul class="publish-benefits">
               <li>Your workout becomes visible to the entire FitU community</li>
               <li>Other users can discover, rate, and review your workout</li>
@@ -391,9 +508,9 @@
           </div>
 
           <div class="confirmation-section">
-            <div class="form-check">
+            <div class="form-check align-checkbox">
               <input 
-                class="form-check-input" 
+                class="" 
                 type="checkbox" 
                 id="confirmPublish"
                 v-model="confirmPublish"
@@ -408,9 +525,9 @@
         <div class="modal-footer">
           <button 
             @click="showPublishModal = false"
-            class="btn btn-secondary"
+            class="u-btn u-btn--secondary"
           >
-            <i class="fas fa-times me-1"></i>Cancel
+            Cancel
           </button>
           <button 
             @click="confirmPublishToVault"
@@ -418,10 +535,10 @@
             :disabled="!confirmPublish || publishingInProgress"
           >
             <span v-if="publishingInProgress">
-              <i class="fas fa-spinner fa-spin me-1"></i>Publishing...
+              Publishing...
             </span>
             <span v-else>
-              <i class="fas fa-upload me-1"></i>Publish to Vault
+              Publish to Vault
             </span>
           </button>
         </div>
@@ -433,18 +550,15 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">
-            <i class="fas fa-download me-2 text-warning"></i>
             Remove from Community Vault
           </h5>
-          <button @click="showUnpublishModal = false" class="btn-close">
-            <i class="fas fa-times"></i>
+          <button @click="showUnpublishModal = false" class="btn-close btn-close-white">
           </button>
         </div>
         
         <div class="modal-body">
           <div class="unpublish-warning">
-            <div class="alert alert-warning">
-              <i class="fas fa-exclamation-triangle me-2"></i>
+            <div class="alert alert-warning u-card text-white">
               <strong>Are you sure you want to remove "{{ unpublishingPlaylist.name }}" from the community vault?</strong>
             </div>
             
@@ -463,20 +577,20 @@
         <div class="modal-footer">
           <button 
             @click="showUnpublishModal = false"
-            class="btn btn-secondary"
+            class="u-btn u-btn--secondary"
           >
-            <i class="fas fa-times me-1"></i>Cancel
+            Cancel
           </button>
           <button 
             @click="confirmUnpublishFromVault"
-            class="btn btn-warning"
+            class="u-btn u-btn--danger"
             :disabled="unpublishingInProgress"
           >
             <span v-if="unpublishingInProgress">
-              <i class="fas fa-spinner fa-spin me-1"></i>Removing...
+              Removing...
             </span>
             <span v-else>
-              <i class="fas fa-download me-1"></i>Remove from Vault
+              Remove from Vault
             </span>
           </button>
         </div>
@@ -491,8 +605,7 @@
             <i class="fas fa-edit me-2"></i>
             Edit Exercises - {{ editingExercisesPlaylist.name }}
           </h5>
-          <button @click="showEditExercisesModal = false" class="btn-close">
-            <i class="fas fa-times"></i>
+          <button @click="showEditExercisesModal = false" class="btn-close-white btn-close">
           </button>
         </div>
         
@@ -659,26 +772,24 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Delete Workout Set</h5>
-          <button @click="showDeleteModal = false" class="btn-close">
-            <i class="fas fa-times"></i>
+          <button @click="showDeleteModal = false" class="btn-close-white btn-close">
           </button>
         </div>
         
         <div class="modal-body">
           <p>Are you sure you want to delete "<strong>{{ deletingPlaylist.name }}</strong>"?</p>
           <p class="text-danger">
-            <i class="fas fa-exclamation-triangle me-2"></i>
             This action cannot be undone.
           </p>
         </div>
         
         <div class="modal-footer">
-          <button @click="showDeleteModal = false" class="btn btn-secondary">Cancel</button>
+          <button @click="showDeleteModal = false" class="u-btn u-btn--secondary">Cancel</button>
           <button 
             @click="confirmDeletePlaylist"
-            class="btn btn-danger"
+            class="u-btn u-btn--danger"
           >
-            <i class="fas fa-trash me-2"></i>Delete
+            Delete
           </button>
         </div>
       </div>
@@ -716,6 +827,17 @@ const confirmPublish = ref(false)
 const publishingInProgress = ref(false)
 const unpublishingInProgress = ref(false)
 const savingChanges = ref(false)
+
+// New exercise search state for edit modal
+const searchQuery = ref('')
+const searchedExercises = ref([])
+const searchLoading = ref(false)
+const searchTimeout = ref(null)
+const searchError = ref('')
+
+// API Configuration
+const API_BASE_URL = 'https://www.exercisedb.dev/api/v1'
+const EXERCISES_PER_PAGE = 12
 
 // Computed properties from store
 const savedPlaylists = computed(() => cartStore.savedPlaylists)
@@ -763,7 +885,9 @@ const viewPlaylist = (playlist) => {
 }
 
 const editPlaylist = (playlist) => {
-  editingPlaylist.value = { ...playlist }
+  editingPlaylist.value = { ...playlist, exercises: [...(playlist.exercises || [])] }
+  clearSearch() // Clear any previous search state
+  fetchExercises() // Preload popular exercises
   showEditModal.value = true
 }
 
@@ -771,16 +895,167 @@ const savePlaylistChanges = async () => {
   if (!editingPlaylist.value.name.trim()) return
 
   try {
+    // Calculate updated duration based on exercises
+    const updatedDuration = calculateWorkoutDuration(editingPlaylist.value.exercises || [])
+    
     await cartStore.updatePlaylist(editingPlaylist.value.id, {
       name: editingPlaylist.value.name.trim(),
-      description: editingPlaylist.value.description.trim()
+      description: editingPlaylist.value.description.trim(),
+      exercises: editingPlaylist.value.exercises || [],
+      totalDuration: updatedDuration
     })
     showEditModal.value = false
+    clearSearch() // Clear search state
     editingPlaylist.value = {}
   } catch (error) {
     console.error('Error updating playlist:', error)
     alert('Error updating workout set: ' + error.message)
   }
+}
+
+// New exercise search functions for edit modal
+const fetchExercises = async (query = '') => {
+  if (searchLoading.value) return
+  
+  searchLoading.value = true
+  searchError.value = ''
+  
+  try {
+    const baseUrl = `${API_BASE_URL}/exercises`
+    const params = new URLSearchParams({
+      limit: EXERCISES_PER_PAGE,
+      offset: 0
+    })
+    
+    if (query.trim()) {
+      params.append('search', query.trim())
+    }
+    
+    const response = await fetch(`${baseUrl}?${params}`)
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch exercises: ${response.status} ${response.statusText}`)
+    }
+    
+    const data = await response.json()
+    
+    // Handle ExerciseDB API response structure
+    if (data.success && data.data) {
+      const mappedExercises = data.data.map(exercise => ({
+        id: exercise.exerciseId,
+        name: exercise.name,
+        target: exercise.targetMuscles,
+        bodyPart: exercise.bodyParts,
+        equipment: exercise.equipments,
+        gifUrl: exercise.gifUrl,
+        instructions: exercise.instructions ? (
+          typeof exercise.instructions === 'string' 
+            ? exercise.instructions.split('Step:').filter(step => step.trim()).map(step => step.trim())
+            : exercise.instructions
+        ) : [],
+        secondaryMuscles: exercise.secondaryMuscles ? (
+          typeof exercise.secondaryMuscles === 'string'
+            ? exercise.secondaryMuscles.split(' ')
+            : exercise.secondaryMuscles
+        ) : []
+      }))
+      
+      searchedExercises.value = mappedExercises
+    } else {
+      searchedExercises.value = Array.isArray(data) ? data : (data.exercises || [])
+    }
+    
+  } catch (err) {
+    console.error('Error fetching exercises:', err)
+    searchError.value = err.message || 'Failed to load exercises. Please check your internet connection and try again.'
+    searchedExercises.value = []
+  } finally {
+    searchLoading.value = false
+  }
+}
+
+const handleSearch = () => {
+  clearTimeout(searchTimeout.value)
+  
+  searchTimeout.value = setTimeout(() => {
+    if (searchQuery.value.trim()) {
+      fetchExercises(searchQuery.value.trim())
+    } else {
+      clearSearch()
+    }
+  }, 500)
+}
+
+const clearSearch = () => {
+  searchQuery.value = ''
+  searchedExercises.value = []
+  searchError.value = ''
+}
+
+// Exercise management functions for edit modal
+const addExerciseToPlaylist = (exercise) => {
+  if (!editingPlaylist.value.exercises) {
+    editingPlaylist.value.exercises = []
+  }
+  
+  // Check if exercise is already in playlist
+  const exists = editingPlaylist.value.exercises.some(ex => ex.id === exercise.id)
+  if (!exists) {
+    editingPlaylist.value.exercises.push({
+      id: exercise.id,
+      name: exercise.name,
+      target: exercise.target,
+      bodyPart: exercise.bodyPart,
+      equipment: exercise.equipment,
+      gifUrl: exercise.gifUrl,
+      instructions: exercise.instructions,
+      secondaryMuscles: exercise.secondaryMuscles
+    })
+  }
+}
+
+const removeExerciseFromPlaylist = (index) => {
+  if (editingPlaylist.value.exercises && index >= 0 && index < editingPlaylist.value.exercises.length) {
+    editingPlaylist.value.exercises.splice(index, 1)
+  }
+}
+
+const isExerciseInPlaylist = (exerciseId) => {
+  return editingPlaylist.value.exercises?.some(ex => ex.id === exerciseId) || false
+}
+
+// Format functions for exercise data
+const formatExerciseName = (name) => {
+  if (!name) return 'Exercise'
+  return name
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
+
+const formatTarget = (target) => {
+  if (!target) return 'Full Body'
+  if (Array.isArray(target)) {
+    return target.join(', ')
+  }
+  return target.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', ')
+}
+
+const formatBodyPart = (bodyPart) => {
+  if (!bodyPart) return 'General'
+  if (Array.isArray(bodyPart)) {
+    return bodyPart.join(', ')
+  }
+  return bodyPart.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', ')
+}
+
+const formatEquipment = (equipment) => {
+  if (!equipment) return 'Bodyweight'
+  if (Array.isArray(equipment)) {
+    return equipment.join(', ')
+  }
+  return equipment.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', ')
 }
 
 const duplicatePlaylist = async (playlistId) => {
@@ -1081,7 +1356,6 @@ const updateWorkoutDurations = async (playlists) => {
 <style scoped>
 .workout-playlists {
   min-height: 100vh;
-  background: #f8f9fa;
 }
 
 .container {
@@ -1094,18 +1368,6 @@ const updateWorkoutDurations = async (playlists) => {
   padding: 2rem 0;
 }
 
-.page-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #2c3e50;
-  margin-bottom: 0.5rem;
-}
-
-.page-subtitle {
-  font-size: 1.1rem;
-  color: #6c757d;
-  margin-bottom: 0;
-}
 
 /* Empty State */
 .empty-state {
@@ -1129,7 +1391,6 @@ const updateWorkoutDurations = async (playlists) => {
 
 /* Playlist Cards */
 .playlist-card {
-  background: white;
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -1159,7 +1420,6 @@ const updateWorkoutDurations = async (playlists) => {
 .playlist-name {
   font-size: 1.2rem;
   font-weight: 600;
-  color: #2c3e50;
   margin: 0 0 0.5rem 0;
 }
 
@@ -1179,7 +1439,7 @@ const updateWorkoutDurations = async (playlists) => {
 }
 
 .playlist-description {
-  color: #6c757d;
+  color: var(--muted);
   font-size: 0.9rem;
   margin-bottom: 1rem;
   line-height: 1.4;
@@ -1191,7 +1451,6 @@ const updateWorkoutDurations = async (playlists) => {
   justify-content: space-between;
   margin-bottom: 1rem;
   padding: 1rem;
-  background: #f8f9fa;
   border-radius: 8px;
 }
 
@@ -1287,7 +1546,6 @@ const updateWorkoutDurations = async (playlists) => {
 .playlist-footer {
   margin-top: auto;
   padding-top: 1rem;
-  border-top: 1px solid #dee2e6;
 }
 
 .playlist-meta {
@@ -1327,7 +1585,7 @@ const updateWorkoutDurations = async (playlists) => {
 }
 
 .modal-content {
-  background: white;
+  background: var(--bg);
   border-radius: 8px;
   width: 100%;
   max-width: 500px;
@@ -1339,9 +1597,115 @@ const updateWorkoutDurations = async (playlists) => {
   max-width: 800px;
 }
 
+.modal-content.large-modal {
+  max-width: 1200px;
+  width: 95%;
+  max-height: 95vh;
+  overflow-y: auto;
+}
+
+.large-modal .modal-body {
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 2rem;
+}
+
+/* Exercise Search Styles for Edit Modal */
+.current-exercises {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 0.5rem;
+}
+
+.exercise-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  background: #f8f9fa;
+}
+
+.exercise-item:last-child {
+  margin-bottom: 0;
+}
+
+.exercise-info {
+  flex: 1;
+}
+
+.exercise-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: #2c3e50;
+}
+
+.exercise-target {
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin: 0;
+}
+
+.exercise-equipment {
+  font-size: 0.75rem;
+  color: #868e96;
+  margin: 0;
+}
+
+.search-container {
+  margin-bottom: 1rem;
+}
+
+.search-results {
+  max-height: 500px;
+  overflow-y: auto;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 0.5rem;
+}
+
+.default-exercises {
+  max-height: 500px;
+  overflow-y: auto;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 0.5rem;
+}
+
+.search-result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.search-result-item:hover {
+  background: #f8f9fa;
+  border-color: #007bff;
+}
+
+.search-result-item:last-child {
+  margin-bottom: 0;
+}
+
+.search-loading {
+  color: #6c757d;
+  font-style: italic;
+}
+
 .modal-header {
   padding: 1.5rem;
-  border-bottom: 1px solid #dee2e6;
+  border-bottom: 1px solid var(--border-subtle);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1349,21 +1713,7 @@ const updateWorkoutDurations = async (playlists) => {
 
 .modal-title {
   margin: 0;
-  color: #2c3e50;
   font-weight: 600;
-}
-
-.btn-close {
-  background: none;
-  border: none;
-  font-size: 1.2rem;
-  color: #6c757d;
-  cursor: pointer;
-  padding: 0.25rem;
-}
-
-.btn-close:hover {
-  color: #dc3545;
 }
 
 .modal-body {
@@ -1382,7 +1732,6 @@ const updateWorkoutDurations = async (playlists) => {
 
 .modal-footer {
   padding: 1rem 1.5rem;
-  border-top: 1px solid #dee2e6;
   display: flex;
   gap: 0.5rem;
   justify-content: flex-end;
@@ -1396,7 +1745,6 @@ const updateWorkoutDurations = async (playlists) => {
 .stat-number {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #007bff;
 }
 
 .stat-label {
@@ -1422,9 +1770,8 @@ const updateWorkoutDurations = async (playlists) => {
   align-items: center;
   gap: 1rem;
   padding: 1rem;
-  background: #f8f9fa;
+  background: var(--surface-subtle);
   border-radius: 8px;
-  border: 1px solid #dee2e6;
 }
 
 .exercise-number {
@@ -1460,13 +1807,13 @@ const updateWorkoutDurations = async (playlists) => {
 .exercise-info .exercise-name {
   font-size: 1rem;
   font-weight: 600;
-  color: #2c3e50;
+  color: white;
   margin: 0 0 0.25rem 0;
 }
 
 .exercise-info .exercise-target {
   font-size: 0.9rem;
-  color: #6c757d;
+  color: var(--muted);
   margin: 0 0 0.5rem 0;
 }
 
@@ -1484,7 +1831,7 @@ const updateWorkoutDurations = async (playlists) => {
   flex-direction: column;
   gap: 0.25rem;
   font-size: 0.9rem;
-  color: #495057;
+  color: var(--muted);
 }
 
 .sets, .reps, .weight {
@@ -1531,7 +1878,6 @@ const updateWorkoutDurations = async (playlists) => {
 }
 
 .publish-info h6 {
-  color: #2c3e50;
   margin-bottom: 0.75rem;
 }
 
@@ -1542,18 +1888,18 @@ const updateWorkoutDurations = async (playlists) => {
 
 .publish-benefits li {
   margin-bottom: 0.5rem;
-  color: #495057;
+  color: var(--muted);
 }
 
 .confirmation-section {
-  background: #f8f9fa;
+  background: var(--surface-subtle);
   border-radius: 8px;
   padding: 1rem;
   border-left: 4px solid #28a745;
 }
 
 .form-check-label {
-  color: #495057;
+  color: var(--muted);
   cursor: pointer;
 }
 
@@ -1562,7 +1908,6 @@ const updateWorkoutDurations = async (playlists) => {
 }
 
 .unpublish-consequences h6 {
-  color: #2c3e50;
   margin-bottom: 0.75rem;
 }
 
@@ -1573,7 +1918,7 @@ const updateWorkoutDurations = async (playlists) => {
 
 .unpublish-consequences li {
   margin-bottom: 0.5rem;
-  color: #495057;
+  color: var(--muted);
 }
 
 /* Exercise Editing Modal Styles */
@@ -1717,6 +2062,26 @@ const updateWorkoutDurations = async (playlists) => {
     flex-direction: column;
     gap: 0.25rem;
   }
+
+  .modal-content.large-modal {
+    margin: 0.5rem;
+    width: calc(100% - 1rem);
+    max-width: none;
+  }
+
+  .large-modal .modal-body {
+    padding: 1rem;
+  }
+
+  .large-modal .modal-body .row > .col-md-6 {
+    margin-bottom: 2rem;
+  }
+
+  .current-exercises,
+  .search-results,
+  .default-exercises {
+    max-height: 300px;
+  }
   
   .playlist-buttons .u-btn {
     width: 100%;
@@ -1736,5 +2101,19 @@ const updateWorkoutDurations = async (playlists) => {
     justify-content: center;
     gap: 1rem;
   }
+}
+
+.dropdown-item:hover {
+  background-color:  rgb(80, 80, 80);;
+}
+
+.align-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* Adjust spacing between checkbox and label */
+}
+
+.align-checkbox .form-check-input {
+  margin-top: 0; /* Remove default margin */
 }
 </style>
