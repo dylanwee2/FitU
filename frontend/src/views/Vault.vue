@@ -123,8 +123,9 @@
                           <h6 class="exercise-name mb-1" style="text-transform: capitalize;">{{ exercise.name }}</h6>
                           <p class="exercise-target mb-1 u-muted">{{ exercise.target }}</p>
                           <div class="exercise-badges">
-                            <span class="badge bg-primary me-1">{{ exercise.bodyPart }}</span>
-                            <span class="badge bg-secondary">{{ exercise.equipment }}</span>
+                            <span class="badge target-muscle-badge me-1">{{ capitalizeFirstLetter(exercise.target) }}</span>
+                            <span class="badge body-part-badge me-1">{{ capitalizeFirstLetter(exercise.bodyPart) }}</span>
+                            <span class="badge equipment-badge">{{ capitalizeFirstLetter(exercise.equipment) }}</span>
                           </div>
                         </div>
                       </div>
@@ -524,6 +525,15 @@ const handleImageError = (event) => {
   event.target.src = '/images/exercise-placeholder.png'
 }
 
+const capitalizeFirstLetter = (text) => {
+  if (!text) return ''
+  return text
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
+
 const filteredWorkoutSets = computed(() => {
   let filtered = [...workoutSets.value]
 
@@ -862,5 +872,60 @@ onUnmounted(() => {
   .filters-section .row {
     gap: 1rem;
   }
+}
+
+/* Color-coded badge styles */
+.target-muscle-badge {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
+  color: white !important;
+  border: none;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.target-muscle-badge:hover {
+  background: linear-gradient(135deg, #c0392b 0%, #a93226 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+.body-part-badge {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
+  color: white !important;
+  border: none;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.body-part-badge:hover {
+  background: linear-gradient(135deg, #2980b9 0%, #21618c 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.equipment-badge {
+  background: linear-gradient(135deg, #27ae60 0%, #229954 100%) !important;
+  color: white !important;
+  border: none;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.equipment-badge:hover {
+  background: linear-gradient(135deg, #229954 0%, #1e8449 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
 }
 </style>
