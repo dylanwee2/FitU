@@ -255,7 +255,7 @@
                   :disabled="isSaving"
                 >
                   <span v-if="isSaving" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                  <i v-else class="bi bi-trash me-2"></i>
+                  
                   {{ isSaving ? 'Deleting Account...' : 'Delete Account' }}
                 </button>
                 </div>
@@ -554,59 +554,57 @@
           <button @click="saveWorkoutEdit" class="u-btn u-btn--primary">Save Changes</button>
         </div>
       </div>
+    </div>
 
-      <!-- Delete Account Confirmation Modal -->
-      <div v-if="showDeleteModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-              <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Delete Account</h5>
-              <button type="button" class="btn-close btn-close-white" @click="closeDeleteModal"></button>
-            </div>
-            <div class="modal-body">
-              <p><strong>This action cannot be undone!</strong></p>
-              <p>Deleting your account will permanently remove:</p>
-              <ul>
-                <li>Your profile and personal information</li>
-                <li>All your published workouts</li>
-                <li>Your workout sets and progress data</li>
-                <li>All reviews you've written</li>
-                <li>Your calorie tracking data</li>
-              </ul>
-              <form @submit.prevent="handlePasswordSubmit">
-                <div class="mb-3 mt-4">
-                  <label for="deletePassword" class="form-label">
-                    <strong>Please enter your password to confirm:</strong>
-                  </label>
-                  <input 
-                    type="password" 
-                    class="form-control" 
-                    id="deletePassword"
-                    v-model="deletePassword" 
-                    placeholder="Enter your password"
-                    :disabled="isSaving"
-                    required
-                  >
-                </div>
-                <div v-if="deleteError" class="alert alert-danger mt-3" role="alert">
-                  {{ deleteError }}
-                </div>
-              </form>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" @click="closeDeleteModal" :disabled="isSaving">
-                Cancel
-              </button>
-              <button type="button" class="btn btn-danger" @click="handlePasswordSubmit" :disabled="isSaving || !deletePassword">
-                <span v-if="isSaving" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                <i v-else class="bi bi-trash me-2"></i>
-                {{ isSaving ? 'Deleting Account...' : 'Delete My Account' }}
-              </button>
-            </div>
+    <!-- Delete Account Confirmation Modal -->
+    <div v-if="showDeleteModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Delete Account</h5>
+            <button type="button" class="btn-close btn-close-white" @click="closeDeleteModal"></button>
+          </div>
+          <div class="modal-body">
+            <p><strong>This action cannot be undone!</strong></p>
+            <p>Deleting your account will permanently remove:</p>
+            <ul>
+              <li>Your profile and personal information</li>
+              <li>All your published workouts</li>
+              <li>Your workout sets and progress data</li>
+              <li>All reviews you've written</li>
+              <li>Your calorie tracking data</li>
+            </ul>
+            <form @submit.prevent="handlePasswordSubmit">
+              <div class="mb-3 mt-4">
+                <label for="deletePassword" class="form-label">
+                  <strong>Please enter your password to confirm:</strong>
+                </label>
+                <input 
+                  type="password" 
+                  class="form-control" 
+                  id="deletePassword"
+                  v-model="deletePassword" 
+                  placeholder="Enter your password"
+                  :disabled="isSaving"
+                  required
+                >
+              </div>
+              <div v-if="deleteError" class="alert alert-danger mt-3" role="alert">
+                {{ deleteError }}
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="closeDeleteModal" :disabled="isSaving">
+              Cancel
+            </button>
+            <button type="button" class="btn btn-danger" @click="handlePasswordSubmit" :disabled="isSaving || !deletePassword">
+              <span v-if="isSaving" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              {{ isSaving ? 'Deleting Account...' : 'Delete My Account' }}
+            </button>
           </div>
         </div>
       </div>
-      
     </div>
   </div>
 
@@ -2308,9 +2306,9 @@ html {
 }
 
 .modal-body {
-  padding: 2rem;
   max-height: 70vh;
   overflow-y: auto;
+  color: white;
 }
 
 .modal-footer {
@@ -2318,7 +2316,7 @@ html {
   border-top: 2px solid var(--border-subtle);
   display: flex;
   gap: 1rem;
-  justify-content: flex-end;
+  justify-content: center;
   background: var(--surface-subtle);
 }
 
@@ -2543,5 +2541,29 @@ textarea.form-control {
   .modal-title {
     font-size: 1.25rem;
   }
+}
+
+/* Delete Modal Specific Styles */
+.modal.fade.show.d-block {
+  z-index: 9999 !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.modal-dialog-centered {
+  z-index: 10000 !important;
+}
+
+.modal-content {
+  background-color: var(--bg) !important;
+  border: 2px solid var(--border-subtle) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
 }
 </style>
