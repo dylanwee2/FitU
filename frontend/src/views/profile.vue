@@ -431,8 +431,6 @@ onMounted(() => {
       setTimeout(() => {
         initializeCharts();
       }, 100);
-    } else {
-      router.push('/login');
     }
   });
 });
