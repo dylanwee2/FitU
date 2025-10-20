@@ -175,7 +175,9 @@
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content u-bg">
             <div class="modal-header">
-              <h5 class="modal-title">Rate "{{ viewingPlaylist?.name || 'Workout' }}"</h5>
+              <h5 class="modal-title">
+                {{ isUpdatingReview ? 'Update Your Rating' : 'Rate' }} "{{ viewingPlaylist?.name || 'Workout' }}"
+              </h5>
               <button 
                 type="button" 
                 class="btn-close btn-close-white" 
@@ -184,7 +186,12 @@
             </div>
             
             <div class="modal-body text-center py-4">
-              <p class="mb-4 u-muted">How would you rate this workout?</p>
+              <p v-if="isUpdatingReview" class="mb-2 u-muted">
+                You previously rated this workout {{ existingUserReview?.rating }} star{{ existingUserReview?.rating !== 1 ? 's' : '' }}.
+              </p>
+              <p class="mb-4 u-muted">
+                {{ isUpdatingReview ? 'Update your rating:' : 'How would you rate this workout?' }}
+              </p>
               
               <div class="stars-rating-container mb-4">
                 <img 
@@ -224,7 +231,7 @@
                 @click="submitRating"
                 :disabled="userRating === 0 || submittingRating"
               >
-                {{ submittingRating ? 'Submitting...' : 'Submit Rating' }}
+                {{ submittingRating ? 'Submitting...' : (isUpdatingReview ? 'Update Rating' : 'Submit Rating') }}
               </button>
             </div>
           </div>
@@ -263,6 +270,59 @@
                 @click="showThankYouModal = false"
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Update Confirmation Modal -->
+      <div 
+        v-if="showUpdateConfirmModal" 
+        class="modal fade show d-block" 
+        tabindex="-1" 
+        style="background-color: rgba(0,0,0,0.7); z-index: 1060;"
+        @click.self="cancelUpdate"
+      >
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content u-bg">
+            <div class="modal-header">
+              <h5 class="modal-title">Update Your Review?</h5>
+              <button 
+                type="button" 
+                class="btn-close btn-close-white" 
+                @click="cancelUpdate"
+              ></button>
+            </div>
+            
+            <div class="modal-body text-center py-4">
+              <div class="mb-3">
+                <i class="fas fa-info-circle text-info" style="font-size: 2.5rem;"></i>
+              </div>
+              <h6 class="mb-3">You've already reviewed this workout</h6>
+              <p class="mb-3 u-muted">
+                You previously gave "{{ viewingPlaylist?.name || 'this workout' }}" 
+                {{ existingUserReview?.rating }} star{{ existingUserReview?.rating !== 1 ? 's' : '' }}.
+              </p>
+              <p class="mb-0 u-muted">
+                Would you like to update your rating?
+              </p>
+            </div>
+            
+            <div class="modal-footer justify-content-center">
+              <button 
+                type="button"
+                class="u-btn u-btn--secondary me-2"
+                @click="cancelUpdate"
+              >
+                Cancel
+              </button>
+              <button 
+                type="button"
+                class="u-btn u-btn--primary"
+                @click="proceedWithUpdate"
+              >
+                Update Rating
               </button>
             </div>
           </div>
@@ -391,10 +451,13 @@ const unsubscribe = ref(null)
 const showViewModal = ref(false)
 const showRatingModal = ref(false)
 const showThankYouModal = ref(false)
+const showUpdateConfirmModal = ref(false)
 const viewingPlaylist = ref(null)
 const userRating = ref(0)
 const hoverRating = ref(0)
 const submittingRating = ref(false)
+const existingUserReview = ref(null)
+const isUpdatingReview = ref(false)
 
 // Computed properties
 const currentUser = computed(() => {
@@ -430,15 +493,52 @@ const viewWorkoutSet = (workoutSet) => {
   showViewModal.value = true
 }
 
-const openRatingModal = () => {
+const openRatingModal = async () => {
   if (!currentUser.value) {
     alert('Please log in to rate workouts')
     return
   }
-  // console.log('Opening rating modal for workout ID:', viewingPlaylist.value?.id) // Debug log
+  
+  try {
+    // Check if user has already reviewed this workout
+    existingUserReview.value = await workoutVaultService.getUserReviewForWorkout(
+      viewingPlaylist.value.id, 
+      currentUser.value.id
+    )
+    
+    if (existingUserReview.value) {
+      // User has already reviewed, show update confirmation modal
+      isUpdatingReview.value = true
+      userRating.value = existingUserReview.value.rating
+      showUpdateConfirmModal.value = true
+    } else {
+      // New review
+      isUpdatingReview.value = false
+      userRating.value = 0
+      hoverRating.value = 0
+      showRatingModal.value = true
+    }
+  } catch (error) {
+    console.error('Error checking existing review:', error)
+    // If there's an error checking, proceed as if it's a new review
+    isUpdatingReview.value = false
+    userRating.value = 0
+    hoverRating.value = 0
+    showRatingModal.value = true
+  }
+}
+
+const proceedWithUpdate = () => {
+  showUpdateConfirmModal.value = false
+  showRatingModal.value = true
+}
+
+const cancelUpdate = () => {
+  showUpdateConfirmModal.value = false
   userRating.value = 0
   hoverRating.value = 0
-  showRatingModal.value = true
+  existingUserReview.value = null
+  isUpdatingReview.value = false
 }
 
 const setRating = (rating) => {
@@ -463,15 +563,8 @@ const submitRating = async () => {
   submittingRating.value = true
   
   try {
-    // console.log('Submitting rating:', {
-    //   workoutId: viewingPlaylist.value.id,
-    //   userId: currentUser.value.id,
-    //   userName: currentUser.value.name,
-    //   rating: userRating.value
-    // })
-    
-    // Add the review/rating using the vault service - this will automatically update the workout's rating statistics
-    await workoutVaultService.addReview(
+    // Add/update the review using the vault service
+    const result = await workoutVaultService.addReview(
       viewingPlaylist.value.id, 
       currentUser.value.id,
       currentUser.value.name,
@@ -493,19 +586,14 @@ const submitRating = async () => {
       viewingPlaylist.value.reviewsCount = updatedWorkoutData.reviewsCount
       viewingPlaylist.value.totalRating = updatedWorkoutData.totalRating
       viewingPlaylist.value.avgRating = updatedWorkoutData.avgRating
-      
-      // console.log('Updated workout data from Firebase:', {
-      //   id: updatedWorkout.id,
-      //   reviewsCount: updatedWorkoutData.reviewsCount,
-      //   totalRating: updatedWorkoutData.totalRating,
-      //   avgRating: updatedWorkoutData.avgRating
-      // })
     }
     
-    // Close all modals and show thank you message
+    // Close modals and show appropriate thank you message
     showViewModal.value = false
     showRatingModal.value = false
     userRating.value = 0
+    isUpdatingReview.value = false
+    existingUserReview.value = null
     showThankYouModal.value = true
     
   } catch (error) {

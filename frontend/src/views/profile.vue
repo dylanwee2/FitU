@@ -32,32 +32,6 @@
             </div>
             <div class="card-body">
               <form @submit.prevent="saveProfile">
-                <!-- Profile Picture -->
-                <div class="row mb-4">
-                  <div class="col-12 text-center">
-                    <div class="profile-picture-wrapper">
-                      <img 
-                        :src="profileData.photoURL || defaultAvatar" 
-                        alt="Profile Picture" 
-                        class="profile-picture"
-                      >
-                      <div v-if=false class="mt-3">
-                        <label for="photoUpload" class="btn btn-change-photo">
-                          <i class="bi bi-camera me-1"></i>Change Photo
-                        </label>
-                        <input 
-                          type="file" 
-                          id="photoUpload" 
-                          accept="image/*" 
-                          @change="handlePhotoUpload" 
-                          class="d-none"
-                        >
-                      </div>
-                      <small v-if=false class="text-muted d-block mt-2">Max size: 2MB</small>
-                    </div>
-                  </div>
-                </div>
-
                 <!-- Name and Email -->
                 <div class="row">
                   <div class="col-md-6 mb-3">
@@ -265,62 +239,6 @@
             </div>
           </div>
 
-          <!-- Preferences & Integrations Card -->
-          <div class="card mb-4">
-            <div class="card-header text-white" style="background: var(--primary)">
-              <h5 class="mb-0"><i class="bi bi-gear me-2"></i>Preferences & Integrations</h5>
-            </div>
-            <div class="card-body">
-              <div class="form-check form-switch mb-3">
-                <input 
-                  class="form-check-input" 
-                  type="checkbox" 
-                  id="spotifyConnect" 
-                  v-model="preferences.spotifyConnected"
-                >
-                <label class="form-check-label" for="spotifyConnect">
-                  <i class="bi bi-spotify me-2"></i>Connect Spotify for Workout Playlists
-                </label>
-              </div>
-
-              <div class="form-check form-switch mb-3">
-                <input 
-                  class="form-check-input" 
-                  type="checkbox" 
-                  id="aiSuggestions" 
-                  v-model="preferences.aiSuggestionsEnabled"
-                >
-                <label class="form-check-label" for="aiSuggestions">
-                  <i class="bi bi-robot me-2"></i>Enable AI-Powered Health Suggestions
-                </label>
-              </div>
-
-              <div class="form-check form-switch mb-3">
-                <input 
-                  class="form-check-input" 
-                  type="checkbox" 
-                  id="reminders" 
-                  v-model="preferences.remindersEnabled"
-                >
-                <label class="form-check-label" for="reminders">
-                  <i class="bi bi-bell me-2"></i>Enable Reminders & Notifications
-                </label>
-              </div>
-
-              <div class="form-check form-switch">
-                <input 
-                  class="form-check-input" 
-                  type="checkbox" 
-                  id="darkMode" 
-                  v-model="preferences.darkMode"
-                >
-                <label class="form-check-label" for="darkMode">
-                  <i class="bi bi-moon me-2"></i>Dark Mode
-                </label>
-              </div>
-            </div>
-          </div>
-
           <!-- Account Actions Card -->
           <div class="card mb-4">
             <div class="card-header text-white" style="background: var(--primary)">
@@ -351,8 +269,11 @@
                   <button 
                   @click="confirmDeleteAccount" 
                   class="btn btn-outline-danger btn-sm py-2 px-3"
+                  :disabled="isSaving"
                 >
-                  <i class="bi bi-trash me-2"></i>Delete Account
+                  <span v-if="isSaving" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  <i v-else class="bi bi-trash me-2"></i>
+                  {{ isSaving ? 'Deleting Account...' : 'Delete Account' }}
                 </button>
                 </div>
 
@@ -368,8 +289,62 @@
 
         </div>
       </div>
+
+      <!-- Delete Account Confirmation Modal -->
+      <div v-if="showDeleteModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+              <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Delete Account</h5>
+              <button type="button" class="btn-close btn-close-white" @click="closeDeleteModal"></button>
+            </div>
+            <div class="modal-body">
+              <p><strong>This action cannot be undone!</strong></p>
+              <p>Deleting your account will permanently remove:</p>
+              <ul>
+                <li>Your profile and personal information</li>
+                <li>All your published workouts</li>
+                <li>Your workout sets and progress data</li>
+                <li>All reviews you've written</li>
+                <li>Your calorie tracking data</li>
+              </ul>
+              <form @submit.prevent="handlePasswordSubmit">
+                <div class="mb-3 mt-4">
+                  <label for="deletePassword" class="form-label">
+                    <strong>Please enter your password to confirm:</strong>
+                  </label>
+                  <input 
+                    type="password" 
+                    class="form-control" 
+                    id="deletePassword"
+                    v-model="deletePassword" 
+                    placeholder="Enter your password"
+                    :disabled="isSaving"
+                    required
+                  >
+                </div>
+                <div v-if="deleteError" class="alert alert-danger mt-3" role="alert">
+                  {{ deleteError }}
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" @click="closeDeleteModal" :disabled="isSaving">
+                Cancel
+              </button>
+              <button type="button" class="btn btn-danger" @click="handlePasswordSubmit" :disabled="isSaving || !deletePassword">
+                <span v-if="isSaving" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                <i v-else class="bi bi-trash me-2"></i>
+                {{ isSaving ? 'Deleting Account...' : 'Delete My Account' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
     </div>
   </div>
+
 </template>
 
 <script setup>
@@ -378,7 +353,7 @@ import { useRouter } from 'vue-router';
 import caloriesService from '@/services/caloriesService.js';
 import Chart from 'chart.js/auto';
 import { getAuth, onAuthStateChanged, signOut, updateProfile, deleteUser, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
-import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp, deleteDoc } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp, deleteDoc, collection, getDocs, query, where } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 
 const router = useRouter();
@@ -396,10 +371,14 @@ const successMessage = ref('');
 const errorMessage = ref('');
 const currentUser = ref(null);
 
+// Delete account modal state
+const showDeleteModal = ref(false);
+const deletePassword = ref('');
+const deleteError = ref('');
+
 const profileData = ref({
   fullName: '',
   email: '',
-  photoURL: '',
   gender: '',
   age: null,
   height: null,
@@ -412,13 +391,6 @@ const goalsData = ref({
   dietaryPreference: '',
   allergies: '',
   workoutFrequency: 3
-});
-
-const preferences = ref({
-  spotifyConnected: false,
-  aiSuggestionsEnabled: true,
-  remindersEnabled: true,
-  darkMode: false
 });
 
 const workoutStreak = ref(4);
@@ -465,19 +437,6 @@ onMounted(() => {
   });
 });
 
-// ============================================
-// FIREBASE FUNCTIONS - COPY THIS ENTIRE SECTION
-// Replace everything from "// Firebase Functions" to the end of your script setup
-// ============================================
-
-// ============================================
-// FIREBASE FUNCTIONS - COPY THIS ENTIRE SECTION
-// Replace everything from "// Firebase Functions" to the end of your script setup
-// ============================================
-
-/**
- * Load user data from Firestore
- */
 async function loadUserData(uid) {
   try {
     isLoading.value = true;
@@ -493,7 +452,6 @@ async function loadUserData(uid) {
       profileData.value = {
         fullName: data.fullName || currentUser.value.displayName || '',
         email: data.email || currentUser.value.email || '',
-        photoURL: data.photoURL || currentUser.value.photoURL || defaultAvatar.value,
         gender: data.gender || '',
         age: data.age || null,
         height: data.height || null,
@@ -525,13 +483,6 @@ async function loadUserData(uid) {
         goalInput.value = data.dailyGoal || 2000;
       }
 
-      // Load preferences
-      preferences.value = {
-        spotifyConnected: data.spotifyConnected || false,
-        aiSuggestionsEnabled: data.aiSuggestionsEnabled !== undefined ? data.aiSuggestionsEnabled : true,
-        remindersEnabled: data.remindersEnabled !== undefined ? data.remindersEnabled : true,
-        darkMode: data.darkMode || false
-      };
     } else {
       // If document doesn't exist, create it with default values
       await createDefaultUserDocument(uid);
@@ -556,7 +507,6 @@ async function createDefaultUserDocument(uid) {
     const defaultData = {
       fullName: currentUser.value.displayName || '',
       email: currentUser.value.email || '',
-      photoURL: currentUser.value.photoURL || defaultAvatar.value,
       gender: '',
       age: null,
       height: null,
@@ -566,10 +516,6 @@ async function createDefaultUserDocument(uid) {
       dietaryPreference: '',
       allergies: '',
       workoutFrequency: 3,
-      spotifyConnected: false,
-      aiSuggestionsEnabled: true,
-      remindersEnabled: true,
-      darkMode: false,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
     };
@@ -585,60 +531,6 @@ async function createDefaultUserDocument(uid) {
   } catch (error) {
     console.error('Error creating default user document:', error);
     errorMessage.value = 'Failed to initialize profile.';
-  }
-}
-
-/**
- * Handle profile picture upload
- */
-async function handlePhotoUpload(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  // Validate file type
-  if (!file.type.startsWith('image/')) {
-    errorMessage.value = 'Please select an image file';
-    return;
-  }
-
-  // Validate file size (max 2MB)
-  if (file.size > 2 * 1024 * 1024) {
-    errorMessage.value = 'Image size should be less than 2MB';
-    return;
-  }
-
-  try {
-    isSaving.value = true;
-    
-    // Create storage reference
-    const photoStorageRef = storageRef(storage, `profile-photos/${currentUser.value.uid}`);
-    
-    // Upload file
-    await uploadBytes(photoStorageRef, file);
-    
-    // Get download URL
-    const photoURL = await getDownloadURL(photoStorageRef);
-    
-    // Update Firebase Auth profile
-    await updateProfile(currentUser.value, { photoURL });
-    
-    // Update Firestore - CRITICAL: Use the user's UID
-    const userDocRef = doc(db, 'users', currentUser.value.uid);
-    await setDoc(userDocRef, {
-      photoURL,
-      updatedAt: serverTimestamp()
-    }, { merge: true });
-    
-    // Update local state
-    profileData.value.photoURL = photoURL;
-    
-    successMessage.value = 'Profile picture updated successfully!';
-    
-  } catch (error) {
-    console.error('Error uploading photo:', error);
-    errorMessage.value = 'Failed to upload photo. Please try again.';
-  } finally {
-    isSaving.value = false;
   }
 }
 
@@ -669,20 +561,13 @@ async function saveAllData() {
       age: profileData.value.age || null,
       height: profileData.value.height || null,
       weight: profileData.value.weight || null,
-      photoURL: profileData.value.photoURL || defaultAvatar.value,
-      
+
       // Goals data
       goalType: goalsData.value.goalType || '',
       dailyGoal: goalsData.value.dailyGoal || 2000,
       dietaryPreference: goalsData.value.dietaryPreference || '',
       allergies: goalsData.value.allergies || '',
       workoutFrequency: goalsData.value.workoutFrequency || 3,
-      
-      // Preferences
-      spotifyConnected: preferences.value.spotifyConnected || false,
-      aiSuggestionsEnabled: preferences.value.aiSuggestionsEnabled !== undefined ? preferences.value.aiSuggestionsEnabled : true,
-      remindersEnabled: preferences.value.remindersEnabled !== undefined ? preferences.value.remindersEnabled : true,
-      darkMode: preferences.value.darkMode || false,
       
       // Metadata
       updatedAt: serverTimestamp()
@@ -728,117 +613,161 @@ async function handleLogout() {
 }
 
 /**
- * Confirm and delete user account
+ * Show delete account confirmation modal
  */
 function confirmDeleteAccount() {
-  const confirmed = confirm(
-    'Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently deleted.'
-  );
-  
-  if (confirmed) {
-    // Ask for password to re-authenticate
-    const password = prompt('Please enter your password to confirm account deletion:');
-    if (password) {
-      deleteAccount(password);
-    } else {
-      errorMessage.value = 'Account deletion canceled. Password is required.';
-    }
+  showDeleteModal.value = true;
+  deletePassword.value = '';
+  deleteError.value = '';
+}
+
+/**
+ * Close delete account modal
+ */
+function closeDeleteModal() {
+  showDeleteModal.value = false;
+  deletePassword.value = '';
+  deleteError.value = '';
+}
+
+/**
+ * Handle password submission for account deletion
+ */
+function handlePasswordSubmit() {
+  if (deletePassword.value.trim()) {
+    deleteError.value = '';
+    deleteAccount(currentUser.value.uid, deletePassword.value);
   }
 }
 
 /**
  * Delete user account with re-authentication
  */
-async function deleteAccount(password) {
+async function deleteAccount(uid, password) {
   try {
     isSaving.value = true;
     errorMessage.value = '';
     
-    console.log('Starting account deletion process...');
-    
-    // Step 1: Re-authenticate the user (required for sensitive operations)
+    // Step 1: Re-authenticate user before deletion
     console.log('Re-authenticating user...');
-    const credential = EmailAuthProvider.credential(
-      currentUser.value.email,
-      password
-    );
+    const credential = EmailAuthProvider.credential(currentUser.value.email, password);
     await reauthenticateWithCredential(currentUser.value, credential);
-    console.log('User re-authenticated successfully');
+    console.log('Re-authentication successful');
     
-    const uid = currentUser.value.uid;
-    
-    // Step 2: Delete profile photo from Storage (if exists)
-    console.log('Deleting profile photo from Storage...');
-    try {
-      const photoStorageRef = storageRef(storage, `profile-photos/${uid}`);
-      await deleteObject(photoStorageRef);
-      console.log('Profile photo deleted');
-    } catch (storageError) {
-      // Photo might not exist, that's okay
-      console.log('No profile photo to delete or already deleted:', storageError.code);
-    }
-    
-    // Step 3: Delete user document from Firestore
+    // Step 2: Delete user-related data from Firestore
     console.log('Deleting user data from Firestore...');
+    
+    // Delete main user document
     const userDocRef = doc(db, 'users', uid);
     await deleteDoc(userDocRef);
-    console.log('Firestore data deleted');
+    console.log('Main user document deleted');
     
-    // Step 4: Delete user from Firebase Authentication
+    // Delete user calories data
+    try {
+      const caloriesDocRef = doc(db, 'calories', uid);
+      await deleteDoc(caloriesDocRef);
+      console.log('User calories data deleted');
+    } catch (caloriesError) {
+      console.log('No calories data found or error deleting calories:', caloriesError.message);
+    }
+    
+    // Delete user profiles data (if exists)
+    try {
+      const userProfileDocRef = doc(db, 'userProfiles', uid);
+      await deleteDoc(userProfileDocRef);
+      console.log('User profile data deleted');
+    } catch (profileError) {
+      console.log('No user profile data found or error deleting profile:', profileError.message);
+    }
+    
+    // Delete workout sets subcollection (users/{uid}/workoutSets)
+    try {
+      const workoutSetsRef = collection(db, 'users', uid, 'workoutSets');
+      const workoutSetsSnapshot = await getDocs(workoutSetsRef);
+      const deletePromises = workoutSetsSnapshot.docs.map(d => deleteDoc(d.ref));
+      await Promise.all(deletePromises);
+      console.log('User workout sets (subcollection) deleted');
+    } catch (workoutError) {
+      console.log('No workout sets subcollection found or error deleting workout sets:', workoutError.message);
+    }
+
+    // Delete top-level workoutSets documents where userId == uid
+    try {
+      const q = query(collection(db, 'workoutSets'), where('userId', '==', uid));
+      const snapshot = await getDocs(q);
+      const promises = snapshot.docs.map(d => deleteDoc(doc(db, 'workoutSets', d.id)));
+      await Promise.all(promises);
+      console.log('Top-level workoutSets documents deleted');
+    } catch (topWorkoutError) {
+      console.log('No top-level workoutSets found or error deleting them:', topWorkoutError.message);
+    }
+
+    // Delete publishedWorkouts (top-level) where userId == uid
+    try {
+      const pubQ = query(collection(db, 'publishedWorkouts'), where('userId', '==', uid));
+      const pubSnap = await getDocs(pubQ);
+      const pubPromises = pubSnap.docs.map(d => deleteDoc(doc(db, 'publishedWorkouts', d.id)));
+      await Promise.all(pubPromises);
+      console.log('Published workouts deleted');
+    } catch (pubErr) {
+      console.log('No publishedWorkouts found or error deleting them:', pubErr.message);
+    }
+
+    // Delete workout reviews authored by the user (top-level collection workoutReviews)
+    try {
+      const revQ = query(collection(db, 'workoutReviews'), where('userId', '==', uid));
+      const revSnap = await getDocs(revQ);
+      const revPromises = revSnap.docs.map(d => deleteDoc(doc(db, 'workoutReviews', d.id)));
+      await Promise.all(revPromises);
+      console.log('User workout reviews deleted');
+    } catch (revErr) {
+      console.log('No workout reviews found or error deleting them:', revErr.message);
+    }
+
+    
+    // Step 3: Delete user from Firebase Authentication
     console.log('Deleting user from Authentication...');
     await deleteUser(currentUser.value);
     console.log('User account deleted successfully');
     
+    // Step 4: Clear any local storage or session data
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Close the modal
+    closeDeleteModal();
+    
     // Redirect to home/login page
-    alert('Your account has been successfully deleted. You will now be redirected to the home page.');
-    router.push('/');
+    successMessage.value = 'Your account has been successfully deleted. You will now be redirected to the home page.';
+    
+    // Wait a moment for the user to see the success message
+    setTimeout(() => {
+      router.push('/');
+    }, 2000);
     
   } catch (error) {
     console.error('Error deleting account:', error);
     
     // Provide specific error messages
     if (error.code === 'auth/wrong-password') {
-      errorMessage.value = 'Incorrect password. Account deletion canceled.';
+      deleteError.value = 'Incorrect password. Please try again.';
+    } else if (error.code === 'auth/invalid-credential') {
+      deleteError.value = 'Invalid credentials. Please check your password and try again.';
     } else if (error.code === 'auth/too-many-requests') {
+      deleteError.value = 'Too many failed attempts. Please try again later.';
+      closeDeleteModal();
       errorMessage.value = 'Too many failed attempts. Please try again later.';
     } else if (error.code === 'auth/requires-recent-login') {
+      deleteError.value = 'This operation requires recent authentication. Please log out and log back in, then try again.';
+      closeDeleteModal();
       errorMessage.value = 'This operation requires recent authentication. Please log out and log back in, then try again.';
+    } else if (error.code === 'auth/user-not-found') {
+      deleteError.value = 'User not found. Please try logging in again.';
+      closeDeleteModal();
+      errorMessage.value = 'User not found. Please try logging in again.';
     } else {
-      errorMessage.value = `Failed to delete account: ${error.message}`;
+      deleteError.value = `Failed to delete account: ${error.message}`;
     }
-  } finally {
-    isSaving.value = false;
-  }
-}
-
-/**
- * Save calorie goal to Firebase
- */
-async function saveCalorieGoal() {
-  const g = Number(goalInput.value)
-  if (!Number.isFinite(g) || g < 800 || g > 5000) {
-    errorMessage.value = 'Goal must be between 800 and 5000 kcal.'
-    return
-  }
-  try {
-    isSaving.value = true;
-    errorMessage.value = '';
-    
-    // Update daily goal using caloriesService
-    await caloriesService.updateDailyGoal(g)
-    
-    // Update local state to match
-    goalsData.value.dailyGoal = g;
-    
-    successMessage.value = 'Daily calorie goal saved to your profile.';
-    
-    setTimeout(() => {
-      successMessage.value = '';
-    }, 3000);
-    
-  } catch (e) {
-    console.error('Error saving calorie goal:', e);
-    errorMessage.value = 'Failed to save goal.';
   } finally {
     isSaving.value = false;
   }

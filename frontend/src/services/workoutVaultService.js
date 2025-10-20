@@ -246,22 +246,59 @@ class WorkoutVaultService {
   // Reviews and ratings
   async addReview(workoutId, userId, userName, rating, comment) {
     try {
-      // Add the review
-      const reviewRef = await addDoc(collection(db, this.reviewsCollection), {
-        workoutId,
-        userId,
-        userName,
-        rating,
-        comment,
-        createdAt: serverTimestamp()
-      });
+      // Check for existing review by same user for the same workout
+      const existingQuery = query(
+        collection(db, this.reviewsCollection),
+        where('workoutId', '==', workoutId),
+        where('userId', '==', userId)
+      );
+      const existingSnap = await getDocs(existingQuery);
+      
+      let reviewRef;
+      let isUpdate = false;
+      let oldRating = 0;
+
+      if (!existingSnap.empty) {
+        // Update existing review
+        isUpdate = true;
+        const existingDoc = existingSnap.docs[0];
+        const existingData = existingDoc.data();
+        oldRating = existingData.rating;
+        
+        reviewRef = { id: existingDoc.id };
+        await updateDoc(doc(db, this.reviewsCollection, existingDoc.id), {
+          rating,
+          comment,
+          updatedAt: serverTimestamp()
+        });
+      } else {
+        // Add new review
+        reviewRef = await addDoc(collection(db, this.reviewsCollection), {
+          workoutId,
+          userId,
+          userName,
+          rating,
+          comment,
+          createdAt: serverTimestamp()
+        });
+      }
 
       // Update workout's rating statistics
       const workoutRef = doc(db, this.vaultWorkoutsCollection, workoutId);
-      await updateDoc(workoutRef, {
-        reviewsCount: increment(1),
-        totalRating: increment(rating)
-      });
+      
+      if (isUpdate) {
+        // For updates, adjust the total rating by the difference
+        const ratingDifference = rating - oldRating;
+        await updateDoc(workoutRef, {
+          totalRating: increment(ratingDifference)
+        });
+      } else {
+        // For new reviews, increment both count and total rating
+        await updateDoc(workoutRef, {
+          reviewsCount: increment(1),
+          totalRating: increment(rating)
+        });
+      }
 
       // Recalculate average rating
       const workoutDoc = await getDoc(workoutRef);
@@ -272,9 +309,18 @@ class WorkoutVaultService {
         avgRating: newAvgRating
       });
 
-      return { id: reviewRef.id, workoutId, userId, userName, rating, comment };
+      return { 
+        id: reviewRef.id, 
+        workoutId, 
+        userId, 
+        userName, 
+        rating, 
+        comment,
+        isUpdate,
+        oldRating: isUpdate ? oldRating : null
+      };
     } catch (error) {
-      console.error('Error adding review:', error);
+      console.error('Error adding/updating review:', error);
       throw error;
     }
   }
@@ -294,6 +340,29 @@ class WorkoutVaultService {
       }));
     } catch (error) {
       console.error('Error fetching reviews:', error);
+      throw error;
+    }
+  }
+
+  async getUserReviewForWorkout(workoutId, userId) {
+    try {
+      const q = query(
+        collection(db, this.reviewsCollection),
+        where('workoutId', '==', workoutId),
+        where('userId', '==', userId)
+      );
+
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        const doc = querySnapshot.docs[0];
+        return {
+          id: doc.id,
+          ...doc.data()
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error('Error fetching user review:', error);
       throw error;
     }
   }
