@@ -6,11 +6,11 @@
       <!-- Success/Error Messages -->
       <div v-if="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
         {{ successMessage }}
-        <button type="button" class="btn-close" @click="successMessage = ''">×</button>
+        <button type="button" class="btn-close" @click="successMessage = ''"></button>
       </div>
       <div v-if="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
         {{ errorMessage }}
-        <button type="button" class="btn-close" @click="errorMessage = ''">×</button>
+        <button type="button" class="btn-close" @click="errorMessage = ''"></button>
       </div>
 
       <!-- Loading State -->
@@ -23,11 +23,34 @@
       <div v-else class="row">
         <div class="col-12">
           
-          <!-- Calorie Goal Card -->
+          <!-- View Toggle -->
+          <div class="view-toggle-container mb-4">
+            <div class="view-toggle">
+              <button 
+                class="toggle-btn"
+                :class="{ active: currentView === 'progress' }"
+                @click="currentView = 'progress'"
+              >
+                <i class="bi bi-graph-up me-2"></i>
+                Progress Overview
+              </button>
+              <button 
+                class="toggle-btn"
+                :class="{ active: currentView === 'profile' }"
+                @click="currentView = 'profile'"
+              >
+                <i class="bi bi-person-circle me-2"></i>
+                Profile Details
+              </button>
+            </div>
+          </div>
 
+          <!-- Profile Details View -->
+          <div v-show="currentView === 'profile'">
+          
           <!-- Personal Information Card -->
           <div class="card mb-4">
-            <div class="card-header text-white" style="background: var(--primary)">
+            <div class="card-header text-white">
               <h5 class="mb-0"><i class="bi bi-person-circle me-2"></i>Personal Information</h5>
             </div>
             <div class="card-body">
@@ -114,10 +137,11 @@
 
           <!-- Health & Fitness Goals Card -->
           <div class="card mb-4">
-            <div class="card-header text-white" style="background: var(--primary)">
+            <div class="card-header text-white">
               <h5 class="mb-0"><i class="bi bi-trophy me-2"></i>Health & Fitness Goals</h5>
             </div>
-              <div class="card-body row">
+            <div class="card-body">
+              <div class="row">
                 <div class="mb-3 col-6">
                   <label for="goalType" class="form-label">Primary Goal</label>
                   <select class="form-select" id="goalType" v-model="goalsData.goalType">
@@ -131,139 +155,98 @@
 
                 <div class="mb-3 col-6">
                   <label for="dailyCalorieGoal" class="form-label">Daily Calorie Target</label>
-                  <input 
-                    type="number" 
-                    class="form-control" 
-                    id="dailyCalorieGoal" 
-                    v-model.number="goalsData.dailyGoal" 
-                    min="1000" 
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="dailyCalorieGoal"
+                    v-model.number="goalsData.dailyGoal"
+                    min="1000"
                     max="5000"
                     placeholder="e.g., 2000"
                   >
-                  <small class="text-muted">Recommended: 1800-2500 kcal for students</small>
+                  <small class="input-label">Recommended: 1800-2500 kcal for students</small>
                 </div>
 
-              <div class="mb-3 col-6">
-                <label for="dietaryPreference" class="form-label">Dietary Preference</label>
-                <select class="form-select" id="dietaryPreference" v-model="goalsData.dietaryPreference">
-                  <option value="">No specific preference</option>
-                  <option value="vegetarian">Vegetarian</option>
-                  <option value="vegan">Vegan</option>
-                  <option value="halal">Halal</option>
-                  <option value="kosher">Kosher</option>
-                  <option value="keto">Keto</option>
-                  <option value="paleo">Paleo</option>
-                  <option value="mediterranean">Mediterranean</option>
-                </select>
-              </div>
-
-              <div class="mb-3 col-6">
-                <label for="allergies" class="form-label">Allergies & Food Restrictions</label>
-                <input 
-                  type="text" 
-                  class="form-control" 
-                  id="allergies" 
-                  v-model="goalsData.allergies" 
-                  placeholder="e.g., peanuts, shellfish, dairy"
-                >
-                <small class="text-muted">Separate multiple items with commas</small>
-              </div>
-
-              <div class="mb-3 col-6">
-                <label for="workoutFrequency" class="form-label">Workout Frequency (days/week)</label>
-                <input 
-                  type="number" 
-                  class="form-control" 
-                  id="workoutFrequency" 
-                  v-model.number="goalsData.workoutFrequency" 
-                  min="0" 
-                  max="7"
-                >
-              </div>
-            </div>
-          </div>
-
-          <!-- Progress Overview Card -->
-          <div class="card mb-4">
-            <div class="card-header text-white" style="background: var(--primary)">
-              <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Progress Overview</h5>
-            </div>
-            <div class="card-body">
-              <!-- Weekly Calorie Chart -->
-              <div v-reveal class="chart-placeholder mb-3" style="min-height: 240px; height: 32vh; max-height: 380px;">
-                <canvas id="calorieChart" ref="calorieChartRef" style="width: 100%; height: 100%;"></canvas>
-                <p class="text-center text-muted mt-2">Weekly Calorie Intake</p>
-              </div>
-
-              <!-- Workout Streak Display -->
-              <div class="stat-card-full mb-3">
-                <div class="stat-header">
-                  <h6>Workout Streak</h6>
-                  <h3>{{ workoutStreak }} days</h3>
+                <div class="mb-3 col-6">
+                  <label for="dietaryPreference" class="form-label">Dietary Preference</label>
+                  <select class="form-select" id="dietaryPreference" v-model="goalsData.dietaryPreference">
+                    <option value="">No specific preference</option>
+                    <option value="vegetarian">Vegetarian</option>
+                    <option value="vegan">Vegan</option>
+                    <option value="halal">Halal</option>
+                    <option value="kosher">Kosher</option>
+                    <option value="keto">Keto</option>
+                    <option value="paleo">Paleo</option>
+                    <option value="mediterranean">Mediterranean</option>
+                  </select>
                 </div>
-                <div class="progress-full">
-                  <div 
-                    class="progress-bar" 
-                    role="progressbar" 
-                    :style="{ width: (workoutStreak / 12 * 100) + '%', background: 'var(--primary)' }"
-                    :aria-valuenow="workoutStreak" 
-                    aria-valuemin="0" 
-                    aria-valuemax="12"
-                  ></div>
-                </div>
-                <small class="text-muted">Goal: 12 days</small>
-              </div>
 
-              <!-- Study-Life Balance Progress -->
-              <div class="stat-card-full">
-                <div class="stat-header">
-                  <h6>Study-Life Balance</h6>
-                  <h3>{{ timeBalance }}%</h3>
+                <div class="mb-3 col-6">
+                  <label for="allergies" class="form-label">Allergies & Food Restrictions</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="allergies"
+                    v-model="goalsData.allergies"
+                    placeholder="e.g., peanuts, shellfish, dairy"
+                  >
+                  <small class="input-label">Separate multiple items with commas</small>
                 </div>
-                <div class="progress-full">
-                  <div 
-                    class="progress-bar" 
-                    role="progressbar" 
-                    :style="{ width: timeBalance + '%', background: 'var(--primary)' }"
-                    :aria-valuenow="timeBalance" 
-                    aria-valuemin="0" 
-                    aria-valuemax="100"
-                  ></div>
-                </div>
-                <small class="text-muted">Balance between academics and personal life</small>
-              </div>
 
-          
-                <small><i class="bi bi-info-circle me-1"></i>Charts will display real data once you log activities</small>
-          
+                <div class="mb-3 col-6">
+                  <label for="workoutFrequency" class="form-label">Workout Frequency (days/week)</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="workoutFrequency"
+                    v-model.number="goalsData.workoutFrequency"
+                    min="0"
+                    max="7"
+                  >
+                </div>
+
+                <div class="mb-3 col-6">
+                  <label for="workoutStreakGoal" class="form-label">Workout Streak Goal (days)</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="workoutStreakGoal"
+                    v-model.number="goalsData.workoutStreakGoal"
+                    min="1"
+                    max="7"
+                    placeholder="e.g., 3"
+                  >
+                  <small class="input-label">Set your target consecutive workout days</small>
+                </div>
+              </div>
             </div>
           </div>
 
           <!-- Account Actions Card -->
           <div class="card mb-4">
-            <div class="card-header text-white" style="background: var(--primary)">
+            <div class="card-header text-white">
               <h5 class="mb-0"><i class="bi bi-shield-check me-2"></i>Account Actions</h5>
             </div>
-              <div class="card-body d-flex flex-wrap gap-2">
-                <button 
-                  @click="saveAllData" 
-                  class="btn u-btn--primary u-btn--primary-success" 
-                  :disabled="isSaving"
-                  style="flex: 1"
-                >
-                  <i class="bi bi-save me-2"></i>{{ isSaving ? 'Saving...' : 'Save All Changes' }}
-                </button>
+            <div class="card-body d-flex flex-wrap gap-2">
+              <button 
+                @click="saveAllData" 
+                class="btn u-btn--primary u-btn--primary-success" 
+                :disabled="isSaving"
+                style="flex: 1"
+              >
+                <i class="bi bi-save me-2"></i>{{ isSaving ? 'Saving...' : 'Save All Changes' }}
+              </button>
 
-                <button 
-                  @click="handleLogout" 
-                  class="btn u-btn--primary u-btn--primary-danger"
-                  style="flex: 1"
-                >
-                  <i class="bi bi-box-arrow-right me-2"></i>Logout
-                </button>
+              <button 
+                @click="handleLogout" 
+                class="btn u-btn--primary u-btn--primary-danger"
+                style="flex: 1"
+              >
+                <i class="bi bi-box-arrow-right me-2"></i>Logout
+              </button>
 
-                <hr class="w-100">
-              
+              <hr class="w-100">
+            
               <div class="row">
                 <div class="col-12">
                   <button 
@@ -278,15 +261,297 @@
                 </div>
 
                 <div class="col-12">
-                  <small class="text-muted d-block mt-2">
+                  <small class="input-label d-block mt-2">
                     Account deletion cannot be undone
                   </small>
                 </div>
               </div>
-                
-              </div>
+            </div>
           </div>
 
+          </div>
+          <!-- End Profile Details View -->
+
+          <!-- Progress Overview View -->
+          <div v-show="currentView === 'progress'">
+            
+            <!-- Progress Overview Card -->
+            <div class="card mb-4">
+              <div class="card-header text-white">
+                <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Progress Overview</h5>
+              </div>
+              <div class="card-body">
+                <!-- Weekly Calorie Chart -->
+                <div class="chart-placeholder mb-3" style="min-height: 240px; height: 32vh; max-height: 380px;">
+                  <CalorieChart :series="weeklyCalorieData" />
+                  <p class="text-center input-label mt-2">Weekly Calorie Intake</p>
+                </div>
+
+                <!-- Workout Streak Display -->
+                <div class="stat-card-full mb-3">
+                  <div class="stat-header">
+                    <h6>Workout Streak</h6>
+                    <h3>{{ goalsData.workoutFrequency || 0 }} days</h3>
+                  </div>
+                  <div class="progress-full">
+                    <div 
+                      class="progress-bar" 
+                      role="progressbar" 
+                      :style="{ 
+                        width: Math.min(((goalsData.workoutFrequency || 0) / (goalsData.workoutStreakGoal || 1) * 100), 100) + '%', 
+                        background: (goalsData.workoutFrequency || 0) >= (goalsData.workoutStreakGoal || 1) ? '#42b06e' : 'var(--text)',
+                        transition: 'all 0.5s ease'
+                      }"
+                      :aria-valuenow="goalsData.workoutFrequency || 0" 
+                      aria-valuemin="0" 
+                      :aria-valuemax="goalsData.workoutStreakGoal || 1"
+                    ></div>
+                  </div>
+                  <small class="input-label">Goal: {{ goalsData.workoutStreakGoal || 0 }} days</small>
+                </div>
+
+                <!-- Calories Consumed Progress -->
+                <div class="stat-card-full">
+                  <div class="stat-header">
+                    <h6>Calories Consumed</h6>
+                    <h3>{{ todayConsumed || 0 }} kcal</h3>
+                  </div>
+                  <div class="progress-full">
+                    <div 
+                      class="progress-bar" 
+                      role="progressbar" 
+                      :style="{ 
+                        width: ((todayConsumed || 0) / (goalsData.dailyGoal || 2000) * 100) + '%', 
+                        background: (todayConsumed || 0) >= (goalsData.dailyGoal || 2000) ? '#42b06e' : 'var(--text)',
+                        transition: 'all 0.5s ease'
+                      }"
+                      :aria-valuenow="todayConsumed || 0" 
+                      aria-valuemin="0" 
+                      :aria-valuemax="goalsData.dailyGoal || 2000"
+                    ></div>
+                  </div>
+                  <small class="input-label">
+                    {{ (todayConsumed || 0) >= (goalsData.dailyGoal || 2000)
+                      ? 'Goal reached! Great job!' 
+                      : `${(goalsData.dailyGoal || 2000) - (todayConsumed || 0)} kcal remaining for today` 
+                    }}
+                  </small>
+                </div>
+
+                <small><i class="bi bi-info-circle me-1"></i>Charts will display real data once you log activities</small>
+              </div>
+            </div>
+
+            <!-- Your Recent Workouts Card -->
+            <div class="card mb-4">
+              <div class="card-header text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-lightning-charge me-2"></i>Your Recent Workouts</h5>
+                <button 
+                  @click="viewAllWorkouts" 
+                  class="btn btn-sm btn-outline-light"
+                >
+                  View All
+                </button>
+              </div>
+              <div class="card-body">
+                <!-- Loading State -->
+                <div v-if="loadingWorkouts" class="text-center py-4">
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                  <p class="mt-2 u-muted">Loading your workouts...</p>
+                </div>
+
+                <!-- Empty State -->
+                <div v-else-if="userWorkoutSets.length === 0" class="text-center py-5">
+                  <i class="bi bi-dumbbell" style="font-size: 3rem; color: var(--muted);"></i>
+                  <h5 class="mt-3">No Published Workouts Yet</h5>
+                  <p class="u-muted">Create and publish your first workout set to see it here</p>
+                  <button @click="router.push('/exerciselibrary')" class="btn u-btn--primary mt-2">
+                    Create Workout
+                  </button>
+                </div>
+
+                <!-- Workout Cards Grid -->
+                <div v-else class="row g-3">
+                  <div 
+                    v-for="workout in userWorkoutSets" 
+                    :key="workout.id"
+                    class="col-md-6 col-lg-4"
+                  >
+                    <div class="workout-mini-card" @click="openEditModal(workout)">
+                      <div class="workout-mini-header">
+                        <h6 class="workout-mini-title">{{ workout.name || workout.title || 'Unnamed Workout' }}</h6>
+                        <span class="workout-mini-count u-muted">
+                          {{ (workout.exercises && workout.exercises.length) || 0 }} exercises
+                        </span>
+                      </div>
+                      
+                      <p class="workout-mini-description u-muted">
+                        {{ truncateText(workout.description, 60) }}
+                      </p>
+                      
+                      <div class="workout-mini-footer">
+                        <div class="workout-mini-stars">
+                          <img 
+                            v-for="star in 5" 
+                            :key="star"
+                            src="/star.png"
+                            alt="star"
+                            class="star-mini"
+                            :class="{ 'star-filled': star <= Math.round(workout.avgRating || 0) }"
+                          />
+                          <span class="rating-mini-text u-muted">{{ formatWorkoutRating(workout) }}</span>
+                        </div>
+                        <span class="workout-mini-duration u-muted">
+                          {{ workout.estimatedDuration || 30 }}min
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <!-- End Progress Overview View -->
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Workout Modal -->
+    <div v-if="showEditModal" class="modal-overlay" @click.self="showEditModal = false">
+      <div class="modal-content-large" style="background-color: var(--bg);">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Workout Set</h5>
+          <button @click="showEditModal = false" class="btn-close-white btn-close"></button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="row">
+            <!-- Left Column - Basic Info -->
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="editPlaylistName" class="form-label">Set Name</label>
+                <input 
+                  v-model="editingWorkout.name"
+                  type="text" 
+                  id="editPlaylistName"
+                  class="form-control"
+                  maxlength="50"
+                >
+              </div>
+              
+              <div class="form-group">
+                <label for="editPlaylistDescription" class="form-label">Description</label>
+                <textarea 
+                  v-model="editingWorkout.description"
+                  id="editPlaylistDescription"
+                  class="form-control"
+                  rows="3"
+                  maxlength="200"
+                ></textarea>
+              </div>
+
+              <!-- Current Exercises -->
+              <div class="form-group">
+                <label class="form-label">Current Exercises ({{ editingWorkout.exercises?.length || 0 }})</label>
+                <div v-if="editingWorkout.exercises && editingWorkout.exercises.length > 0" class="current-exercises">
+                  <div 
+                    v-for="(exercise, index) in editingWorkout.exercises" 
+                    :key="exercise.id || index"
+                    class="exercise-item"
+                  >
+                    <div class="exercise-info">
+                      <h6 class="exercise-name">{{ formatExerciseName(exercise.name) }}</h6>
+                      <p class="exercise-target">{{ formatTarget(exercise.target) }}</p>
+                    </div>
+                    <button 
+                      @click="removeExerciseFromWorkout(index)"
+                      class="btn btn-sm btn-danger"
+                      type="button"
+                    >
+                      Remove 
+                    </button>
+                  </div>
+                </div>
+                <div v-else class="text-muted">
+                  No exercises in this workout set yet.
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column - Exercise Search -->
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label">Add Exercises</label>
+                <div class="search-container">
+                  <div class="input-group">
+                    <input
+                      v-model="searchQuery"
+                      @input="handleSearch"
+                      type="text"
+                      class="form-control"
+                      placeholder="Search exercises by name (e.g., push-up, squat, bicep)..."
+                    >
+                    <button 
+                      v-if="searchQuery" 
+                      @click="clearSearch" 
+                      class="btn btn-outline-secondary"
+                      type="button"
+                    >
+                      <i class="bi bi-x"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Search Results -->
+                <div v-if="searchLoading" class="search-loading text-center py-3">
+                  <div class="spinner-border spinner-border-sm me-2"></div>
+                  Searching exercises...
+                </div>
+
+                <div v-else-if="searchError" class="alert alert-danger mt-2">
+                  {{ searchError }}
+                </div>
+
+                <div v-else-if="searchedExercises.length > 0" class="search-results mt-3">
+                  <div 
+                    v-for="exercise in searchedExercises.slice(0, 8)" 
+                    :key="exercise.id"
+                    class="search-result-item"
+                  >
+                    <div class="exercise-info">
+                      <h6 class="exercise-name">{{ formatExerciseName(exercise.name) }}</h6>
+                      <p class="exercise-target">{{ formatTarget(exercise.target) }} • {{ formatBodyPart(exercise.bodyPart) }}</p>
+                      <p class="exercise-equipment">{{ formatEquipment(exercise.equipment) }}</p>
+                    </div>
+                    <button 
+                      @click="addExerciseToWorkout(exercise)"
+                      :disabled="isExerciseInWorkout(exercise.id)"
+                      class="btn btn-sm u-btn--primary"
+                      type="button"
+                    >
+                      {{ isExerciseInWorkout(exercise.id) ? 'Added' : 'Add' }}
+                    </button>
+                  </div>
+                  <div v-if="searchedExercises.length > 8" class="text-muted text-center mt-2">
+                    Showing first 8 results. Refine search for more specific results.
+                  </div>
+                </div>
+
+                <div v-else-if="searchQuery && !searchLoading && searchedExercises.length === 0" class="text-muted text-center py-3">
+                  No exercises found for "{{ searchQuery }}". Try different keywords.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button @click="showEditModal = false" class="u-btn u-btn--secondary">Cancel</button>
+          <button @click="saveWorkoutEdit" class="u-btn u-btn--primary">Save Changes</button>
         </div>
       </div>
 
@@ -348,10 +613,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import caloriesService from '@/services/caloriesService.js';
-import Chart from 'chart.js/auto';
+import CalorieChart from '@/components/CalorieChart.vue';
+import { workoutVaultService } from '@/services/workoutVaultService.js';
 import { getAuth, onAuthStateChanged, signOut, updateProfile, deleteUser, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp, deleteDoc, collection, getDocs, query, where } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
@@ -361,7 +627,7 @@ const auth = getAuth();
 const db = getFirestore();
 const storage = getStorage();
 
-// Default avatar URL - hosted on a CDN or you can use a local asset
+// Default avatar URL
 const defaultAvatar = ref('https://ui-avatars.com/api/?name=User&size=150&background=008280&color=fff');
 
 // State Management
@@ -370,6 +636,7 @@ const isSaving = ref(false);
 const successMessage = ref('');
 const errorMessage = ref('');
 const currentUser = ref(null);
+const currentView = ref('progress'); // 'profile' or 'progress'
 
 // Delete account modal state
 const showDeleteModal = ref(false);
@@ -390,7 +657,8 @@ const goalsData = ref({
   dailyGoal: 2000,
   dietaryPreference: '',
   allergies: '',
-  workoutFrequency: 3
+  workoutFrequency: 3,
+  workoutStreakGoal: 3
 });
 
 const workoutStreak = ref(4);
@@ -403,22 +671,51 @@ const chartInstance = ref(null);
 
 // Calorie data for weekly chart
 const weeklyCalorieData = ref([]);
+const todayConsumed = ref(0);
+
+// User's workout sets
+const userWorkoutSets = ref([]);
+const loadingWorkouts = ref(false);
+const workoutUnsubscribe = ref(null);
+
+// Edit modal state
+const showEditModal = ref(false);
+const editingWorkout = ref({});
+
+// Exercise search state for edit modal
+const searchQuery = ref('');
+const searchedExercises = ref([]);
+const searchLoading = ref(false);
+const searchTimeout = ref(null);
+const searchError = ref('');
+
+// API Configuration
+const API_BASE_URL = 'https://www.exercisedb.dev/api/v1';
+const EXERCISES_PER_PAGE = 12;
 
 // Computed Properties
 const calculatedBMI = computed(() => {
-  if (profileData.value.height && profileData.value.weight) {
-    const heightInMeters = profileData.value.height / 100;
-    const bmi = (profileData.value.weight / (heightInMeters * heightInMeters)).toFixed(1);
+  try {
+    const height = profileData.value.height;
+    const weight = profileData.value.weight;
     
-    let category = '';
-    if (bmi < 18.5) category = 'Underweight';
-    else if (bmi < 25) category = 'Normal';
-    else if (bmi < 30) category = 'Overweight';
-    else category = 'Obese';
-    
-    return { value: bmi, category };
+    if (height && weight && height > 0 && weight > 0) {
+      const heightInMeters = height / 100;
+      const bmi = (weight / (heightInMeters * heightInMeters)).toFixed(1);
+      
+      let category = '';
+      if (bmi < 18.5) category = 'Underweight';
+      else if (bmi < 25) category = 'Normal';
+      else if (bmi < 30) category = 'Overweight';
+      else category = 'Obese';
+      
+      return { value: bmi, category };
+    }
+    return null;
+  } catch (error) {
+    console.error('Error calculating BMI:', error);
+    return null;
   }
-  return null;
 });
 
 // Lifecycle Hooks
@@ -439,7 +736,6 @@ async function loadUserData(uid) {
   try {
     isLoading.value = true;
 
-    // Get user document from Firestore using the user's UID
     const userDocRef = doc(db, 'users', uid);
     const userDoc = await getDoc(userDocRef);
 
@@ -462,27 +758,30 @@ async function loadUserData(uid) {
         dailyGoal: data.dailyGoal || 2000,
         dietaryPreference: data.dietaryPreference || '',
         allergies: data.allergies || '',
-        workoutFrequency: data.workoutFrequency || 3
+        workoutFrequency: data.workoutFrequency || 3,
+        workoutStreakGoal: data.workoutStreakGoal || 3
       };
       
-      // Load calorie data from caloriesService to get the actual daily goal
+      // Load calorie data from caloriesService
       try {
         const calorieData = await caloriesService.getUserCalories();
-        if (calorieData && calorieData.dailyGoal) {
-          goalsData.value.dailyGoal = calorieData.dailyGoal;
-          goalInput.value = calorieData.dailyGoal;
+        if (calorieData) {
+          if (calorieData.dailyGoal) {
+            goalsData.value.dailyGoal = calorieData.dailyGoal;
+          }
           // Get weekly data for chart
           weeklyCalorieData.value = caloriesService.getWeekSeries(calorieData.entries || [], 7);
-        } else {
-          goalInput.value = data.dailyGoal || 2000;
+          // Calculate today's consumed calories
+          todayConsumed.value = caloriesService.getTodayConsumed(calorieData.entries || []);
         }
       } catch (error) {
         console.error('Error loading calorie data:', error);
-        goalInput.value = data.dailyGoal || 2000;
+        // Set default values on error
+        weeklyCalorieData.value = [];
+        todayConsumed.value = 0;
       }
 
     } else {
-      // If document doesn't exist, create it with default values
       await createDefaultUserDocument(uid);
     }
 
@@ -499,7 +798,6 @@ async function loadUserData(uid) {
  */
 async function createDefaultUserDocument(uid) {
   try {
-    // CRITICAL: Use doc() to specify the exact document ID (the user's UID)
     const userDocRef = doc(db, 'users', uid);
     
     const defaultData = {
@@ -518,10 +816,8 @@ async function createDefaultUserDocument(uid) {
       updatedAt: serverTimestamp()
     };
 
-    // Use setDoc to create the document with the specific UID
     await setDoc(userDocRef, defaultData);
     
-    // Load the default data into state
     profileData.value.fullName = defaultData.fullName;
     profileData.value.email = defaultData.email;
     profileData.value.photoURL = defaultData.photoURL;
@@ -540,19 +836,23 @@ async function saveAllData() {
     isSaving.value = true;
     errorMessage.value = '';
 
-    // Validate required fields
     if (!profileData.value.fullName || !profileData.value.email) {
       errorMessage.value = 'Please fill in all required fields';
       isSaving.value = false;
       return;
     }
 
-    // CRITICAL: Always use the current user's UID as the document ID
+    // Validate calorie goal
+    const calorieGoal = Number(goalsData.value.dailyGoal);
+    if (!Number.isFinite(calorieGoal) || calorieGoal < 800 || calorieGoal > 5000) {
+      errorMessage.value = 'Daily calorie goal must be between 800 and 5000 kcal.';
+      isSaving.value = false;
+      return;
+    }
+
     const userDocRef = doc(db, 'users', currentUser.value.uid);
     
-    // Prepare data to save
     const dataToSave = {
-      // Profile data
       fullName: profileData.value.fullName,
       email: profileData.value.email,
       gender: profileData.value.gender || '',
@@ -562,7 +862,7 @@ async function saveAllData() {
 
       // Goals data
       goalType: goalsData.value.goalType || '',
-      dailyGoal: goalsData.value.dailyGoal || 2000,
+      dailyGoal: calorieGoal,
       dietaryPreference: goalsData.value.dietaryPreference || '',
       allergies: goalsData.value.allergies || '',
       workoutFrequency: goalsData.value.workoutFrequency || 3,
@@ -571,11 +871,13 @@ async function saveAllData() {
       updatedAt: serverTimestamp()
     };
 
-    // Use setDoc with merge:true to update the existing document
-    // This will update fields or create the document if it doesn't exist
+    // Save to users document
     await setDoc(userDocRef, dataToSave, { merge: true });
 
-    // Update Firebase Auth display name if changed
+    // IMPORTANT: Also update the calorie goal in the calories service
+    await caloriesService.updateDailyGoal(calorieGoal);
+
+    // Update display name if changed
     if (currentUser.value.displayName !== profileData.value.fullName) {
       await updateProfile(currentUser.value, {
         displayName: profileData.value.fullName
@@ -584,7 +886,6 @@ async function saveAllData() {
 
     successMessage.value = 'All changes saved successfully!';
     
-    // Clear success message after 3 seconds
     setTimeout(() => {
       successMessage.value = '';
     }, 3000);
@@ -602,6 +903,22 @@ async function saveAllData() {
  */
 async function handleLogout() {
   try {
+    // Clean up subscriptions before logging out
+    try {
+      caloriesService.unsubscribeAll();
+    } catch (e) {
+      console.error('Error during cleanup:', e);
+    }
+    
+    try {
+      if (workoutUnsubscribe.value) {
+        workoutUnsubscribe.value();
+        workoutUnsubscribe.value = null;
+      }
+    } catch (e) {
+      console.error('Error during workout cleanup:', e);
+    }
+    
     await signOut(auth);
     router.push('/login');
   } catch (error) {
@@ -746,7 +1063,6 @@ async function deleteAccount(uid, password) {
   } catch (error) {
     console.error('Error deleting account:', error);
     
-    // Provide specific error messages
     if (error.code === 'auth/wrong-password') {
       deleteError.value = 'Incorrect password. Please try again.';
     } else if (error.code === 'auth/invalid-credential') {
@@ -817,19 +1133,410 @@ function initializeCharts() {
 }
 
 
+function setupWorkoutListener(uid) {
+  try {
+    loadingWorkouts.value = true;
+    
+    // Subscribe to user's published workout sets
+    workoutUnsubscribe.value = workoutVaultService.subscribeToUserWorkouts(
+      uid,
+      (workouts) => {
+        userWorkoutSets.value = workouts || [];
+        loadingWorkouts.value = false;
+      },
+      (error) => {
+        console.error('Error loading workouts:', error);
+        errorMessage.value = 'Failed to load workouts';
+        userWorkoutSets.value = [];
+        loadingWorkouts.value = false;
+      }
+    );
+  } catch (error) {
+    console.error('Error setting up workout listener:', error);
+    userWorkoutSets.value = [];
+    loadingWorkouts.value = false;
+  }
+}
+
+/**
+ * Navigate to workout vault page
+ */
+function viewAllWorkouts() {
+  try {
+    router.push('/vault');
+  } catch (error) {
+    console.error('Error navigating to vault:', error);
+    errorMessage.value = 'Navigation error. Please try again.';
+  }
+}
+
+/**
+ * Truncate text to specified length
+ */
+function truncateText(text, maxLength) {
+  if (!text) return 'No description available';
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + '...';
+}
+
+/**
+ * Format workout rating for display
+ */
+function formatWorkoutRating(workout) {
+  if (!workout || !workout.avgRating) return '0.0';
+  return workout.avgRating.toFixed(1);
+}
+
+/**
+ * Open edit modal for a workout
+ */
+function openEditModal(workout) {
+  try {
+    editingWorkout.value = { 
+      ...workout, 
+      exercises: [...(workout.exercises || [])] 
+    };
+    clearSearch();
+    fetchExercises(); // Preload exercises
+    showEditModal.value = true;
+  } catch (error) {
+    console.error('Error opening edit modal:', error);
+    errorMessage.value = 'Failed to open edit modal. Please try again.';
+  }
+}
+
+/**
+ * Fetch exercises from API
+ */
+async function fetchExercises(query = '') {
+  if (searchLoading.value) return;
+  
+  searchLoading.value = true;
+  searchError.value = '';
+  
+  try {
+    const baseUrl = `${API_BASE_URL}/exercises`;
+    const params = new URLSearchParams({
+      limit: EXERCISES_PER_PAGE,
+      offset: 0
+    });
+    
+    if (query.trim()) {
+      params.append('search', query.trim());
+    }
+    
+    const response = await fetch(`${baseUrl}?${params}`);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch exercises: ${response.status} ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    
+    // Handle ExerciseDB API response structure
+    if (data.success && data.data) {
+      const mappedExercises = data.data.map(exercise => ({
+        id: exercise.exerciseId,
+        name: exercise.name,
+        target: exercise.targetMuscles,
+        bodyPart: exercise.bodyParts,
+        equipment: exercise.equipments,
+        gifUrl: exercise.gifUrl,
+        instructions: exercise.instructions ? (
+          typeof exercise.instructions === 'string' 
+            ? exercise.instructions.split('Step:').filter(step => step.trim()).map(step => step.trim())
+            : exercise.instructions
+        ) : [],
+        secondaryMuscles: exercise.secondaryMuscles ? (
+          typeof exercise.secondaryMuscles === 'string'
+            ? exercise.secondaryMuscles.split(' ')
+            : exercise.secondaryMuscles
+        ) : []
+      }));
+      
+      searchedExercises.value = mappedExercises;
+    } else {
+      searchedExercises.value = Array.isArray(data) ? data : (data.exercises || []);
+    }
+    
+  } catch (err) {
+    console.error('Error fetching exercises:', err);
+    searchError.value = err.message || 'Failed to load exercises. Please check your internet connection and try again.';
+    searchedExercises.value = [];
+  } finally {
+    searchLoading.value = false;
+  }
+}
+
+/**
+ * Handle search input with debounce
+ */
+function handleSearch() {
+  clearTimeout(searchTimeout.value);
+  
+  searchTimeout.value = setTimeout(() => {
+    if (searchQuery.value.trim()) {
+      fetchExercises(searchQuery.value.trim());
+    } else {
+      clearSearch();
+    }
+  }, 500);
+}
+
+/**
+ * Clear search state
+ */
+function clearSearch() {
+  searchQuery.value = '';
+  searchedExercises.value = [];
+  searchError.value = '';
+}
+
+/**
+ * Format exercise name
+ */
+function formatExerciseName(name) {
+  if (!name) return 'Exercise';
+  return name
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+/**
+ * Format target muscles
+ */
+function formatTarget(target) {
+  if (!target) return 'Full Body';
+  if (Array.isArray(target)) {
+    return target.join(', ');
+  }
+  return target.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', ');
+}
+
+/**
+ * Format body part
+ */
+function formatBodyPart(bodyPart) {
+  if (!bodyPart) return 'General';
+  if (Array.isArray(bodyPart)) {
+    return bodyPart.join(', ');
+  }
+  return bodyPart.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', ');
+}
+
+/**
+ * Format equipment
+ */
+function formatEquipment(equipment) {
+  if (!equipment) return 'Bodyweight';
+  if (Array.isArray(equipment)) {
+    return equipment.join(', ');
+  }
+  return equipment.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', ');
+}
+
+/**
+ * Add exercise to workout
+ */
+function addExerciseToWorkout(exercise) {
+  try {
+    if (!editingWorkout.value.exercises) {
+      editingWorkout.value.exercises = [];
+    }
+    
+    // Check if exercise is already in workout
+    const exists = editingWorkout.value.exercises.some(ex => ex.id === exercise.id);
+    if (!exists) {
+      editingWorkout.value.exercises.push({
+        id: exercise.id,
+        name: exercise.name,
+        target: exercise.target,
+        bodyPart: exercise.bodyPart,
+        equipment: exercise.equipment,
+        gifUrl: exercise.gifUrl,
+        instructions: exercise.instructions,
+        secondaryMuscles: exercise.secondaryMuscles
+      });
+    }
+  } catch (error) {
+    console.error('Error adding exercise:', error);
+    errorMessage.value = 'Failed to add exercise. Please try again.';
+  }
+}
+
+/**
+ * Remove exercise from workout
+ */
+function removeExerciseFromWorkout(index) {
+  try {
+    if (editingWorkout.value.exercises && index >= 0 && index < editingWorkout.value.exercises.length) {
+      editingWorkout.value.exercises.splice(index, 1);
+    }
+  } catch (error) {
+    console.error('Error removing exercise:', error);
+    errorMessage.value = 'Failed to remove exercise. Please try again.';
+  }
+}
+
+/**
+ * Check if exercise is in workout
+ */
+function isExerciseInWorkout(exerciseId) {
+  return editingWorkout.value.exercises?.some(ex => ex.id === exerciseId) || false;
+}
+
+/**
+ * Save workout edits
+ */
+async function saveWorkoutEdit() {
+  try {
+    isSaving.value = true;
+    errorMessage.value = '';
+
+    if (!editingWorkout.value.name || !editingWorkout.value.name.trim()) {
+      errorMessage.value = 'Please enter a workout name';
+      isSaving.value = false;
+      return;
+    }
+
+    // Update workout in Firebase Firestore directly
+    const workoutRef = doc(db, 'workoutSets', editingWorkout.value.id);
+    await setDoc(workoutRef, {
+      name: editingWorkout.value.name,
+      description: editingWorkout.value.description || '',
+      exercises: editingWorkout.value.exercises || [],
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+
+    // Manually update the local userWorkoutSets array to reflect changes immediately
+    const index = userWorkoutSets.value.findIndex(w => w.id === editingWorkout.value.id);
+    if (index !== -1) {
+      userWorkoutSets.value[index] = {
+        ...userWorkoutSets.value[index],
+        name: editingWorkout.value.name,
+        description: editingWorkout.value.description || '',
+        exercises: editingWorkout.value.exercises || [],
+        updatedAt: new Date().toISOString()
+      };
+    }
+
+    successMessage.value = 'Workout updated successfully!';
+    showEditModal.value = false;
+    clearSearch();
+    editingWorkout.value = {};
+
+    setTimeout(() => {
+      successMessage.value = '';
+    }, 3000);
+
+  } catch (error) {
+    console.error('Error saving workout:', error);
+    errorMessage.value = `Failed to save workout: ${error.message}`;
+  } finally {
+    isSaving.value = false;
+  }
+}
 </script>
 
 <style scoped>
 /* Container */
 .profile-container {
   min-height: 100vh;
-  background-color: white;
+  background-color: var(--surface);
   padding: 20px 0;
+}
+
+/* View Toggle */
+.view-toggle-container {
+  display: flex;
+  justify-content: center;
+  animation: fadeInDown 0.6s ease-out;
+}
+
+.view-toggle {
+  display: inline-flex;
+  background: var(--surface);
+  border: 2px solid var(--border-subtle);
+  border-radius: 50px;
+  padding: 6px;
+  box-shadow: var(--shadow-card);
+  gap: 6px;
+}
+
+.toggle-btn {
+  padding: 12px 32px;
+  border: none;
+  border-radius: 50px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.toggle-btn i {
+  transition: transform 0.3s ease;
+}
+
+.toggle-btn:hover {
+  color: var(--text);
+  transform: translateY(-2px);
+}
+
+.toggle-btn:hover i {
+  transform: scale(1.2);
+}
+
+.toggle-btn.active {
+  background: linear-gradient(135deg, var(--primary) 0%, #7083eb 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(112, 131, 235, 0.4);
+  transform: translateY(-1px);
+}
+
+.toggle-btn.active i {
+  animation: iconPop 0.4s ease-out;
+}
+
+@keyframes iconPop {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+}
+
+.toggle-btn:active {
+  transform: translateY(0);
+}
+
+.toggle-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+@media (max-width: 576px) {
+  .view-toggle {
+    width: 100%;
+  }
+  
+  .toggle-btn {
+    flex: 1;
+    padding: 12px 16px;
+    font-size: 0.9rem;
+  }
 }
 
 /* Title with animation */
 .page-title {
-  color: var(--primary);
+  color: var(--text);
   font-weight: 800;
   text-align: center;
   animation: fadeInDown 0.6s ease-out;
@@ -846,14 +1553,19 @@ function initializeCharts() {
   }
 }
 
-/* Cards - matching home page style */
+/* Cards */
 .card {
-  border: 1px solid var(--border-subtle);
+  border: 2px solid var(--border-subtle);
   border-radius: 12px;
   transition: all 0.3s ease;
   background: var(--surface);
   box-shadow: var(--shadow-card);
   animation: fadeInUp 0.6s ease-out backwards;
+  overflow: hidden;
+}
+
+.input-label {
+  color: var(--muted);
 }
 
 .card:nth-child(1) { animation-delay: 0.1s; }
@@ -875,11 +1587,11 @@ function initializeCharts() {
 
 .card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 12px 24px rgba(34, 170, 255, 0.4);
+  box-shadow: 0 12px 24px var(--shadow-card);
 }
 
 .card-header {
-  background-color: var(--primary);
+  background-color: var(--surface-subtle);
   color: #ffffff !important;
   border-radius: 12px 12px 0 0 !important;
   font-weight: 600;
@@ -887,12 +1599,13 @@ function initializeCharts() {
 }
 
 .card-body {
-  background-color: white;
+  background: var(--bg);
   border-radius: 0 0 12px 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 2px solid var(--border-subtle);
+  border-top: 0px;
 }
 
-/* Profile Picture with enhanced animation */
+/* Profile Picture */
 .profile-picture-wrapper {
   display: flex;
   flex-direction: column;
@@ -916,18 +1629,18 @@ function initializeCharts() {
   height: 150px;
   border-radius: 50%;
   object-fit: cover;
-  box-shadow: 0 8px 16px rgba(120, 135, 145, 0.4);
+  box-shadow: var(--shadow-card);
   transition: all 0.4s ease;
   position: relative;
 }
 
 .profile-picture:hover {
   transform: scale(1.1) rotate(5deg);
-  box-shadow: 0 12px 24px rgba(194, 224, 255, 0.4);
+  box-shadow: 0 12px 24px var(--shadow-card);
 }
 
 .btn-change-photo {
-  background-color: white;
+  background-color: var(--surface);
   color: var(--primary);
   border: 1px solid var(--primary);
   border-radius: 8px;
@@ -940,42 +1653,35 @@ function initializeCharts() {
   background-color: var(--primary);
   color: white;
   transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 8px 24px rgba(34, 170, 255, 0.4);
+  box-shadow: var(--shadow-card);
 }
 
 .btn-change-photo:active {
   transform: translateY(1px);
 }
 
-/* Forms with smooth transitions */
+/* Forms */
 .form-label {
   font-weight: 600;
-  color: #495057;
+  color: var(--text);
   transition: color 0.2s ease;
-}
-
-.form-control,
-.form-select {
-  border-radius: 8px;
-  border: 2px solid #e9ecef;
-  transition: all 0.3s ease;
-}
-
-.form-control:focus,
-.form-select:focus {
-  border-color: var(--primary);
-
-  transform: translateY(-2px);
-}
-
-.form-control:hover,
-.form-select:hover {
-  border-color: var(--primary);
 }
 
 .form-check-input {
   cursor: pointer;
   transition: all 0.3s ease;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border-subtle);
+  border-radius: 4px;
+  background-color: var(--surface-subtle);
+  appearance: none;
+  position: relative;
+}
+
+.form-check-input:hover {
+  border-color: var(--primary);
+  background-color: var(--surface-hover, #f0f0f0);
 }
 
 .form-check-input:checked {
@@ -984,9 +1690,26 @@ function initializeCharts() {
   transform: scale(1.1);
 }
 
+.form-check-input:checked::after {
+  content: "✔";
+  color: var(--on-primary, #fff);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -60%);
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.form-check-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--primary-transparent, rgba(0, 123, 255, 0.25));
+}
+
 .form-check-label {
   cursor: pointer;
   transition: color 0.2s ease;
+  color: var(--text);
 }
 
 .form-check-label:hover {
@@ -995,28 +1718,23 @@ function initializeCharts() {
 
 /* Chart Placeholder */
 .chart-placeholder {
-  background-color: white;
   border-radius: 10px;
-  padding: 20px;
+  padding: 0;
   min-height: 200px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
 }
 
-.chart-placeholder:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-/* Full Width Stat Cards with pulse animation */
+/* Full Width Stat Cards */
 .stat-card-full {
-  background-color: white;
-  color: #495057;
+  background-color: var(--surface);
+  color: var(--text);
+  border: 2px solid var(--border-subtle);
   padding: 20px;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-card);
   width: 100%;
   transition: all 0.3s ease;
   animation: slideInRight 0.6s ease-out;
@@ -1035,7 +1753,7 @@ function initializeCharts() {
 
 .stat-card-full:hover {
   transform: translateX(5px);
-  box-shadow: 0 4px 12px rgba(34, 170, 255, 0.4);
+  box-shadow: 0 4px 12px var(--shadow-card);
 }
 
 .stat-header {
@@ -1049,13 +1767,14 @@ function initializeCharts() {
   margin: 0;
   font-size: 1rem;
   font-weight: 600;
+  color: var(--text);
 }
 
 .stat-header h3 {
   margin: 0;
   font-size: 1.8rem;
   font-weight: 700;
-  color: var(--primary);
+  color: var(--text);
   animation: pulse 2s ease-in-out infinite;
 }
 
@@ -1071,7 +1790,7 @@ function initializeCharts() {
 .progress-full {
   height: 30px;
   border-radius: 15px;
-  background-color: #e9ecef;
+  background-color: var(--surface-subtle);
   overflow: hidden;
   margin-bottom: 10px;
   position: relative;
@@ -1096,7 +1815,7 @@ function initializeCharts() {
   left: -100%;
   width: 100%;
   height: 100%;
-  background-color: rgb(0, 130, 128);
+  background-color: var(--text);
   animation: shimmer 2s 1;
 }
 
@@ -1113,9 +1832,10 @@ function initializeCharts() {
   display: block;
   margin-top: 5px;
   font-size: 0.85rem;
+  color: var(--muted);
 }
 
-/* Buttons - matching home page style */
+/* Buttons */
 .u-btn--primary-success::before {
   content: '';
   position: absolute;
@@ -1154,14 +1874,13 @@ function initializeCharts() {
 
 .btn-outline-secondary {
   color: red;
-  background-color: white;
+  background-color: var(--surface);
   border: 1px solid red;
-  transition: all 0.3s ease;;
+  transition: all 0.3s ease;
   font-weight: 600;
   position: relative;
   overflow: hidden;
 }
-
 
 .u-btn--primary-danger:hover::before {
   width: 300px;
@@ -1188,7 +1907,7 @@ function initializeCharts() {
 
 .btn-outline-danger {
   color: rgb(224, 41, 41);
-  background-color: white;
+  background-color: var(--surface);
   border: 1px solid rgb(224, 41, 41);
   transition: all 0.3s ease;
   font-weight: 600;
@@ -1204,14 +1923,13 @@ function initializeCharts() {
   border-color: rgb(224, 41, 41);
   background-color: rgb(224, 41, 41);
   transform: translateY(-2px) scale(1.02);
-  box-shadow: rgb(255, 77, 77);
+  box-shadow: 0 6px 18px rgba(255, 91, 91, 0.4);
 }
 
 .btn-outline-danger:active {
   transform: translateY(1px);
 }
 
-/* Disabled button state */
 .btn-primary:disabled,
 .btn-outline-secondary:disabled,
 .btn-outline-danger:disabled {
@@ -1220,11 +1938,12 @@ function initializeCharts() {
   transform: none !important;
 }
 
-/* Alerts with slide-in animation */
+/* Alerts */
 .alert {
   border-radius: 12px;
   border: none;
   animation: slideInFromTop 0.4s ease-out;
+  background-color: var(--surface);
 }
 
 @keyframes slideInFromTop {
@@ -1239,29 +1958,29 @@ function initializeCharts() {
 }
 
 .alert-success {
-  background-color: white;
+  background-color: var(--surface);
   color: var(--primary);
   border-left: 4px solid var(--primary);
-  box-shadow: 0 4px 12px rgba(213, 239, 255, 0.4);
+  box-shadow: var(--shadow-card);
 }
 
 .alert-danger {
-  background-color: white;
+  background-color: var(--surface);
   color: var(--primary);
   border-left: 4px solid var(--primary);
-  box-shadow: 0 4px 12px rgba(213, 239, 255, 0.4);
+  box-shadow: var(--shadow-card);
 }
 
 .alert-info {
-  background-color: white;
-  color: var(--primary);
-  border: 2px solid #e9ecef;
+  background-color: var(--surface);
+  color: var(--text);
+  border: 2px solid var(--border-subtle);
 }
 
 .alert-light {
-  background-color: rgb(255, 239, 212);
-  color: #495057;
-  border: 2px solid #e9ecef;
+  background-color: var(--surface);
+  color: var(--text);
+  border: 2px solid var(--border-subtle);
 }
 
 .btn-close {
@@ -1273,7 +1992,7 @@ function initializeCharts() {
   transform: scale(1.2) rotate(90deg);
 }
 
-/* Loading Spinner with enhanced animation */
+/* Loading Spinner */
 .spinner-border {
   width: 3rem;
   height: 3rem;
@@ -1290,7 +2009,7 @@ function initializeCharts() {
   color: var(--primary) !important;
 }
 
-/* BMI Alert with icon animation */
+/* BMI Alert */
 .alert-info strong {
   animation: bounce 1s ease-in-out infinite;
 }
@@ -1304,28 +2023,66 @@ function initializeCharts() {
   }
 }
 
-/* Icon animations */
+/* Icons */
 .bi {
-  color: rgb(221, 221, 221);
+  color: var(--text);
   transition: all 0.3s ease;
+}
+
+.card-header .bi {
+  color: #ffffff;
 }
 
 .card-header .bi:hover {
   transform: scale(1.2) rotate(10deg);
 }
 
-/* Input focus glow effect */
+/* Form Controls - Consistent Sizing */
+.card-body .form-control,
+.card-body .form-select {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background-color: var(--surface);
+  color: var(--text);
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  height: calc(1.5em + 1rem + 2px);
+}
+
+.card-body input[type="number"].form-control {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.card-body input[type="number"]::-webkit-outer-spin-button,
+.card-body input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.card-body textarea.form-control {
+  height: auto;
+  min-height: calc(1.5em + 1rem + 2px);
+}
+
+/* Input focus */
 .form-control:focus,
 .form-select:focus {
   animation: inputGlow 0.6s ease-out;
+  border-color: var(--primary);
+  outline: 0;
 }
 
 @keyframes inputGlow {
   0% {
-    box-shadow: 0 0 0 0 rgba(34, 170, 255, 0.4);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--ring) 40%, transparent);
   }
   100% {
-    box-shadow: 0 0 0 0.2rem rgba(34, 170, 255, 0.4);
+    box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--ring) 40%, transparent);
   }
 }
 
@@ -1343,18 +2100,16 @@ function initializeCharts() {
   .page-title {
     font-size: 1.5rem;
   }
-  
+
   .card:hover {
     transform: translateY(-4px);
   }
 }
 
-/* Smooth scroll behavior */
 html {
   scroll-behavior: smooth;
 }
 
-/* Add floating animation to cards on hover */
 @keyframes float {
   0%, 100% {
     transform: translateY(-8px);
@@ -1364,8 +2119,429 @@ html {
   }
 }
 
-
-
-/* Bootstrap Icons */
 @import url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css');
+
+/* Workout Mini Cards */
+.workout-mini-card {
+  background: var(--surface);
+  border: 2px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-card);
+}
+
+.workout-mini-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px var(--shadow-card);
+  border-color: var(--primary);
+}
+
+.workout-mini-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.workout-mini-title {
+  font-weight: 600;
+  font-size: 1rem;
+  margin: 0;
+  color: var(--text);
+  flex: 1;
+  line-height: 1.3;
+}
+
+.workout-mini-count {
+  font-size: 0.75rem;
+  white-space: nowrap;
+  margin-left: 0.5rem;
+}
+
+.workout-mini-description {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  margin-bottom: 0.75rem;
+  flex-grow: 1;
+  min-height: 2.8em;
+}
+
+.workout-mini-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.workout-mini-stars {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.star-mini {
+  width: 14px;
+  height: 14px;
+  opacity: 0.3;
+  filter: grayscale(100%);
+}
+
+.star-mini.star-filled {
+  opacity: 1;
+  filter: grayscale(0%);
+}
+
+.rating-mini-text {
+  font-size: 0.75rem;
+  margin-left: 0.25rem;
+}
+
+.workout-mini-duration {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Button styling for View All */
+.btn-outline-light {
+  color: white;
+  border-color: rgba(255, 255, 255, 0.5);
+  font-size: 0.875rem;
+  padding: 0.375rem 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-light:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: white;
+  color: white;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .workout-mini-card {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Edit Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-content-large {
+  background: var(--bg);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 1200px;
+  width: 95%;
+  max-height: 95vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+  border: 2px solid var(--border-subtle);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  padding: 1.5rem;
+  border-bottom: 2px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--surface-subtle);
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text);
+}
+
+.btn-close-white {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text);
+  transition: all 0.3s ease;
+  opacity: 0.7;
+}
+
+.btn-close-white:hover {
+  opacity: 1;
+  transform: scale(1.1) rotate(90deg);
+}
+
+.modal-body {
+  padding: 2rem;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.modal-footer {
+  padding: 1.5rem;
+  border-top: 2px solid var(--border-subtle);
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  background: var(--surface-subtle);
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid var(--border-subtle);
+  border-radius: 8px;
+  font-size: 1rem;
+  line-height: 1.5;
+  background: var(--surface);
+  color: var(--text);
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  height: calc(1.5em + 1.5rem + 4px);
+}
+
+.form-control[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.form-control[type="number"]::-webkit-outer-spin-button,
+.form-control[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 0.2rem rgba(112, 131, 235, 0.25);
+}
+
+.form-control::placeholder {
+  color: var(--muted);
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 100px;
+  height: auto;
+}
+
+.current-exercises {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 2px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 0.75rem;
+  background: var(--surface);
+}
+
+.exercise-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  background: var(--bg);
+  transition: all 0.3s ease;
+}
+
+.exercise-item:last-child {
+  margin-bottom: 0;
+}
+
+.exercise-item:hover {
+  border-color: var(--primary);
+  transform: translateX(4px);
+}
+
+.exercise-info {
+  flex: 1;
+}
+
+.exercise-name {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: var(--text);
+}
+
+.exercise-target {
+  font-size: 0.85rem;
+  margin: 0;
+  color: var(--muted);
+}
+
+.exercise-equipment {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin: 0.25rem 0 0 0;
+}
+
+.search-container {
+  margin-bottom: 1rem;
+}
+
+.input-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.input-group .form-control {
+  flex: 1;
+}
+
+.input-group .btn {
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--border-subtle);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.input-group .btn:hover {
+  background: var(--surface-hover);
+  border-color: var(--primary);
+}
+
+.search-results {
+  max-height: 500px;
+  overflow-y: auto;
+  border: 2px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 0.75rem;
+  background: var(--surface);
+}
+
+.search-result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  background: var(--bg);
+  transition: all 0.3s ease;
+}
+
+.search-result-item:last-child {
+  margin-bottom: 0;
+}
+
+.search-result-item:hover {
+  border-color: var(--primary);
+  transform: translateX(4px);
+  background: var(--surface-subtle);
+}
+
+.search-loading {
+  color: var(--muted);
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+.btn-danger {
+  background-color: rgb(224, 41, 41);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+}
+
+.btn-danger:hover {
+  background-color: rgb(200, 35, 35);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(224, 41, 41, 0.3);
+}
+
+.btn-danger:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  .modal-content-large {
+    margin: 0.5rem;
+    width: calc(100% - 1rem);
+    max-width: none;
+  }
+
+  .modal-body {
+    padding: 1rem;
+  }
+
+  .modal-body .row > .col-md-6 {
+    margin-bottom: 2rem;
+  }
+
+  .current-exercises,
+  .search-results {
+    max-height: 300px;
+  }
+  
+  .modal-title {
+    font-size: 1.25rem;
+  }
+}
 </style>
