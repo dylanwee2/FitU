@@ -112,7 +112,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, onUnmounted } from 'vue'
+import { ref, onMounted, nextTick, onUnmounted, watch } from 'vue'
 
 // Tooltip state for ICS input
 const showTooltip = ref(false)
@@ -122,6 +122,9 @@ import timeGridPlugin from '@fullcalendar/timegrid'
 import listPlugin from '@fullcalendar/list'
 import interactionPlugin from '@fullcalendar/interaction'
 import ICAL from 'ical.js'
+import { db } from '../firebase.js'
+import { collection, query, where, onSnapshot, getDocs, addDoc, updateDoc, doc as firestoreDoc, serverTimestamp } from 'firebase/firestore'
+import { useAuth } from '../composables/useAuth.js'
 
 // Props
 const props = defineProps({
@@ -203,6 +206,163 @@ const newEvent = ref({
 })
 
 let calendarInstance = null
+let calendarUnsubscribe = null
+
+// Auth
+const { currentUser, isLoading } = useAuth()
+
+// Subscribe to Firestore 'calendar' collection for the logged-in user
+const subscribeToCalendar = () => {
+  // unsubscribe previous listener if any
+  if (calendarUnsubscribe) {
+    try { calendarUnsubscribe() } catch (e) { /* ignore */ }
+    calendarUnsubscribe = null
+  }
+
+  if (!currentUser.value || !currentUser.value.uid) {
+    // No user: clear calendar
+    if (calendarInstance) calendarInstance.removeAllEvents()
+    console.debug('[Calendar] No currentUser - cleared calendar')
+    return
+  }
+
+  const q = query(
+    collection(db, 'calendar'),
+    where('userId', '==', currentUser.value.uid)
+  )
+  console.debug('[Calendar] Subscribing to calendar for uid:', currentUser.value.uid)
+
+  calendarUnsubscribe = onSnapshot(q, (snapshot) => {
+    try {
+      console.debug('[Calendar] snapshot received, docs:', snapshot.size)
+
+      // Build events array by iterating documents. Some docs store the raw ICS string in `ics`.
+      const events = []
+      snapshot.docs.forEach(doc => {
+        const d = doc.data()
+
+        // If the document stores raw ICS content, parse it and extract VEVENTs
+        if (d.ics && typeof d.ics === 'string') {
+          try {
+            const jcal = ICAL.parse(d.ics)
+            const comp = new ICAL.Component(jcal)
+            const vevents = comp.getAllSubcomponents('vevent')
+            vevents.forEach((vevent, idx) => {
+              try {
+                const e = new ICAL.Event(vevent)
+                events.push({
+                  id: vevents.length > 1 ? `${doc.id}_${idx}` : doc.id,
+                  title: e.summary || d.title || 'Untitled',
+                  start: e.startDate ? e.startDate.toJSDate() : undefined,
+                  end: e.endDate ? e.endDate.toJSDate() : undefined,
+                  allDay: e.startDate ? !!e.startDate.isDate : !!d.allDay,
+                  extendedProps: {
+                    description: e.description || d.description || ''
+                  }
+                })
+              } catch (err) {
+                console.warn('[Calendar] failed to parse vevent in doc', doc.id, idx, err)
+              }
+            })
+          } catch (err) {
+            console.warn('[Calendar] failed parsing ICS in doc', doc.id, err)
+          }
+
+          return
+        }
+
+        // Robust date parsing helper for non-ICS docs
+        const parseDateValue = (val) => {
+          if (!val && val !== 0) return undefined
+          if (val && typeof val.toDate === 'function') return val.toDate()
+          if (val && typeof val.seconds === 'number') return new Date(val.seconds * 1000)
+          if (typeof val === 'number') return (val > 1e12) ? new Date(val) : new Date(val * 1000)
+          if (typeof val === 'string') {
+            const parsed = new Date(val)
+            if (!isNaN(parsed.getTime())) return parsed
+            return undefined
+          }
+          return undefined
+        }
+
+        const startCandidates = ['start', 'startDate', 'start_time', 'date', 'timestamp', 'startAt', 'startTs', 'startTimestamp', 'when', 'begin']
+        const endCandidates = ['end', 'endDate', 'end_time', 'until', 'finish']
+
+        const findFirstDate = (candidates) => {
+          for (const f of candidates) {
+            if (d[f] !== undefined) {
+              const parsed = parseDateValue(d[f])
+              if (parsed) return parsed
+            }
+          }
+          return undefined
+        }
+
+        const start = findFirstDate(startCandidates)
+        const end = findFirstDate(endCandidates)
+
+        if (!start) console.warn('[Calendar] document', doc.id, 'has no parseable start date. Fields found:', Object.keys(d))
+
+        events.push({
+          id: doc.id,
+          title: d.title || 'Untitled',
+          start,
+          end,
+          allDay: !!d.allDay || (start && (d.allDay === undefined) && /^\d{4}-\d{2}-\d{2}$/.test((d.date || d.startDate || '') + '')),
+          extendedProps: {
+            description: d.description || ''
+          }
+        })
+      })
+
+      console.debug('[Calendar] mapped events:', events)
+
+      if (calendarInstance) {
+        calendarInstance.removeAllEvents()
+        // add a visible color for debugging in case CSS makes events invisible
+        const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#1976d2'
+        const debugEvents = events.map(ev => ({
+          ...ev,
+          backgroundColor: ev.backgroundColor || primaryColor,
+          borderColor: ev.borderColor || primaryColor,
+          textColor: ev.textColor || '#ffffff'
+        }))
+
+        calendarInstance.addEventSource(debugEvents)
+        console.debug('[Calendar] events added to FullCalendar')
+        // Log the events FullCalendar currently has
+        try {
+          const fcEvents = calendarInstance.getEvents().map(e => ({ id: e.id, title: e.title, start: e.start, end: e.end, allDay: e.allDay }))
+          console.debug('[Calendar] FullCalendar internal events:', fcEvents)
+          if (fcEvents.length && fcEvents[0].start) {
+            // jump to first event date to ensure it's in view for debugging
+            calendarInstance.gotoDate(fcEvents[0].start)
+            console.debug('[Calendar] moved calendar to first event date')
+          }
+        } catch (err) {
+          console.warn('[Calendar] could not read internal events:', err)
+        }
+      } else {
+        console.debug('[Calendar] calendarInstance not ready yet - events mapped but not added')
+      }
+    } catch (err) {
+      console.error('Error mapping calendar snapshot:', err)
+    }
+  }, (err) => {
+    console.error('Calendar onSnapshot error:', err)
+  })
+}
+
+// watch for user changes and (re)subscribe
+watch(currentUser, (val) => {
+  if (val && val.uid) {
+    subscribeToCalendar()
+  } else {
+    // clear events if user signed out
+    if (calendarInstance) calendarInstance.removeAllEvents()
+    if (calendarUnsubscribe) { try { calendarUnsubscribe() } catch(e){}; calendarUnsubscribe = null }
+  }
+}, { immediate: true })
 
 // Calendar instance management
 const initializeCalendar = async () => {
@@ -324,10 +484,38 @@ const handleIcsUpload = async (event) => {
       }
     })
     
+    // Render parsed events immediately
     if (calendarInstance) {
       calendarInstance.removeAllEvents()
       calendarInstance.addEventSource(events)
       emit('events-imported', events)
+    }
+
+    // Persist the raw ICS content to Firestore under this user's calendar doc
+    try {
+      if (currentUser.value && currentUser.value.uid) {
+        const q = query(collection(db, 'calendar'), where('userId', '==', currentUser.value.uid))
+        const snap = await getDocs(q)
+        if (!snap.empty) {
+          const existing = snap.docs[0]
+          await updateDoc(firestoreDoc(db, 'calendar', existing.id), {
+            ics: text,
+            updatedAt: serverTimestamp()
+          })
+          console.debug('[Calendar] updated ICS for doc', existing.id)
+        } else {
+          const newRef = await addDoc(collection(db, 'calendar'), {
+            userId: currentUser.value.uid,
+            ics: text,
+            createdAt: serverTimestamp()
+          })
+          console.debug('[Calendar] created calendar doc', newRef.id)
+        }
+      } else {
+        console.debug('[Calendar] user not signed in; ICS not saved to Firestore')
+      }
+    } catch (err) {
+      console.error('[Calendar] error saving ICS to Firestore:', err)
     }
     
     // Clear the file input
@@ -482,6 +670,10 @@ onMounted(() => {
 onUnmounted(() => {
   if (calendarInstance) {
     calendarInstance.destroy()
+  }
+  if (calendarUnsubscribe) {
+    try { calendarUnsubscribe() } catch (e) { /* ignore */ }
+    calendarUnsubscribe = null
   }
 })
 
