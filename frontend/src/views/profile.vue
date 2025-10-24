@@ -57,7 +57,7 @@
               <form @submit.prevent="saveProfile">
                 <!-- Name and Email -->
                 <div class="row">
-                  <div class="col-md-6 mb-3">
+                  <div class="col-sm-12 col-md-6 mb-3">
                     <label for="fullName" class="form-label">Full Name *</label>
                     <input 
                       type="text" 
@@ -67,7 +67,7 @@
                       required
                     >
                   </div>
-                  <div class="col-md-6 mb-3">
+                  <div class="col-sm-12 col-md-6 mb-3">
                     <label for="email" class="form-label">Email *</label>
                     <input 
                       type="email" 
@@ -81,7 +81,7 @@
 
                 <!-- Personal Details -->
                 <div class="row">
-                  <div class="col-md-3 mb-3">
+                  <div class="col-sm-12 col-md-3 mb-3">
                     <label for="gender" class="form-label">Gender</label>
                     <select class="form-select" id="gender" v-model="profileData.gender">
                       <option value="">Select</option>
@@ -91,7 +91,7 @@
                       <option value="prefer-not-to-say">Prefer not to say</option>
                     </select>
                   </div>
-                  <div class="col-md-3 mb-3">
+                  <div class="col-sm-12 col-md-3 mb-3">
                     <label for="age" class="form-label">Age</label>
                     <input 
                       type="number" 
@@ -102,7 +102,7 @@
                       max="100"
                     >
                   </div>
-                  <div class="col-md-3 mb-3">
+                  <div class="col-sm-12 col-md-3 mb-3">
                     <label for="height" class="form-label">Height (cm)</label>
                     <input 
                       type="number" 
@@ -113,7 +113,7 @@
                       max="250"
                     >
                   </div>
-                  <div class="col-md-3 mb-3">
+                  <div class="col-sm-12 col-md-3 mb-3">
                     <label for="weight" class="form-label">Weight (kg)</label>
                     <input 
                       type="number" 
@@ -142,7 +142,7 @@
             </div>
             <div class="card-body">
               <div class="row">
-                <div class="mb-3 col-6">
+                <div class="mb-3 col-sm-12 col-md-6">
                   <label for="goalType" class="form-label">Primary Goal</label>
                   <select class="form-select" id="goalType" v-model="goalsData.goalType">
                     <option value="">Select your goal</option>
@@ -153,7 +153,7 @@
                   </select>
                 </div>
 
-                <div class="mb-3 col-6">
+                <div class="mb-3 col-sm-12 col-md-6">
                   <label for="dailyCalorieGoal" class="form-label">Daily Calorie Target</label>
                   <input
                     type="number"
@@ -167,7 +167,7 @@
                   <small class="input-label">Recommended: 1800-2500 kcal for students</small>
                 </div>
 
-                <div class="mb-3 col-6">
+                <div class="mb-3 col-sm-12 col-md-6">
                   <label for="dietaryPreference" class="form-label">Dietary Preference</label>
                   <select class="form-select" id="dietaryPreference" v-model="goalsData.dietaryPreference">
                     <option value="">No specific preference</option>
@@ -181,7 +181,7 @@
                   </select>
                 </div>
 
-                <div class="mb-3 col-6">
+                <div class="mb-3 col-sm-12 col-md-6">
                   <label for="allergies" class="form-label">Allergies & Food Restrictions</label>
                   <input
                     type="text"
@@ -193,7 +193,7 @@
                   <small class="input-label">Separate multiple items with commas</small>
                 </div>
 
-                <div class="mb-3 col-6">
+                <div class="mb-3 col-sm-12 col-md-6">
                   <label for="workoutFrequency" class="form-label">Workout Frequency (days/week)</label>
                   <input
                     type="number"
@@ -205,7 +205,7 @@
                   >
                 </div>
 
-                <div class="mb-3 col-6">
+                <div class="mb-3 col-sm-12 col-md-6">
                   <label for="workoutStreakGoal" class="form-label">Workout Streak Goal (days)</label>
                   <input
                     type="number"
@@ -342,10 +342,10 @@
               </div>
             </div>
 
-            <!-- Your Recent Workouts Card -->
+            <!-- Your Workouts Card -->
             <div class="card mb-4">
               <div class="card-header text-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-lightning-charge me-2"></i>Your Recent Workouts</h5>
+                <h5 class="mb-0"><i class="bi bi-lightning-charge me-2"></i>Your Workouts</h5>
                 <button 
                   @click="viewAllWorkouts" 
                   class="btn btn-sm btn-outline-light"
@@ -372,39 +372,58 @@
                   </button>
                 </div>
 
-                <!-- Workout Cards Grid -->
+                <!-- Workout List - Simplified -->
                 <div v-else class="row g-3">
-                  <div 
-                    v-for="workout in userWorkoutSets" 
+                  <div
+                    v-for="workout in userWorkoutSets.slice(0, 2)"
                     :key="workout.id"
-                    class="col-md-6 col-lg-4"
+                    class="col-12"
                   >
-                    <div class="workout-mini-card" @click="openEditModal(workout)">
-                      <div class="workout-mini-header">
-                        <h6 class="workout-mini-title">{{ workout.name || workout.title || 'Unnamed Workout' }}</h6>
-                        <span class="workout-mini-count u-muted">
-                          {{ (workout.exercises && workout.exercises.length) || 0 }} exercises
-                        </span>
-                      </div>
-                      
-                      <p class="workout-mini-description u-muted">
-                        {{ truncateText(workout.description, 60) }}
-                      </p>
-                      
-                      <div class="workout-mini-footer">
-                        <div class="workout-mini-stars">
-                          <img 
-                            v-for="star in 5" 
-                            :key="star"
-                            src="/star.png"
-                            alt="star"
-                            class="star-mini"
-                            :class="{ 'star-filled': star <= Math.round(workout.avgRating || 0) }"
-                          />
-                          <span class="rating-mini-text u-muted">{{ formatWorkoutRating(workout) }}</span>
+                    <div class="workout-card-simple">
+                      <!-- Delete Button -->
+                      <button
+                        class="delete-workout-btn btn-close"
+                        @click.stop="confirmDeleteWorkout(workout)"
+                        title="Delete workout"
+                        aria-label="Delete workout"
+                      ></button>
+
+                      <!-- Workout Header -->
+                      <div class="workout-card-header" @click="openEditModal(workout)">
+                        <div class="workout-title-section">
+                          <h6 class="workout-name mb-1">{{ workout.name || workout.title || 'Unnamed Workout' }}</h6>
+                          <p v-if="workout.description" class="workout-description u-muted mb-0">
+                            {{ workout.description }}
+                          </p>
                         </div>
-                        <span class="workout-mini-duration u-muted">
-                          {{ workout.estimatedDuration || 30 }}min
+                      </div>
+
+                      <!-- Workout Stats -->
+                      <div class="workout-stats-simple" @click="openEditModal(workout)">
+                        <div class="stat-item-simple">
+                          <i class="bi bi-list-check me-1"></i>
+                          <span>{{ (workout.exercises && workout.exercises.length) || 0 }} exercises</span>
+                        </div>
+                        <div class="stat-item-simple">
+                          <i class="bi bi-clock me-1"></i>
+                          <span>{{ workout.totalDuration || 30 }} min</span>
+                        </div>
+                      </div>
+
+                      <!-- Exercise Types (First 3 exercises as tags) -->
+                      <div v-if="workout.exercises && workout.exercises.length > 0" class="exercise-tags-simple" @click="openEditModal(workout)">
+                        <span
+                          v-for="exercise in workout.exercises.slice(0, 3)"
+                          :key="exercise.id"
+                          class="exercise-tag-simple"
+                        >
+                          {{ formatExerciseName(exercise.name) }}
+                        </span>
+                        <span
+                          v-if="workout.exercises.length > 3"
+                          class="exercise-tag-simple more-tag"
+                        >
+                          +{{ workout.exercises.length - 3 }} more
                         </span>
                       </div>
                     </div>
@@ -412,7 +431,6 @@
                 </div>
               </div>
             </div>
-
           </div>
           <!-- End Progress Overview View -->
 
@@ -431,7 +449,7 @@
         <div class="modal-body">
           <div class="row">
             <!-- Left Column - Basic Info -->
-            <div class="col-md-6">
+            <div class="col-sm-12 col-md-6">
               <div class="form-group">
                 <label for="editPlaylistName" class="form-label">Set Name</label>
                 <input 
@@ -483,7 +501,7 @@
             </div>
 
             <!-- Right Column - Exercise Search -->
-            <div class="col-md-6">
+            <div class="col-sm-12 col-md-6">
               <div class="form-group">
                 <label class="form-label">Add Exercises</label>
                 <div class="search-container">
@@ -552,6 +570,32 @@
         <div class="modal-footer">
           <button @click="showEditModal = false" class="u-btn u-btn--secondary">Cancel</button>
           <button @click="saveWorkoutEdit" class="u-btn u-btn--primary">Save Changes</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Workout Confirmation Modal -->
+    <div v-if="showDeleteWorkoutModal" class="modal-overlay" @click.self="showDeleteWorkoutModal = false">
+      <div class="modal-content-small">
+        <div class="modal-header-delete">
+          <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Delete Workout</h5>
+          <button type="button" class="btn-close" @click="showDeleteWorkoutModal = false"></button>
+        </div>
+        <div class="modal-body-delete">
+          <p><strong>Are you sure you want to delete this workout?</strong></p>
+          <p v-if="workoutToDelete" class="mb-0">
+            <strong>{{ workoutToDelete.name || 'Unnamed Workout' }}</strong>
+          </p>
+          <p class="input-label mt-3 mb-0">This action cannot be undone.</p>
+        </div>
+        <div class="modal-footer-delete">
+          <button type="button" class="u-btn u-btn--secondary" @click="showDeleteWorkoutModal = false">
+            Cancel
+          </button>
+          <button type="button" class="u-btn u-btn--primary u-btn--primary-danger" @click="deleteWorkout" :disabled="isSaving">
+            <span v-if="isSaving" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            <i class="bi bi-trash me-2"></i>{{ isSaving ? 'Deleting...' : 'Delete Workout' }}
+          </button>
         </div>
       </div>
     </div>
@@ -680,6 +724,10 @@ const workoutUnsubscribe = ref(null);
 const showEditModal = ref(false);
 const editingWorkout = ref({});
 
+// Delete workout modal state
+const showDeleteWorkoutModal = ref(false);
+const workoutToDelete = ref(null);
+
 // Exercise search state for edit modal
 const searchQuery = ref('');
 const searchedExercises = ref([]);
@@ -777,7 +825,9 @@ async function loadUserData(uid) {
         // Set default values on error
         weeklyCalorieData.value = [];
         todayConsumed.value = 0;
+        
       }
+    await setupWorkoutListener(uid);
 
     } else {
       await createDefaultUserDocument(uid);
@@ -1131,27 +1181,23 @@ function initializeCharts() {
 }
 
 
-function setupWorkoutListener(uid) {
+async function setupWorkoutListener(uid) {
+  console.log('🔵 Loading workouts for user:', uid);
+  
   try {
     loadingWorkouts.value = true;
     
-    // Subscribe to user's published workout sets
-    workoutUnsubscribe.value = workoutVaultService.subscribeToUserWorkouts(
-      uid,
-      (workouts) => {
-        userWorkoutSets.value = workouts || [];
-        loadingWorkouts.value = false;
-      },
-      (error) => {
-        console.error('Error loading workouts:', error);
-        errorMessage.value = 'Failed to load workouts';
-        userWorkoutSets.value = [];
-        loadingWorkouts.value = false;
-      }
-    );
+    // Get workout sets from workoutSets collection (not publishedWorkouts)
+    const workouts = await workoutVaultService.getUserWorkouts(uid);
+    console.log('✅ Workouts loaded:', workouts);
+    console.log('✅ Count:', workouts?.length || 0);
+    
+    userWorkoutSets.value = workouts || [];
+    
   } catch (error) {
-    console.error('Error setting up workout listener:', error);
+    console.error('❌ Error loading workouts:', error);
     userWorkoutSets.value = [];
+  } finally {
     loadingWorkouts.value = false;
   }
 }
@@ -1161,10 +1207,54 @@ function setupWorkoutListener(uid) {
  */
 function viewAllWorkouts() {
   try {
-    router.push('/vault');
+    router.push('/workout-sets');
   } catch (error) {
-    console.error('Error navigating to vault:', error);
+    console.error('Error navigating to workout sets:', error);
     errorMessage.value = 'Navigation error. Please try again.';
+  }
+}
+
+/**
+ * Show delete workout confirmation modal
+ */
+function confirmDeleteWorkout(workout) {
+  workoutToDelete.value = workout;
+  showDeleteWorkoutModal.value = true;
+}
+
+/**
+ * Delete workout from Firestore
+ */
+async function deleteWorkout() {
+  if (!workoutToDelete.value) return;
+
+  try {
+    isSaving.value = true;
+    errorMessage.value = '';
+
+    // Delete from Firestore
+    const workoutRef = doc(db, 'workoutSets', workoutToDelete.value.id);
+    await deleteDoc(workoutRef);
+
+    // Remove from local array
+    const index = userWorkoutSets.value.findIndex(w => w.id === workoutToDelete.value.id);
+    if (index !== -1) {
+      userWorkoutSets.value.splice(index, 1);
+    }
+
+    successMessage.value = 'Workout deleted successfully!';
+    showDeleteWorkoutModal.value = false;
+    workoutToDelete.value = null;
+
+    setTimeout(() => {
+      successMessage.value = '';
+    }, 3000);
+
+  } catch (error) {
+    console.error('Error deleting workout:', error);
+    errorMessage.value = `Failed to delete workout: ${error.message}`;
+  } finally {
+    isSaving.value = false;
   }
 }
 
@@ -1181,8 +1271,12 @@ function truncateText(text, maxLength) {
  * Format workout rating for display
  */
 function formatWorkoutRating(workout) {
-  if (!workout || !workout.avgRating) return '0.0';
-  return workout.avgRating.toFixed(1);
+  if (!workout.avgRating || workout.avgRating === 0) {
+    return 'No ratings yet';
+  }
+  const rating = workout.avgRating.toFixed(1);
+  const count = workout.reviewsCount || 0;
+  return `${rating} (${count})`;
 }
 
 /**
@@ -1377,6 +1471,8 @@ function removeExerciseFromWorkout(index) {
     errorMessage.value = 'Failed to remove exercise. Please try again.';
   }
 }
+
+
 
 /**
  * Check if exercise is in workout
@@ -1982,11 +2078,29 @@ async function saveWorkoutEdit() {
 }
 
 .btn-close {
-  filter: invert(0.3) sepia(1) saturate(5) hue-rotate(315deg);
+  filter: brightness(0) invert(1);
   transition: transform 0.2s ease;
+  opacity: 0.8;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  width: 1em;
+  height: 1em;
 }
 
 .btn-close:hover {
+  transform: scale(1.2) rotate(90deg);
+  opacity: 1;
+}
+
+.modal-header-delete .btn-close {
+  filter: brightness(0) invert(1);
+  opacity: 0.9;
+}
+
+.modal-header-delete .btn-close:hover {
+  opacity: 1;
   transform: scale(1.2) rotate(90deg);
 }
 
@@ -2274,6 +2388,56 @@ html {
   }
 }
 
+/* Small Modal for Delete Confirmation */
+.modal-content-small {
+  background: var(--bg);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 95%;
+  animation: slideUp 0.3s ease;
+  border: 2px solid var(--border-subtle);
+  overflow: hidden;
+}
+
+.modal-header-delete {
+  padding: 1.5rem 2rem;
+  border-bottom: 2px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #2a2a2a;
+  color: white;
+  border-radius: 20px 20px 0 0;
+}
+
+.modal-header-delete .modal-title {
+  color: white;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.modal-body-delete {
+  padding: 2rem 2.5rem;
+  color: var(--text);
+  background: var(--bg);
+}
+
+.modal-body-delete p {
+  line-height: 1.6;
+}
+
+.modal-footer-delete {
+  padding: 1.5rem 2rem;
+  border-top: 2px solid var(--border-subtle);
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  background: var(--bg);
+  border-radius: 0 0 20px 20px;
+}
+
 .modal-header {
   padding: 1.5rem;
   border-bottom: 2px solid var(--border-subtle);
@@ -2281,6 +2445,15 @@ html {
   justify-content: space-between;
   align-items: center;
   background: var(--surface-subtle);
+}
+
+.modal-header.bg-danger {
+  background: rgb(224, 41, 41) !important;
+  color: white !important;
+}
+
+.modal-header.bg-danger .modal-title {
+  color: white !important;
 }
 
 .modal-title {
@@ -2565,5 +2738,123 @@ textarea.form-control {
   border: 2px solid var(--border-subtle) !important;
   border-radius: 12px !important;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Simplified Workout Card */
+.workout-card-simple {
+  background: var(--surface-subtle);
+  border-radius: 12px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-subtle);
+  position: relative;
+}
+
+.workout-card-simple:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: var(--primary);
+}
+
+/* Delete Button on Workout Card */
+.delete-workout-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+  padding: 0;
+  opacity: 1;
+  background-size: 0.75em;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23e02929'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e");
+}
+
+.delete-workout-btn:hover {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23e02929'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e");
+  transform: scale(1.2) rotate(90deg);
+  opacity: 1;
+}
+
+.workout-card-header {
+  margin-bottom: 0.75rem;
+}
+
+.workout-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.25rem;
+}
+
+.workout-description {
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+/* Workout Stats - Simplified */
+.workout-stats-simple {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.stat-item-simple {
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.stat-item-simple i {
+  color: var(--primary);
+}
+
+/* Exercise Tags - Simplified */
+.exercise-tags-simple {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.exercise-tag-simple {
+  background: #171717;
+  color: var(--muted);
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  text-transform: capitalize;
+}
+
+.exercise-tag-simple.more-tag {
+  background: var(--primary);
+  color: white;
+}
+
+/* Responsive Design for Simplified Workout Cards */
+@media (max-width: 768px) {
+  .workout-card-simple {
+    padding: 0.875rem;
+  }
+
+  .workout-name {
+    font-size: 0.95rem;
+  }
+
+  .stat-item-simple {
+    font-size: 0.8rem;
+  }
+
+  .exercise-tag-simple {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.6rem;
+  }
 }
 </style>
