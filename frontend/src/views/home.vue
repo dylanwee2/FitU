@@ -1,66 +1,41 @@
 <template>
-  <div class="container-fluid">
-    <!-- Example 3: Full Calendar Component -->
-    <div class="row mb-5">
-      <div class="col-12 col-xxl-6 mb-3 mb-xxl-0">
-        <div class="card h-100">
-          <div class="card-header">
-            <h5 class="mb-0">Timetable</h5>
+  <div class="home-page">
+    <div class="container-fluid">
+      <!-- Example 3: Full Calendar Component -->
+      <div class="row mb-5">
+        <div class="col-12 col-xxl-6 mb-3 mb-xxl-0">
+          <div class="card h-100">
+            <div class="card-header">
+              <h5 class="mb-0">Timetable</h5>
+            </div>
+            <div class="card-body">
+              <CalendarComponent 
+                :show-controls="true"
+                :show-add-event="true"
+                :show-file-upload="true"
+                :show-department-field="true"
+              />
+            </div>
           </div>
-          <div class="card-body">
-            <CalendarComponent 
-              :show-controls="true"
-              :show-add-event="true"
-              :show-file-upload="true"
-              :show-department-field="true"
-              @event-added="handleEventAdded"
-              @event-updated="handleEventUpdated"
-              @event-deleted="handleEventDeleted"
-              @events-imported="handleEventsImported"
-            />
+        </div>
+
+         <div class="col-12 col-xxl-6">
+          <div class="card h-100">
+            <div class="card-header">
+              <h5 class="mb-0">My Workouts</h5>
+            </div>
+            <div class="card-body workout-scrollable">
+              <WorkoutPlaylistsComponent/>
+            </div>
           </div>
         </div>
       </div>
+    </div> 
 
-       <div class="col-12 col-xxl-6">
-        <div class="card h-100">
-          <div class="card-header">
-            <h5 class="mb-0">My Workouts</h5>
-          </div>
-          <div class="card-body workout-scrollable">
-            <WorkoutPlaylistsComponent 
-              @playlist-selected="handlePlaylistSelected"
-              @playlist-edited="handlePlaylistEdited"
-              @playlist-published="handlePlaylistPublished"
-              @playlist-unpublished="handlePlaylistUnpublished"
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  </div> 
 
-  <div class="container mt-4">
-    <!-- Authentication Required Modal -->
-    <div v-if="showAuthModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Authentication Required</h5>
-          </div>
-          <div class="modal-body">
-            <p>You need to be logged in to use FitU. Please log in or sign up to continue.</p>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="u-btn u-btn--primary" @click="redirectToLanding">OK</button>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    
-  
-    <h1 class="mb-1" >Today's Calories</h1>
+    <div class="container">
+      <h1 class="mb-1" >Today's Calories</h1>
     <p class="u-muted mb-4">Quickly log your intake and visualize your last 7 days.</p>
 
     <!-- Quick Add Form -->
@@ -95,8 +70,9 @@
     </div>
 
     <h5 class="mb-2 u-muted">Last 7 days</h5>
-    <div class="card p-3 mb-4 home-card" v-reveal>
-      <CalorieChart :series="weekSeries" />
+      <div class="card p-3 mb-4 home-card" v-reveal>
+        <CalorieChart :series="weekSeries" />
+      </div>
     </div>
   </div>
 
@@ -123,7 +99,6 @@ export default {
   setup() {
     const router = useRouter()
     const auth = getAuth();
-    const showAuthModal = ref(false);
 
     // Reactive state for calorie data
     const calorieData = reactive({
@@ -155,16 +130,10 @@ export default {
       }
     };
 
-    const redirectToLanding = () => {
-      showAuthModal.value = false;
-      router.push('/');
-    };
-
     onMounted(async () => {
       onAuthStateChanged(auth, async (userCredential) => {
           if (userCredential) {
-            // User is logged in, hide modal and load data
-            showAuthModal.value = false;
+            // User is logged in, load data
             await loadCalorieData();
             
             // Set up real-time listener for calorie data
@@ -177,9 +146,7 @@ export default {
               }
             });
           } else {
-            // User is not logged in, show modal
-            showAuthModal.value = true;
-            // Clean up listeners
+            // User is not logged in, clean up listeners
             caloriesService.unsubscribeAll();
           }
       });
@@ -207,8 +174,6 @@ export default {
       amount,
       note,
       onAdd,
-      showAuthModal,
-      redirectToLanding
     };
   }
 };

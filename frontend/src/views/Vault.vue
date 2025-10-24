@@ -123,8 +123,9 @@
                           <h6 class="exercise-name mb-1" style="text-transform: capitalize;">{{ exercise.name }}</h6>
                           <p class="exercise-target mb-1 u-muted">{{ exercise.target }}</p>
                           <div class="exercise-badges">
-                            <span class="badge bg-primary me-1">{{ exercise.bodyPart }}</span>
-                            <span class="badge bg-secondary">{{ exercise.equipment }}</span>
+                            <span class="badge target-muscle-badge me-1">{{ exercise.target }}</span>
+                            <span class="badge body-part-badge me-1">{{ exercise.bodyPart }}</span>
+                            <span class="badge equipment-badge">{{ exercise.equipment }}</span>
                           </div>
                         </div>
                       </div>
@@ -242,7 +243,7 @@
           <div class="modal-content u-bg">
             <div class="modal-header">
               <h5 class="modal-title">
-                {{ isEditingReview ? 'Edit Review' : 'Rate' }} "{{ viewingPlaylist?.name || 'Workout' }}"
+                {{ isUpdatingReview ? 'Update Your Rating' : 'Rate' }} "{{ viewingPlaylist?.name || 'Workout' }}"
               </h5>
               <button 
                 type="button" 
@@ -251,9 +252,12 @@
               ></button>
             </div>
             
-            <div class="modal-body py-4">
-              <p class="mb-4 u-muted text-center">
-                {{ isEditingReview ? 'Update your rating and review:' : 'How would you rate this workout?' }}
+            <div class="modal-body text-center py-4">
+              <p v-if="isUpdatingReview" class="mb-2 u-muted">
+                You previously rated this workout {{ existingUserReview?.rating }} star{{ existingUserReview?.rating !== 1 ? 's' : '' }}.
+              </p>
+              <p class="mb-4 u-muted">
+                {{ isUpdatingReview ? 'Update your rating:' : 'How would you rate this workout?' }}
               </p>
               
               <div class="stars-rating-container mb-4 text-center">
@@ -310,7 +314,7 @@
                 @click="submitRating"
                 :disabled="userRating === 0 || submittingRating"
               >
-                {{ submittingRating ? (isEditingReview ? 'Updating...' : 'Submitting...') : (isEditingReview ? 'Update Review' : 'Submit Rating') }}
+                {{ submittingRating ? 'Submitting...' : (isUpdatingReview ? 'Update Rating' : 'Submit Rating') }}
               </button>
             </div>
           </div>
@@ -359,131 +363,53 @@
         </div>
       </div>
 
-      <!-- Reviews Modal -->
+      <!-- Update Confirmation Modal -->
       <div 
-        v-if="showReviewsModal" 
+        v-if="showUpdateConfirmModal" 
         class="modal fade show d-block" 
         tabindex="-1" 
         style="background-color: rgba(0,0,0,0.7); z-index: 1060;"
-        @click.self="showReviewsModal = false"
+        @click.self="cancelUpdate"
       >
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content u-bg">
             <div class="modal-header">
-              <h5 class="modal-title">
-                Reviews for "{{ selectedWorkoutForReviews?.name || 'Workout' }}"
-              </h5>
+              <h5 class="modal-title">Update Your Review?</h5>
               <button 
                 type="button" 
                 class="btn-close btn-close-white" 
-                @click="showReviewsModal = false"
+                @click="cancelUpdate"
               ></button>
             </div>
             
-            <div class="modal-body">
-              <!-- Rating Summary -->
-              <div class="rating-summary mb-4 p-3 border rounded">
-                <div class="row align-items-center">
-                  <div class="col-md-4 text-center">
-                    <div class="overall-rating">
-                      <div class="rating-number">
-                        {{ selectedWorkoutForReviews?.avgRating ? selectedWorkoutForReviews.avgRating.toFixed(1) : '0.0' }}
-                      </div>
-                      <div class="rating-stars-large mb-2">
-                        <img 
-                          v-for="star in 5" 
-                          :key="star"
-                          src="/star.png"
-                          alt="star"
-                          class="star-display-large"
-                          :class="{ 'star-filled': star <= Math.round(selectedWorkoutForReviews?.avgRating || 0) }"
-                        />
-                      </div>
-                      <div class="rating-text">out of 5</div>
-                    </div>
-                  </div>
-                  <div class="col-md-8">
-                    <div class="rating-breakdown">
-                      <div class="total-reviews mb-2">
-                        <strong>{{ selectedWorkoutForReviews?.reviewsCount || 0 }}</strong> total reviews
-                      </div>
-                      <!-- You can add star breakdown here if needed -->
-                    </div>
-                  </div>
-                </div>
+            <div class="modal-body text-center py-4">
+              <div class="mb-3">
+                <i class="fas fa-info-circle text-info" style="font-size: 2.5rem;"></i>
               </div>
-
-              <!-- Reviews List -->
-              <div class="reviews-container">
-                <div v-if="reviewsModalData.length === 0" class="no-reviews text-center py-4">
-                  <i class="fas fa-star text-muted" style="font-size: 3rem; opacity: 0.3;"></i>
-                  <h6 class="mt-3 text-muted">No reviews yet</h6>
-                  <p class="text-muted">Be the first to review this workout!</p>
-                </div>
-                <div v-else class="reviews-list">
-                  <div 
-                    v-for="review in reviewsModalData" 
-                    :key="review.id" 
-                    class="review-item-modal mb-3 p-3 border rounded"
-                    :class="{ 'user-own-review': review.userId === currentUser?.id }"
-                  >
-                    <!-- Reviewer Header -->
-                    <div class="reviewer-header d-flex align-items-center gap-2 mb-2">
-                      <div class="reviewer-avatar">
-                        <div class="avatar-circle">
-                          {{ getInitials(review.userName) }}
-                        </div>
-                      </div>
-                      <div class="reviewer-details">
-                        <div class="reviewer-name-row d-flex align-items-center gap-2">
-                          <strong class="reviewer-name">{{ review.userName }}</strong>
-                          <span v-if="review.userId === currentUser?.id" class="badge bg-primary">Your Review</span>
-                        </div>
-                        <div class="review-meta d-flex align-items-center gap-2">
-                          <div class="rating-stars">
-                            <img 
-                              v-for="star in 5" 
-                              :key="star"
-                              src="/star.png"
-                              alt="star"
-                              class="star-display"
-                              :class="{ 'star-filled': star <= review.rating }"
-                            />
-                          </div>
-                          <small class="text-muted">{{ formatDate(review.createdAt) }}</small>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <!-- Review Content -->
-                    <div class="review-content">
-                      <p v-if="review.comment && review.comment.trim()" class="review-comment mb-0">
-                        {{ review.comment }}
-                      </p>
-                      <p v-else class="review-comment mb-0 text-muted font-italic">
-                        This user provided a rating without a written review.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <h6 class="mb-3">You've already reviewed this workout</h6>
+              <p class="mb-3 u-muted">
+                You previously gave "{{ viewingPlaylist?.name || 'this workout' }}" 
+                {{ existingUserReview?.rating }} star{{ existingUserReview?.rating !== 1 ? 's' : '' }}.
+              </p>
+              <p class="mb-0 u-muted">
+                Would you like to update your rating?
+              </p>
             </div>
             
-            <div class="modal-footer">
+            <div class="modal-footer justify-content-center">
               <button 
                 type="button"
-                class="u-btn u-btn--secondary"
-                @click="showReviewsModal = false"
+                class="u-btn u-btn--secondary me-2"
+                @click="cancelUpdate"
               >
-                Close
+                Cancel
               </button>
               <button 
-                v-if="!isOwner(selectedWorkoutForReviews) && currentUser"
                 type="button"
                 class="u-btn u-btn--primary"
-                @click="openRatingModalFromReviews"
+                @click="proceedWithUpdate"
               >
-                {{ hasUserReviewedSelected ? 'Edit Your Review' : 'Write a Review' }}
+                Update Rating
               </button>
             </div>
           </div>
@@ -555,7 +481,7 @@
                         src="/star.png"
                         alt="star"
                         class="star-display"
-                        :class="{ 'star-filled': star <= Math.round(workoutSet.avgRating || 0) }"
+                        :class="{ 'star-filled': star <= Math.ceil(workoutSet.avgRating || 0) }"
                       />
                     </div>
                     <span class="rating-text">{{ formatRating(workoutSet) }}</span>
@@ -619,17 +545,14 @@ const unsubscribe = ref(null)
 const showViewModal = ref(false)
 const showRatingModal = ref(false)
 const showThankYouModal = ref(false)
+const showUpdateConfirmModal = ref(false)
 const viewingPlaylist = ref(null)
 const userRating = ref(0)
 const userComment = ref('')
 const hoverRating = ref(0)
 const submittingRating = ref(false)
-const workoutReviews = ref([])
-const isEditingReview = ref(false)
-const existingReview = ref(null)
-const showReviewsModal = ref(false)
-const selectedWorkoutForReviews = ref(null)
-const reviewsModalData = ref([])
+const existingUserReview = ref(null)
+const isUpdatingReview = ref(false)
 
 // Computed properties
 const currentUser = computed(() => {
@@ -644,15 +567,7 @@ const currentUser = computed(() => {
   return null
 })
 
-const hasUserReviewed = computed(() => {
-  if (!currentUser.value || !viewingPlaylist.value) return false
-  return workoutReviews.value.some(review => review.userId === currentUser.value.id)
-})
 
-const hasUserReviewedSelected = computed(() => {
-  if (!currentUser.value || !selectedWorkoutForReviews.value) return false
-  return reviewsModalData.value.some(review => review.userId === currentUser.value.id)
-})
 
 const viewWorkoutSet = (workoutSet) => {
   // Convert workoutSet to playlist format for the modal
@@ -673,108 +588,53 @@ const viewWorkoutSet = (workoutSet) => {
   userRating.value = 0
   hoverRating.value = 0
   showViewModal.value = true
-  
-  // Load reviews for this workout
-  loadWorkoutReviews(workoutSet.id)
 }
-
-const loadWorkoutReviews = async (workoutId) => {
-  try {
-    workoutReviews.value = await workoutVaultService.getWorkoutReviews(workoutId)
-  } catch (error) {
-    console.error('Error loading reviews:', error)
-    workoutReviews.value = []
-  }
-}
-
-const openReviewsModal = async (workoutSet) => {
-  selectedWorkoutForReviews.value = workoutSet
-  showReviewsModal.value = true
-  
-  // Load reviews for this workout
-  try {
-    const reviews = await workoutVaultService.getWorkoutReviews(workoutSet.id)
-    console.log(`Loaded ${reviews.length} reviews for workout:`, workoutSet.name)
-    reviewsModalData.value = reviews
-  } catch (error) {
-    console.error('Error loading reviews for modal:', error)
-    reviewsModalData.value = []
-  }
-}
-
-const openRatingModalFromReviews = async () => {
-  // Close reviews modal and open rating modal with the selected workout
-  showReviewsModal.value = false
-  
-  // Set the viewing playlist to the selected workout
-  viewingPlaylist.value = selectedWorkoutForReviews.value
-  
-  // Open the rating modal
-  await openRatingModal()
-}
-
-const formatDate = (timestamp) => {
-  if (!timestamp) return 'Unknown date'
-  
-  // Handle Firebase timestamp
-  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
-}
-
-const getInitials = (name) => {
-  if (!name) return '?'
-  const names = name.split(' ')
-  if (names.length >= 2) {
-    return (names[0][0] + names[names.length - 1][0]).toUpperCase()
-  }
-  return name.substring(0, 2).toUpperCase()
-}
-
 const openRatingModal = async () => {
   if (!currentUser.value) {
     alert('Please log in to rate workouts')
     return
   }
-
-  // Check if user is trying to rate their own workout
-  if (isOwner(viewingPlaylist.value)) {
-    alert('You cannot rate your own workout')
-    return
-  }
-
-  // Check if user has already rated this workout
+  
   try {
-    const userReview = await workoutVaultService.getUserReview(
+    // Check if user has already reviewed this workout
+    existingUserReview.value = await workoutVaultService.getUserReviewForWorkout(
       viewingPlaylist.value.id, 
       currentUser.value.id
     )
     
-    if (userReview) {
-      // User has existing review - load it for editing
-      isEditingReview.value = true
-      existingReview.value = userReview
-      userRating.value = userReview.rating
-      userComment.value = userReview.comment || ''
+    if (existingUserReview.value) {
+      // User has already reviewed, show update confirmation modal
+      isUpdatingReview.value = true
+      userRating.value = existingUserReview.value.rating
+      showUpdateConfirmModal.value = true
     } else {
-      // No existing review - create new one
-      isEditingReview.value = false
-      existingReview.value = null
+      // New review
+      isUpdatingReview.value = false
       userRating.value = 0
-      userComment.value = ''
+      hoverRating.value = 0
+      showRatingModal.value = true
     }
   } catch (error) {
-    console.error('Error checking user review:', error)
-    alert('Error loading review data. Please try again.')
-    return
+    console.error('Error checking existing review:', error)
+    // If there's an error checking, proceed as if it's a new review
+    isUpdatingReview.value = false
+    userRating.value = 0
+    hoverRating.value = 0
+    showRatingModal.value = true
   }
+}
 
-  // Reset other states and open modal
-  hoverRating.value = 0
+const proceedWithUpdate = () => {
+  showUpdateConfirmModal.value = false
   showRatingModal.value = true
+}
+
+const cancelUpdate = () => {
+  showUpdateConfirmModal.value = false
+  userRating.value = 0
+  hoverRating.value = 0
+  existingUserReview.value = null
+  isUpdatingReview.value = false
 }
 
 const setRating = (rating) => {
@@ -799,15 +659,8 @@ const submitRating = async () => {
   submittingRating.value = true
   
   try {
-    // console.log('Submitting rating:', {
-    //   workoutId: viewingPlaylist.value.id,
-    //   userId: currentUser.value.id,
-    //   userName: currentUser.value.name,
-    //   rating: userRating.value
-    // })
-    
-    // Add the review/rating using the vault service - this will automatically update the workout's rating statistics
-    await workoutVaultService.addReview(
+    // Add/update the review using the vault service
+    const result = await workoutVaultService.addReview(
       viewingPlaylist.value.id, 
       currentUser.value.id,
       currentUser.value.name,
@@ -829,34 +682,14 @@ const submitRating = async () => {
       viewingPlaylist.value.reviewsCount = updatedWorkoutData.reviewsCount
       viewingPlaylist.value.totalRating = updatedWorkoutData.totalRating
       viewingPlaylist.value.avgRating = updatedWorkoutData.avgRating
-      
-      // Update selectedWorkoutForReviews if it's the same workout
-      if (selectedWorkoutForReviews.value?.id === viewingPlaylist.value.id) {
-        selectedWorkoutForReviews.value.reviewsCount = updatedWorkoutData.reviewsCount
-        selectedWorkoutForReviews.value.totalRating = updatedWorkoutData.totalRating
-        selectedWorkoutForReviews.value.avgRating = updatedWorkoutData.avgRating
-      }
-      
-      // console.log('Updated workout data from Firebase:', {
-      //   id: updatedWorkout.id,
-      //   reviewsCount: updatedWorkoutData.reviewsCount,
-      //   totalRating: updatedWorkoutData.totalRating,
-      //   avgRating: updatedWorkoutData.avgRating
-      // })
     }
     
-    // Refresh the reviews list
-    await loadWorkoutReviews(viewingPlaylist.value.id)
-    
-    // Refresh reviews modal data if it's open for the same workout
-    if (selectedWorkoutForReviews.value?.id === viewingPlaylist.value.id) {
-      reviewsModalData.value = await workoutVaultService.getWorkoutReviews(viewingPlaylist.value.id)
-    }
-    
-    // Close all modals and show thank you message
+    // Close modals and show appropriate thank you message
     showViewModal.value = false
     showRatingModal.value = false
     userRating.value = 0
+    isUpdatingReview.value = false
+    existingUserReview.value = null
     showThankYouModal.value = true
     
   } catch (error) {
@@ -936,7 +769,7 @@ const isOwner = (workoutSet) => {
 
 const getUserName = (workoutSet) => {
   // Try to get user name from workout data
-  return workoutSet.userName || workoutSet.creatorName || 'Anonymous'
+  return workoutSet.authorDisplayName  
 }
 
 // Utility functions
@@ -1433,5 +1266,60 @@ onUnmounted(() => {
   .filters-section .row {
     gap: 1rem;
   }
+}
+
+/* Color-coded badge styles */
+.target-muscle-badge {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
+  color: white !important;
+  border: none;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.target-muscle-badge:hover {
+  background: linear-gradient(135deg, #c0392b 0%, #a93226 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+.body-part-badge {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
+  color: white !important;
+  border: none;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.body-part-badge:hover {
+  background: linear-gradient(135deg, #2980b9 0%, #21618c 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.equipment-badge {
+  background: linear-gradient(135deg, #27ae60 0%, #229954 100%) !important;
+  color: white !important;
+  border: none;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.equipment-badge:hover {
+  background: linear-gradient(135deg, #229954 0%, #1e8449 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
 }
 </style>

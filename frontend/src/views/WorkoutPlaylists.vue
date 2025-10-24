@@ -173,7 +173,7 @@
                   <button 
                     v-else
                     @click="unpublishFromVault(playlist)"
-                    class="u-btn u-btn--secondary"
+                    class="u-btn u-btn--danger"
                     title="Remove from Community Vault"
                   >
                     <p class="text-center">Unpublish</p>
@@ -188,7 +188,7 @@
 
     <!-- Edit Playlist Modal -->
     <div v-if="showEditModal" class="modal-overlay" @click.self="showEditModal = false">
-      <div class="modal-content large-modal">
+      <div class="modal-content large-modal" style="background-color: var(--bg);">
         <div class="modal-header">
           <h5 class="modal-title">Edit Workout Set</h5>
           <button @click="showEditModal = false" class="btn-close-white btn-close">
@@ -236,7 +236,7 @@
                     </div>
                     <button 
                       @click="removeExerciseFromPlaylist(index)"
-                      class="btn btn-sm btn-outline-danger"
+                      class="btn btn-sm btn-danger"
                       type="button"
                     >
                       Remove
@@ -297,10 +297,9 @@
                     <button 
                       @click="addExerciseToPlaylist(exercise)"
                       :disabled="isExerciseInPlaylist(exercise.id)"
-                      class="btn btn-sm btn-primary"
+                      class="btn btn-sm u-btn--primary"
                       type="button"
                     >
-                      <i class="fas fa-plus me-1"></i>
                       {{ isExerciseInPlaylist(exercise.id) ? 'Added' : 'Add' }}
                     </button>
                   </div>
@@ -360,7 +359,7 @@
 
     <!-- View Playlist Modal -->
     <div v-if="showViewModal" class="modal-overlay" @click.self="showViewModal = false">
-      <div class="modal-content large">
+      <div class="modal-content large" style="background-color: var(--bg);">
         <div class="modal-header">
           <h5 class="modal-title">{{ viewingPlaylist.name }}</h5>
           <button @click="showViewModal = false" class="btn-close-white btn-close">
@@ -428,8 +427,9 @@
                   <h6 class="exercise-name">{{ exercise.name }}</h6>
                   <p class="exercise-target">{{ exercise.target }}</p>
                   <div class="exercise-badges">
-                    <span class="badge bg-primary">{{ exercise.bodyPart }}</span>
-                    <span class="badge bg-secondary">{{ exercise.equipment }}</span>
+                    <span class="badge target-muscle-badge">{{ exercise.target }}</span>
+                    <span class="badge body-part-badge">{{ exercise.bodyPart }}</span>
+                    <span class="badge equipment-badge">{{ exercise.equipment }}</span>
                   </div>
                 </div>
                 <div class="exercise-sets">
@@ -451,19 +451,13 @@
           >
             Close
           </button>
-          <button 
-            @click="loadPlaylist(viewingPlaylist.id)"
-            class="u-btn u-btn--primary"
-          >
-            Load into Cart
-          </button>
         </div>
       </div>
     </div>
 
     <!-- Publish to Vault Modal -->
     <div v-if="showPublishModal" class="modal-overlay" @click.self="showPublishModal = false">
-      <div class="modal-content">
+      <div class="modal-content" style="background-color: var(--bg);">
         <div class="modal-header">
           <h5 class="modal-title">
             <i class="fas fa-upload me-2 text-success"></i>
@@ -547,7 +541,7 @@
 
     <!-- Unpublish Confirmation Modal -->
     <div v-if="showUnpublishModal" class="modal-overlay" @click.self="showUnpublishModal = false">
-      <div class="modal-content">
+      <div class="modal-content" style="background-color: var(--bg);">
         <div class="modal-header">
           <h5 class="modal-title">
             Remove from Community Vault
@@ -599,7 +593,7 @@
 
     <!-- Edit Exercises Modal -->
     <div v-if="showEditExercisesModal" class="modal-overlay" @click.self="showEditExercisesModal = false">
-      <div class="modal-content large">
+      <div class="modal-content large" style="background-color: var(--bg);">
         <div class="modal-header">
           <h5 class="modal-title">
             <i class="fas fa-edit me-2"></i>
@@ -635,8 +629,9 @@
                     <h6 class="exercise-name">{{ exercise.name }}</h6>
                     <p class="exercise-target">{{ exercise.target }}</p>
                     <div class="exercise-badges">
-                      <span class="badge bg-primary">{{ exercise.bodyPart }}</span>
-                      <span class="badge bg-secondary">{{ exercise.equipment }}</span>
+                      <span class="badge target-muscle-badge">{{ capitalizeFirstLetter(exercise.target) }}</span>
+                      <span class="badge body-part-badge">{{ capitalizeFirstLetter(exercise.bodyPart) }}</span>
+                      <span class="badge equipment-badge">{{ capitalizeFirstLetter(exercise.equipment) }}</span>
                     </div>
                   </div>
                   <div class="exercise-controls">
@@ -769,7 +764,7 @@
 
     <!-- Delete Confirmation Modal -->
     <div v-if="showDeleteModal" class="modal-overlay" @click.self="showDeleteModal = false">
-      <div class="modal-content">
+      <div class="modal-content" style="background-color: var(--bg);">
         <div class="modal-header">
           <h5 class="modal-title">Delete Workout Set</h5>
           <button @click="showDeleteModal = false" class="btn-close-white btn-close">
@@ -845,18 +840,6 @@ const savedPlaylists = computed(() => cartStore.savedPlaylists)
 const isAuthenticated = computed(() => cartStore.isAuthenticated)
 
 // Methods
-const formatDate = (dateString) => {
-  const date = new Date(dateString)
-  const now = new Date()
-  const diffTime = Math.abs(now - date)
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-  
-  if (diffDays === 1) return 'yesterday'
-  if (diffDays < 7) return `${diffDays} days ago`
-  if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`
-  return date.toLocaleDateString()
-}
-
 const formatDuration = (minutes) => {
   if (!minutes || minutes === 0) return '0 min'
   if (minutes < 60) return `${minutes} min`
@@ -870,14 +853,6 @@ const formatWorkoutDays = (days) => {
   if (days.length === 7) return 'Daily'
   if (days.length === 1) return days[0]
   return `${days.length} days/week`
-}
-
-const loadPlaylist = (playlistId) => {
-  const success = cartStore.loadPlaylist(playlistId)
-  if (success) {
-    // Navigate to exercises page to show the loaded cart
-    router.push('/exercises')
-  }
 }
 
 const viewPlaylist = (playlist) => {
@@ -1104,7 +1079,14 @@ const confirmPublishToVault = async () => {
   publishingInProgress.value = true
 
   try {
-    const result = await workoutVaultService.publishWorkout(publishingPlaylist.value.id, auth.currentUser.uid)
+    // Get the user's display name from Firebase Auth
+    const userDisplayName = auth.currentUser?.displayName || 'Anonymous'
+    
+    const result = await workoutVaultService.publishWorkout(
+      publishingPlaylist.value.id, 
+      auth.currentUser.uid, 
+      userDisplayName
+    )
     
     // Update the local playlist to reflect published status
     await cartStore.updatePlaylist(publishingPlaylist.value.id, {
@@ -1162,13 +1144,6 @@ const confirmUnpublishFromVault = async () => {
   }
 }
 
-const editPlaylistExercises = (playlist) => {
-  editingExercisesPlaylist.value = { ...playlist }
-  editingExercises.value = [...(playlist.exercises || [])]
-  exerciseSearchQuery.value = ''
-  exerciseSearchResults.value = []
-  showEditExercisesModal.value = true
-}
 
 const removeExerciseFromEdit = (index) => {
   editingExercises.value.splice(index, 1)
@@ -1197,11 +1172,8 @@ const searchExercises = async () => {
   }
 
   try {
-    // This assumes you have an exercise API service available
-    // You might need to import this from your existing exercise service
     const response = await fetch(`https://exercisedb.p.rapidapi.com/exercises/name/${encodeURIComponent(exerciseSearchQuery.value)}`, {
       headers: {
-        'X-RapidAPI-Key': 'your-api-key', // You'll need to use your actual API key
         'X-RapidAPI-Host': 'exercisedb.p.rapidapi.com'
       }
     })
@@ -1433,7 +1405,7 @@ const updateWorkoutDurations = async (playlists) => {
       
       // Update if duration is significantly different (accounting for old calculation method)
       if (Math.abs(currentDuration - calculatedDuration) > 5) {
-        console.log(`Updating duration for ${playlist.name}: ${currentDuration} -> ${calculatedDuration}`)
+        // console.log(`Updating duration for ${playlist.name}: ${currentDuration} -> ${calculatedDuration}`)
         try {
           await cartStore.updatePlaylist(playlist.id, {
             totalDuration: calculatedDuration
@@ -1606,7 +1578,6 @@ const updateWorkoutDurations = async (playlists) => {
   align-items: center;
   gap: 0.75rem;
   padding: 0.5rem;
-  background: #f8f9fa;
   border-radius: 6px;
 }
 
@@ -1708,7 +1679,6 @@ const updateWorkoutDurations = async (playlists) => {
 .current-exercises {
   max-height: 400px;
   overflow-y: auto;
-  border: 1px solid #dee2e6;
   border-radius: 8px;
   padding: 0.5rem;
 }
@@ -1718,10 +1688,8 @@ const updateWorkoutDurations = async (playlists) => {
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem;
-  border: 1px solid #e9ecef;
   border-radius: 6px;
   margin-bottom: 0.5rem;
-  background: #f8f9fa;
 }
 
 .exercise-item:last-child {
@@ -1758,7 +1726,6 @@ const updateWorkoutDurations = async (playlists) => {
 .search-results {
   max-height: 500px;
   overflow-y: auto;
-  border: 1px solid #dee2e6;
   border-radius: 8px;
   padding: 0.5rem;
 }
@@ -1766,7 +1733,6 @@ const updateWorkoutDurations = async (playlists) => {
 .default-exercises {
   max-height: 500px;
   overflow-y: auto;
-  border: 1px solid #dee2e6;
   border-radius: 8px;
   padding: 0.5rem;
 }
@@ -1776,15 +1742,13 @@ const updateWorkoutDurations = async (playlists) => {
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem;
-  border: 1px solid #e9ecef;
   border-radius: 6px;
   margin-bottom: 0.5rem;
-  background: white;
   transition: all 0.2s ease;
 }
 
 .search-result-item:hover {
-  background: #f8f9fa;
+  background: grey;
   border-color: #007bff;
 }
 
@@ -2209,5 +2173,60 @@ const updateWorkoutDurations = async (playlists) => {
 
 .align-checkbox .form-check-input {
   margin-top: 0; /* Remove default margin */
+}
+
+/* Color-coded badge styles */
+.target-muscle-badge {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
+  color: white !important;
+  border: none;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.target-muscle-badge:hover {
+  background: linear-gradient(135deg, #c0392b 0%, #a93226 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+.body-part-badge {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
+  color: white !important;
+  border: none;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.body-part-badge:hover {
+  background: linear-gradient(135deg, #2980b9 0%, #21618c 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.equipment-badge {
+  background: linear-gradient(135deg, #27ae60 0%, #229954 100%) !important;
+  color: white !important;
+  border: none;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.equipment-badge:hover {
+  background: linear-gradient(135deg, #229954 0%, #1e8449 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
 }
 </style>

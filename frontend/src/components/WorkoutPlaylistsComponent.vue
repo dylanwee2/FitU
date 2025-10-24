@@ -229,7 +229,7 @@
                     </div>
                     <button 
                       @click="removeExerciseFromPlaylist(index)"
-                      class="btn btn-sm btn-outline-danger"
+                      class="btn btn-sm btn-danger"
                       type="button"
                     >
                     Remove 
@@ -290,10 +290,9 @@
                     <button 
                       @click="addExerciseToPlaylist(exercise)"
                       :disabled="isExerciseInPlaylist(exercise.id)"
-                      class="btn btn-sm btn-primary"
+                      class="btn btn-sm u-btn--primary"
                       type="button"
                     >
-                      <i class="fas fa-plus me-1"></i>
                       {{ isExerciseInPlaylist(exercise.id) ? 'Added' : 'Add' }}
                     </button>
                   </div>
@@ -521,16 +520,16 @@ const checkPublishedStatus = async () => {
     return
   }
 
-  console.log('Checking published status for user:', auth.currentUser.uid)
+  // console.log('Checking published status for user:', auth.currentUser.uid)
 
   try {
     // Get user's workout sets from 'workoutSets' collection
     const userWorkouts = await workoutVaultService.getUserWorkouts(auth.currentUser.uid)
-    console.log('User workouts from workoutSets:', userWorkouts)
+    // console.log('User workouts from workoutSets:', userWorkouts)
     
     // Get user's published workouts from 'publishedWorkouts' collection
     const publishedWorkouts = await workoutVaultService.getPublishedWorkoutsByUser(auth.currentUser.uid)
-    console.log('Published workouts from publishedWorkouts:', publishedWorkouts)
+    // console.log('Published workouts from publishedWorkouts:', publishedWorkouts)
     
     // Create a map of originalId -> publishedWorkout for quick lookup
     const publishedMap = new Map()
@@ -548,16 +547,16 @@ const checkPublishedStatus = async () => {
         const isActuallyPublished = publishedMap.has(userWorkout.id)
         const publishedWorkout = publishedMap.get(userWorkout.id)
         
-        console.log(`Checking workout ${userWorkout.id}:`, {
-          localPublished: localPlaylist.isPublished,
-          firebaseUserWorkoutPublished: userWorkout.isPublished,
-          actuallyPublished: isActuallyPublished,
-          publishedWorkout: publishedWorkout
-        })
+        // console.log(`Checking workout ${userWorkout.id}:`, {
+        //   localPublished: localPlaylist.isPublished,
+        //   firebaseUserWorkoutPublished: userWorkout.isPublished,
+        //   actuallyPublished: isActuallyPublished,
+        //   publishedWorkout: publishedWorkout
+        // })
         
         // Update the status based on whether it's actually in the publishedWorkouts collection
         if (localPlaylist.isPublished !== isActuallyPublished) {
-          console.log(`Updating playlist ${userWorkout.id} published status to ${isActuallyPublished}`)
+          // console.log(`Updating playlist ${userWorkout.id} published status to ${isActuallyPublished}`)
           await cartStore.updatePlaylist(userWorkout.id, {
             isPublished: isActuallyPublished,
             publishedId: publishedWorkout?.id || null,
@@ -588,7 +587,7 @@ const updateWorkoutDurations = async (playlists) => {
       
       // Update if duration is significantly different (accounting for old calculation method)
       if (Math.abs(currentDuration - calculatedDuration) > 5) {
-        console.log(`Updating duration for ${playlist.name}: ${currentDuration} -> ${calculatedDuration}`)
+        // console.log(`Updating duration for ${playlist.name}: ${currentDuration} -> ${calculatedDuration}`)
         try {
           await cartStore.updatePlaylist(playlist.id, {
             totalDuration: calculatedDuration
@@ -856,7 +855,14 @@ const confirmPublishToVault = async () => {
   publishingInProgress.value = true
 
   try {
-    const result = await workoutVaultService.publishWorkout(publishingPlaylist.value.id, auth.currentUser.uid)
+    // Get the user's display name from Firebase Auth
+    const userDisplayName = auth.currentUser?.displayName || 'Anonymous'
+    
+    const result = await workoutVaultService.publishWorkout(
+      publishingPlaylist.value.id, 
+      auth.currentUser.uid, 
+      userDisplayName
+    )
     
     // Update the local playlist to reflect published status
     await cartStore.updatePlaylist(publishingPlaylist.value.id, {
@@ -1255,10 +1261,8 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem;
-  border: 1px solid #e9ecef;
   border-radius: 6px;
   margin-bottom: 0.5rem;
-  background: #f8f9fa;
 }
 
 .exercise-item:last-child {
@@ -1273,12 +1277,10 @@ onUnmounted(() => {
   font-size: 0.9rem;
   font-weight: 600;
   margin-bottom: 0.25rem;
-  color: #2c3e50;
 }
 
 .exercise-target {
   font-size: 0.8rem;
-  color: #6c757d;
   margin: 0;
 }
 
@@ -1297,15 +1299,13 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem;
-  border: 1px solid #e9ecef;
   border-radius: 6px;
   margin-bottom: 0.5rem;
-  background: white;
   transition: all 0.2s ease;
 }
 
 .search-result-item:hover {
-  background: #f8f9fa;
+  background: grey;
   border-color: #007bff;
 }
 
@@ -1334,7 +1334,6 @@ onUnmounted(() => {
 .current-exercises {
   max-height: 400px;
   overflow-y: auto;
-  border: 1px solid #dee2e6;
   border-radius: 8px;
   padding: 0.5rem;
 }
@@ -1342,7 +1341,6 @@ onUnmounted(() => {
 .search-results {
   max-height: 500px;
   overflow-y: auto;
-  border: 1px solid #dee2e6;
   border-radius: 8px;
   padding: 0.5rem;
 }
@@ -1350,7 +1348,6 @@ onUnmounted(() => {
 .default-exercises {
   max-height: 500px;
   overflow-y: auto;
-  border: 1px solid #dee2e6;
   border-radius: 8px;
   padding: 0.5rem;
 }

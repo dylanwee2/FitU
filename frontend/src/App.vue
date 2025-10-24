@@ -6,9 +6,11 @@
     <!-- Main content area -->
     <main id="main" class="flex-grow-1" tabindex="-1">
       <!-- Route transitions -->
-      <transition name="route" mode="out-in">
-        <router-view />
-      </transition>
+      <router-view v-slot="{ Component }">
+        <transition name="route" mode="out-in">
+          <component :is="Component" />
+        </transition>
+      </router-view>
     </main>
 
     <!-- Global Footer Component -->
@@ -16,22 +18,34 @@
 
     <!-- Global Workout Cart Component -->
     <WorkoutCart />
+
+    <!-- Global Auth Modal Component -->
+    <AuthModal :show="showAuthModal" />
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { useAuth } from './composables/useAuth'
 import Navbar from './components/navbar.vue'
 import Footer from './components/Footer.vue'
 import WorkoutCart from './components/WorkoutCart.vue'
+import AuthModal from './components/AuthModal.vue'
 
-export default {
-  name: 'App',
-  components: {
-    Navbar,
-    Footer,
-    WorkoutCart
-  }
-}
+const route = useRoute()
+const { isAuthenticated, isLoading } = useAuth()
+
+// Routes that don't require authentication
+const publicRoutes = ['/', '/login', '/signup']
+
+// Computed property to determine if auth modal should show
+const showAuthModal = computed(() => {
+  if (isLoading.value) return false // Don't show modal while loading
+  
+  const requiresAuth = !publicRoutes.includes(route.path)
+  return !isAuthenticated.value && requiresAuth
+})
 </script>
 
 <style>
