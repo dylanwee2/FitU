@@ -799,12 +799,13 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useWorkoutCartStore } from '../stores/workoutCart'
 import { workoutVaultService } from '@/services/workoutVaultService.js'
 import { auth } from '@/firebase.js'
 
 const router = useRouter()
+const route = useRoute()
 const cartStore = useWorkoutCartStore()
 
 // Local state
@@ -1267,10 +1268,103 @@ const handleImageError = (event) => {
   event.target.src = '/images/exercise-placeholder.png'
 }
 
-onMounted(() => {
+onMounted(async () => {
   // Initialize store to load saved playlists
   cartStore.initializeStore()
+  
+  // Check if we need to auto-edit a workout from the vault
+  if (route.query.edit) {
+    await autoEditWorkout(route.query.edit)
+  }
 })
+
+// Function to automatically load and edit a workout from the vault
+const autoEditWorkout = async (workoutId) => {
+  try {
+    // Check if user is authenticated
+    if (!auth.currentUser) {
+      alert('Please log in to edit workouts')
+      router.push('/login')
+      return
+    }
+    
+    console.log('Loading workout for editing:', workoutId)
+    
+    // Get the workout data from Firebase vault
+    const workoutData = await workoutVaultService.getWorkoutById(workoutId)
+    console.log('Vault workout data:', workoutData)
+    
+    if (workoutData) {
+      // Check if the current user owns this workout
+      if (workoutData.userId !== auth.currentUser.uid) {
+        alert('You can only edit your own workouts')
+        router.replace('/vault')
+        return
+      }
+      
+      // Try to get the original workout ID from the vault workout
+      let originalWorkoutId = workoutData.originalId
+      let originalWorkout = null
+      
+      // If we have an original ID, try to get the original workout
+      if (originalWorkoutId) {
+        try {
+          console.log('Loading original workout:', originalWorkoutId)
+          originalWorkout = await cartStore.getPlaylistById(originalWorkoutId)
+          console.log('Original workout found:', originalWorkout)
+        } catch (error) {
+          console.warn('Could not load original workout:', error)
+          originalWorkout = null
+        }
+      }
+      
+      // If we couldn't find the original workout, we'll edit the vault data directly
+      // This can happen if the original was deleted or if there's an ID mismatch
+      if (!originalWorkout) {
+        console.log('Original workout not found, using vault data directly')
+        
+        // Create a new workout entry in the user's collection based on vault data
+        const workoutForEdit = {
+          name: workoutData.name || workoutData.title || 'Unnamed Workout',
+          description: workoutData.description || '',
+          exercises: workoutData.exercises || [],
+          muscleGroups: workoutData.muscleGroups || [],
+          estimatedDuration: workoutData.estimatedDuration || workoutData.totalDuration || 30,
+          isPublished: true,
+          publishedId: workoutData.id,
+          // Don't set an ID yet - it will be created when saved
+        }
+        
+        console.log('Workout prepared for editing (from vault):', workoutForEdit)
+        editPlaylist(workoutForEdit)
+      } else {
+        // Use the original workout but with updated data from vault
+        const workoutForEdit = {
+          ...originalWorkout,
+          id: originalWorkoutId,
+          name: workoutData.name || originalWorkout.name || 'Unnamed Workout',
+          description: workoutData.description || originalWorkout.description || '',
+          exercises: workoutData.exercises || originalWorkout.exercises || [],
+          isPublished: true,
+          publishedId: workoutData.id
+        }
+        
+        console.log('Workout prepared for editing (from original):', workoutForEdit)
+        editPlaylist(workoutForEdit)
+      }
+      
+      // Clear the query parameters from the URL
+      router.replace({ path: '/workout-sets' })
+    } else {
+      alert('Workout not found')
+      router.replace('/vault')
+    }
+  } catch (error) {
+    console.error('Error loading workout for editing:', error)
+    alert('Failed to load workout for editing: ' + error.message)
+    router.replace('/vault')
+  }
+}
 
 // Add method to check published status from Firebase
 const checkPublishedStatus = async () => {

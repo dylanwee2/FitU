@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
 import { db } from '@/firebase'
-import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where } from 'firebase/firestore'
+import { collection, addDoc, getDocs, getDoc, doc, updateDoc, deleteDoc, query, where } from 'firebase/firestore'
 import { workoutVaultService } from '@/services/workoutVaultService.js'
 
 export const useWorkoutCartStore = defineStore('workoutCart', () => {
@@ -187,6 +187,40 @@ export const useWorkoutCartStore = defineStore('workoutCart', () => {
     }
   }
 
+  const getPlaylistById = async (playlistId) => {
+    if (!currentUser.value) {
+      throw new Error('User must be authenticated to get workout sets')
+    }
+
+    try {
+      // First check if it's already in local storage
+      const localPlaylist = savedPlaylists.value.find(p => p.id === playlistId)
+      if (localPlaylist) {
+        return localPlaylist
+      }
+
+      // If not found locally, fetch from Firebase
+      const docRef = doc(db, "workoutSets", playlistId)
+      const docSnap = await getDoc(docRef)
+      
+      if (docSnap.exists()) {
+        const workoutData = { id: docSnap.id, ...docSnap.data() }
+        
+        // Verify ownership
+        if (workoutData.userId === currentUser.value.uid) {
+          return workoutData
+        } else {
+          throw new Error('Unauthorized: You can only access your own workouts')
+        }
+      } else {
+        return null
+      }
+    } catch (error) {
+      console.error('Error getting workout set:', error)
+      throw error
+    }
+  }
+
   const updatePlaylist = async (playlistId, updates) => {
     if (!currentUser.value) {
       throw new Error('User must be authenticated to update workout sets')
@@ -196,40 +230,39 @@ export const useWorkoutCartStore = defineStore('workoutCart', () => {
       // Find the local playlist to check if it's published
       const playlist = savedPlaylists.value.find(p => p.id === playlistId)
       
-      // Update in Firebase
+      // Update in Firebase (local user workout)
       const playlistRef = doc(db, "workoutSets", playlistId)
       const firebaseUpdates = {
         ...updates,
         lastUsed: new Date().toISOString()
       }
+      
       await updateDoc(playlistRef, firebaseUpdates)
       
-      // If the workout is published, update the published version as well
-      if (playlist && playlist.isPublished && playlist.publishedId) {
-        try {
-          const publishedRef = doc(db, "publishedWorkouts", playlist.publishedId)
-          // Update the published workout with the same changes
-          const publishedUpdates = {
-            ...updates,
-            updatedAt: new Date().toISOString()
-          }
-          await updateDoc(publishedRef, publishedUpdates)
-          console.log('Successfully updated published workout in vault')
-        } catch (error) {
-          console.error('Error updating published workout:', error)
-          // Continue even if published update fails
-        }
-      }
-      
-      // Update local playlist
+      // Update local playlist immediately after successful Firebase update
       if (playlist) {
         Object.assign(playlist, updates)
         playlist.updatedAt = new Date().toISOString()
       }
       
+      // If the workout is published, try to update the published version as well
+      if (playlist && playlist.isPublished && playlist.publishedId) {
+        try {
+          // Use the workoutVaultService to properly update the published workout
+          await workoutVaultService.updatePublishedWorkout(playlist.publishedId, updates, currentUser.value.uid)
+        } catch (vaultError) {
+          console.error('Error updating published workout in vault:', vaultError)
+          // Show a warning but don't fail the entire operation
+          console.warn('Published workout in vault could not be updated. Local workout was updated successfully.')
+          // The local update succeeded, so we return true
+          // User could try republishing if needed
+        }
+      }
+      
       return true
     } catch (error) {
       console.error('Error updating workout set in Firebase:', error)
+      console.error('Error details:', error.message, error.code)
       throw new Error('Failed to update workout set. Please try again.')
     }
   }
@@ -377,6 +410,7 @@ export const useWorkoutCartStore = defineStore('workoutCart', () => {
     savePlaylist,
     loadPlaylist,
     deletePlaylist,
+    getPlaylistById,
     updatePlaylist,
     duplicatePlaylist,
     initializeStore
