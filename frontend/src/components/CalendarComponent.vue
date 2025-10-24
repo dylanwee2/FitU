@@ -6,17 +6,22 @@
         <div class="col-6 mb-2 mb-md-0" v-if="showFileUpload">
           
           <div class="file-upload-container info-icon-tooltip-wrapper">
-            <input type="file" class="upload-box visually-hidden" accept=".ics" @change="handleIcsUpload" ref="fileInput" id="icsFileInput" />
-            <label for="icsFileInput" class="custom-upload-btn u-btn u-btn--primary">Import ICS File</label>
-            <span class="ics-info-icon-btn" tabindex="0" @mouseenter="showTooltip = true" @mouseleave="showTooltip = false" @focus="showTooltip = true" @blur="showTooltip = false">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-                <circle cx="8" cy="8" r="8" fill="var(--primary)"/>
-                <text x="8" y="12" text-anchor="middle" font-size="10" fill="#fff" font-family="Arial" font-weight="bold">?</text>
-              </svg>
-            </span>
-            <div v-if="showTooltip" class="custom-tooltip custom-tooltip-icon">
-              You can export an ICS file from your Google Calendar and import it here.
-            </div>
+            <template v-if="!hasImportedIcs">
+              <input type="file" class="upload-box visually-hidden" accept=".ics" @change="handleIcsUpload" ref="fileInput" id="icsFileInput" />
+              <label for="icsFileInput" class="custom-upload-btn u-btn u-btn--primary">Import ICS File</label>
+              <span class="ics-info-icon-btn" tabindex="0" @mouseenter="showTooltip = true" @mouseleave="showTooltip = false" @focus="showTooltip = true" @blur="showTooltip = false">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                  <circle cx="8" cy="8" r="8" fill="var(--primary)"/>
+                  <text x="8" y="12" text-anchor="middle" font-size="10" fill="#fff" font-family="Arial" font-weight="bold">?</text>
+                </svg>
+              </span>
+              <div v-if="showTooltip" class="custom-tooltip custom-tooltip-icon">
+                You can export an ICS file from your Google Calendar and import it here.
+              </div>
+            </template>
+            <template v-else>
+              <button class="u-btn u-btn--danger" @click="clearCalendar">Clear calendar</button>
+            </template>
           </div>
         </div>
         <div class="col-6 d-flex justify-content-end">
@@ -104,6 +109,26 @@
       </div>
     </div>
     
+    <!-- Import Success Modal -->
+    <div 
+      v-if="showImportSuccess"
+      class="modal-backdrop"
+      @click.self="closeImportSuccess"
+    >
+      <div class="event-form-modal">
+        <div class="modal-header">
+          <h5 class="modal-title">Import Successful</h5>
+          <button @click="closeImportSuccess" class="btn-close btn-close-white"></button>
+        </div>
+        <div class="modal-body">
+          <p>{{ importSuccessMsg }}</p>
+        </div>
+        <div class="modal-footer">
+          <button @click="closeImportSuccess" class="u-btn u-btn--primary">OK</button>
+        </div>
+      </div>
+    </div>
+    
     <!-- Calendar Container -->
     <div class="calendar-container">
       <div ref="calendarRef" class="calendar-element"></div>
@@ -123,7 +148,7 @@ import listPlugin from '@fullcalendar/list'
 import interactionPlugin from '@fullcalendar/interaction'
 import ICAL from 'ical.js'
 import { db } from '../firebase.js'
-import { collection, query, where, onSnapshot, getDocs, addDoc, updateDoc, doc as firestoreDoc, serverTimestamp } from 'firebase/firestore'
+import { collection, query, where, onSnapshot, getDocs, addDoc, updateDoc, doc as firestoreDoc, serverTimestamp, deleteField } from 'firebase/firestore'
 import { useAuth } from '../composables/useAuth.js'
 
 // Props
@@ -164,7 +189,6 @@ const props = defineProps({
     default: false
   },
   
-  // Calendar behavior
   editable: {
     type: Boolean,
     default: true
@@ -174,14 +198,12 @@ const props = defineProps({
     default: true
   },
   
-  // Initial events
   events: {
     type: Array,
     default: () => []
   }
 })
 
-// Emits
 const emit = defineEmits([
   'event-added',
   'event-updated', 
@@ -191,7 +213,6 @@ const emit = defineEmits([
   'events-imported'
 ])
 
-// Reactive state
 const calendarRef = ref(null)
 const fileInput = ref(null)
 const showEventForm = ref(false)
@@ -204,6 +225,33 @@ const newEvent = ref({
   description: '',
 
 })
+
+// Track whether the current user already has an imported ICS in Firestore
+const hasImportedIcs = ref(false)
+const importedDocId = ref(null)
+
+// Import success popup state
+const showImportSuccess = ref(false)
+const importSuccessMsg = ref('')
+let importSuccessTimeout = null
+
+const openImportSuccess = (msg) => {
+  importSuccessMsg.value = msg || 'Import successful'
+  showImportSuccess.value = true
+  if (importSuccessTimeout) clearTimeout(importSuccessTimeout)
+  importSuccessTimeout = setTimeout(() => {
+    closeImportSuccess()
+  }, 3500)
+}
+
+const closeImportSuccess = () => {
+  showImportSuccess.value = false
+  importSuccessMsg.value = ''
+  if (importSuccessTimeout) {
+    clearTimeout(importSuccessTimeout)
+    importSuccessTimeout = null
+  }
+}
 
 let calendarInstance = null
 let calendarUnsubscribe = null
@@ -235,6 +283,9 @@ const subscribeToCalendar = () => {
   calendarUnsubscribe = onSnapshot(q, (snapshot) => {
     try {
       console.debug('[Calendar] snapshot received, docs:', snapshot.size)
+      // Reset ICS tracking; we'll set if we find a doc with `ics` field
+      hasImportedIcs.value = false
+      importedDocId.value = null
 
       // Build events array by iterating documents. Some docs store the raw ICS string in `ics`.
       const events = []
@@ -243,6 +294,11 @@ const subscribeToCalendar = () => {
 
         // If the document stores raw ICS content, parse it and extract VEVENTs
         if (d.ics && typeof d.ics === 'string') {
+          // mark that this user has an imported ICS doc
+          if (!hasImportedIcs.value) {
+            hasImportedIcs.value = true
+            importedDocId.value = doc.id
+          }
           try {
             const jcal = ICAL.parse(d.ics)
             const comp = new ICAL.Component(jcal)
@@ -517,6 +573,12 @@ const handleIcsUpload = async (event) => {
     } catch (err) {
       console.error('[Calendar] error saving ICS to Firestore:', err)
     }
+    // Show success popup (even if user not signed in, we rendered locally)
+    try {
+      openImportSuccess(`${events.length} event${events.length === 1 ? '' : 's'} imported`)
+    } catch (e) {
+      // ignore
+    }
     
     // Clear the file input
     if (fileInput.value) {
@@ -607,6 +669,34 @@ const deleteEvent = () => {
   }
 }
 
+// Clear the imported ICS from Firestore (if present) and clear calendar UI
+const clearCalendar = async () => {
+  if (importedDocId.value && currentUser.value && currentUser.value.uid) {
+    try {
+      await updateDoc(firestoreDoc(db, 'calendar', importedDocId.value), {
+        ics: deleteField(),
+        updatedAt: serverTimestamp()
+      })
+      console.debug('[Calendar] cleared ICS field from doc', importedDocId.value)
+      openImportSuccess('Calendar cleared')
+      // local state will update when snapshot triggers
+      return
+    } catch (err) {
+      console.error('[Calendar] error clearing ICS:', err)
+      alert('Could not clear calendar. Please try again.')
+      return
+    }
+  }
+
+  // If no Firestore doc, just clear the displayed events
+  if (calendarInstance) {
+    calendarInstance.removeAllEvents()
+  }
+  hasImportedIcs.value = false
+  importedDocId.value = null
+  openImportSuccess('Calendar cleared')
+}
+
 // Utility functions
 // Format date for datetime-local input in local time (not UTC)
 const formatDateForInput = (date) => {
@@ -674,6 +764,11 @@ onUnmounted(() => {
   if (calendarUnsubscribe) {
     try { calendarUnsubscribe() } catch (e) { /* ignore */ }
     calendarUnsubscribe = null
+  }
+  // clear any import success timeout
+  if (importSuccessTimeout) {
+    try { clearTimeout(importSuccessTimeout) } catch(e){}
+    importSuccessTimeout = null
   }
 })
 
