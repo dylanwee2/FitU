@@ -98,9 +98,9 @@
         
         <div class="modal-footer">
           <button @click="closeEventForm" class="u-btn u-btn--secondary">Cancel</button>
-          <button v-if="editingEvent" @click="deleteEvent" class="u-btn u-btn--danger ms-2">
-            Delete
-          </button>
+                <button v-if="editingEvent" @click="deleteEvent" class="u-btn u-btn--danger ms-2">
+                  Delete
+                </button>
           <button @click="submitEvent" class="u-btn u-btn--primary" :disabled="!newEvent.title">
             {{ editingEvent ? 'Update' : 'Add' }} Event
           </button>
@@ -134,6 +134,40 @@
       <div ref="calendarRef" class="calendar-element"></div>
     </div>
   </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div v-if="showDeleteConfirm" class="modal-backdrop" @click.self="showDeleteConfirm = false">
+    <div class="event-form-modal">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirm Deletion</h5>
+        <button @click="showDeleteConfirm = false" class="btn-close btn-close-white"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete this event? This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button @click="showDeleteConfirm = false" class="u-btn u-btn--secondary">Cancel</button>
+        <button @click="confirmDelete" class="u-btn u-btn--danger">Delete</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Clear Calendar Confirmation Modal -->
+  <div v-if="showClearConfirm" class="modal-backdrop" @click.self="showClearConfirm = false">
+    <div class="event-form-modal">
+      <div class="modal-header">
+        <h5 class="modal-title">Clear Calendar</h5>
+        <button @click="showClearConfirm = false" class="btn-close btn-close-white"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to clear the calendar? This will remove imported events from your stored calendar and clear the view.</p>
+      </div>
+      <div class="modal-footer">
+        <button @click="showClearConfirm = false" class="u-btn u-btn--secondary">Cancel</button>
+        <button @click="performClearCalendar" class="u-btn u-btn--danger">Clear Calendar</button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -148,7 +182,7 @@ import listPlugin from '@fullcalendar/list'
 import interactionPlugin from '@fullcalendar/interaction'
 import ICAL from 'ical.js'
 import { db } from '../firebase.js'
-import { collection, query, where, onSnapshot, getDocs, addDoc, updateDoc, doc as firestoreDoc, serverTimestamp, deleteField } from 'firebase/firestore'
+import { collection, query, where, onSnapshot, getDocs, updateDoc, doc as firestoreDoc, serverTimestamp, deleteField, getDoc, setDoc, deleteDoc } from 'firebase/firestore'
 import { useAuth } from '../composables/useAuth.js'
 
 // Props
@@ -225,6 +259,10 @@ const newEvent = ref({
   description: '',
 
 })
+
+// Delete confirmation modal state
+const showDeleteConfirm = ref(false)
+
 
 // Track whether the current user already has an imported ICS in Firestore
 const hasImportedIcs = ref(false)
@@ -313,7 +351,8 @@ const subscribeToCalendar = () => {
                   end: e.endDate ? e.endDate.toJSDate() : undefined,
                   allDay: e.startDate ? !!e.startDate.isDate : !!d.allDay,
                   extendedProps: {
-                    description: e.description || d.description || ''
+                    description: e.description || d.description || '',
+                    uid: e.uid || null
                   }
                 })
               } catch (err) {
@@ -504,7 +543,7 @@ const handleDateSelect = (info) => {
   emit('date-selected', info)
 }
 
-const handleEventUpdate = (info) => {
+const handleEventUpdate = async (info) => {
   const event = info.event
   emit('event-updated', {
     id: event.id,
@@ -513,6 +552,21 @@ const handleEventUpdate = (info) => {
     end: event.end,
     allDay: event.allDay,
   })
+
+  // Also update the ICS content so drags/resizes persist
+  try {
+    const outgoing = {
+      title: event.title,
+      start: event.start,
+      end: event.end,
+      allDay: event.allDay,
+      description: event.extendedProps?.description || '',
+      extendedProps: event.extendedProps || {}
+    }
+    await updateEventInIcs(event.id, outgoing)
+  } catch (err) {
+    console.error('[Calendar] failed to update ICS after drag/resize:', err)
+  }
 }
 
 // File upload handling
@@ -554,18 +608,23 @@ const handleIcsUpload = async (event) => {
         const snap = await getDocs(q)
         if (!snap.empty) {
           const existing = snap.docs[0]
+          // update the existing doc (may have arbitrary id)
           await updateDoc(firestoreDoc(db, 'calendar', existing.id), {
             ics: text,
             updatedAt: serverTimestamp()
           })
           console.debug('[Calendar] updated ICS for doc', existing.id)
         } else {
-          const newRef = await addDoc(collection(db, 'calendar'), {
+          // Prefer a document whose id equals the user's uid. Use setDoc with merge
+          // so we don't accidentally overwrite other fields. This ensures we write
+          // into a predictable doc id (user's uid) instead of creating a new one.
+          const userDocRef = firestoreDoc(db, 'calendar', currentUser.value.uid)
+          await setDoc(userDocRef, {
             userId: currentUser.value.uid,
             ics: text,
             createdAt: serverTimestamp()
-          })
-          console.debug('[Calendar] created calendar doc', newRef.id)
+          }, { merge: true })
+          console.debug('[Calendar] created/merged calendar doc with id (uid)', currentUser.value.uid)
         }
       } else {
         console.debug('[Calendar] user not signed in; ICS not saved to Firestore')
@@ -617,7 +676,7 @@ const closeEventForm = () => {
   }
 }
 
-const submitEvent = () => {
+const submitEvent = async () => {
   if (!newEvent.value.title) return
 
   const eventData = {
@@ -646,6 +705,14 @@ const submitEvent = () => {
       id: editingEvent.value.id,
       ...eventData
     })
+    // Update the VEVENT inside stored ICS (do not create duplicate)
+    try {
+      // include existing extendedProps (such as uid) so updater can match the VEVENT
+      const outgoing = { ...eventData, extendedProps: editingEvent.value.extendedProps || {} }
+      await updateEventInIcs(editingEvent.value.id, outgoing)
+    } catch (err) {
+      console.error('[Calendar] updateEventInIcs error:', err)
+    }
   } else {
     // Add new event
     if (calendarInstance) {
@@ -654,6 +721,12 @@ const submitEvent = () => {
         id: event.id,
         ...eventData
       })
+      // Persist to ICS in Firestore (append VEVENT)
+      try {
+        appendEventToIcs(eventData).catch(err => console.error('[Calendar] appendEventToIcs error:', err))
+      } catch (e) {
+        console.error('[Calendar] appendEventToIcs call failed:', e)
+      }
     }
   }
 
@@ -661,16 +734,176 @@ const submitEvent = () => {
 }
 
 const deleteEvent = () => {
-  if (editingEvent.value && confirm('Are you sure you want to delete this event?')) {
-    const eventId = editingEvent.value.id
-    editingEvent.value.remove()
-    emit('event-deleted', eventId)
-    closeEventForm()
+  // Open confirmation modal instead of immediate deletion
+  if (editingEvent.value) {
+    showDeleteConfirm.value = true
   }
 }
 
-// Clear the imported ICS from Firestore (if present) and clear calendar UI
-const clearCalendar = async () => {
+// Called when user confirms deletion
+const confirmDelete = async () => {
+  showDeleteConfirm.value = false
+  if (!editingEvent.value) return
+
+  const event = editingEvent.value
+  const eventId = event.id
+
+  // Remove from UI
+  try {
+    event.remove()
+  } catch (e) {
+    console.warn('[Calendar] event remove failed (already removed?)', e)
+  }
+
+  // Try delete from ICS or structured doc
+  try {
+    // If the event appears to be from an ICS (docId_index or importedDocId present), remove VEVENT
+    await deleteEventInIcs(eventId, event)
+  } catch (err) {
+    console.error('[Calendar] deleteEventInIcs error:', err)
+    // Fallback: if eventId looks like a document id, attempt to delete the document
+    try {
+      if (typeof eventId === 'string' && !eventId.includes('_')) {
+        await deleteDoc(firestoreDoc(db, 'calendar', eventId))
+        console.debug('[Calendar] deleted calendar doc', eventId)
+      }
+    } catch (e) {
+      console.warn('[Calendar] fallback deleteDoc failed:', e)
+    }
+  }
+
+  emit('event-deleted', eventId)
+  closeEventForm()
+  // Show success popup
+  try { openImportSuccess('Event deleted') } catch(e){}
+}
+
+// Remove VEVENT from user's stored ICS content
+const deleteEventInIcs = async (editingEventId, eventObj) => {
+  if (!currentUser.value || !currentUser.value.uid) return
+
+  // try to parse editingEventId for docId_index
+  let docId = null
+  let idx = null
+  const m = String(editingEventId).match(/^(.+?)_(\d+)$/)
+  if (m) {
+    docId = m[1]
+    idx = parseInt(m[2], 10)
+  }
+
+  const tryRemoveFromDoc = async (docRef) => {
+    const snap = await getDoc(docRef)
+    if (!snap.exists()) return false
+    const data = snap.data() || {}
+    const currentIcs = data.ics || ''
+    if (!currentIcs) return false
+
+    const veventRegex = /BEGIN:VEVENT[\s\S]*?END:VEVENT/gi
+    const matches = currentIcs.match(veventRegex) || []
+    if (matches.length === 0) return false
+
+    // If index provided, remove that one
+    if (typeof idx === 'number' && idx >= 0 && idx < matches.length) {
+      const original = matches[idx]
+      let newIcs = currentIcs.replace(original, '')
+      // Cleanup consecutive blank lines
+      newIcs = newIcs.replace(/\r?\n{2,}/g, '\r\n')
+      // If no VEVENT left, delete the ics field
+      const remaining = newIcs.match(veventRegex) || []
+      if (remaining.length === 0) {
+        await updateDoc(docRef, { ics: deleteField(), updatedAt: serverTimestamp() })
+        console.debug('[Calendar] removed last VEVENT and cleared ics field in', docRef.id)
+      } else {
+        await updateDoc(docRef, { ics: newIcs, updatedAt: serverTimestamp() })
+        console.debug('[Calendar] removed VEVENT at index', idx, 'in', docRef.id)
+      }
+      return true
+    }
+
+    // Try match by UID if available on eventObj.extendedProps.uid
+    const uid = eventObj?.extendedProps?.uid || null
+    if (uid) {
+      const uidRegex = new RegExp(`BEGIN:VEVENT[\\s\\S]*?UID:${uid}[\\s\\S]*?END:VEVENT`, 'i')
+      const match = currentIcs.match(uidRegex)
+      if (match) {
+        let newIcs = currentIcs.replace(match[0], '')
+        newIcs = newIcs.replace(/\r?\n{2,}/g, '\r\n')
+        const remaining = newIcs.match(veventRegex) || []
+        if (remaining.length === 0) {
+          await updateDoc(docRef, { ics: deleteField(), updatedAt: serverTimestamp() })
+          console.debug('[Calendar] removed last VEVENT by UID and cleared ics field in', docRef.id)
+        } else {
+          await updateDoc(docRef, { ics: newIcs, updatedAt: serverTimestamp() })
+          console.debug('[Calendar] removed VEVENT by UID', uid, 'in', docRef.id)
+        }
+        return true
+      }
+    }
+
+    // Fallback: match by DTSTART and SUMMARY
+    const dtstart = eventObj.allDay ? toIcsDate(eventObj.start) : toIcsDateTime(eventObj.start)
+    const summary = (eventObj.title || '').replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')
+    const dtRegex = eventObj.allDay ? new RegExp(`BEGIN:VEVENT[\\s\\S]*?DTSTART;VALUE=DATE:${dtstart}[\\s\\S]*?SUMMARY:${summary}[\\s\\S]*?END:VEVENT`, 'i') : new RegExp(`BEGIN:VEVENT[\\s\\S]*?DTSTART:${dtstart}[\\s\\S]*?SUMMARY:${summary}[\\s\\S]*?END:VEVENT`, 'i')
+    const match2 = currentIcs.match(dtRegex)
+    if (match2) {
+      let newIcs = currentIcs.replace(match2[0], '')
+      newIcs = newIcs.replace(/\r?\n{2,}/g, '\r\n')
+      const remaining = newIcs.match(veventRegex) || []
+      if (remaining.length === 0) {
+        await updateDoc(docRef, { ics: deleteField(), updatedAt: serverTimestamp() })
+        console.debug('[Calendar] removed last VEVENT by DTSTART+SUMMARY and cleared ics field in', docRef.id)
+      } else {
+        await updateDoc(docRef, { ics: newIcs, updatedAt: serverTimestamp() })
+        console.debug('[Calendar] removed VEVENT by DTSTART+SUMMARY in', docRef.id)
+      }
+      return true
+    }
+
+    return false
+  }
+
+  // If docId was embedded, try that specific doc
+  if (docId) {
+    try {
+      const docRef = firestoreDoc(db, 'calendar', docId)
+      const removed = await tryRemoveFromDoc(docRef)
+      if (removed) return
+    } catch (err) {
+      console.error('[Calendar] deleteEventInIcs by docId failed:', err)
+    }
+  }
+
+  // Otherwise, try the importedDocId if set (most common case)
+  if (importedDocId.value) {
+    try {
+      const docRef = firestoreDoc(db, 'calendar', importedDocId.value)
+      const removed = await tryRemoveFromDoc(docRef)
+      if (removed) return
+    } catch (err) {
+      console.error('[Calendar] deleteEventInIcs by importedDoc failed:', err)
+    }
+  }
+
+  // As a last resort, try to find any calendar doc for this user and remove from the first that contains ics
+  try {
+    const q = query(collection(db, 'calendar'), where('userId', '==', currentUser.value.uid))
+    const snap = await getDocs(q)
+    for (const sd of snap.docs) {
+      const docRef = firestoreDoc(db, 'calendar', sd.id)
+      const removed = await tryRemoveFromDoc(docRef)
+      if (removed) return
+    }
+  } catch (err) {
+    console.error('[Calendar] deleteEventInIcs final lookup failed:', err)
+  }
+}
+
+// Show a confirmation before clearing the imported ICS from Firestore (or clearing UI)
+const showClearConfirm = ref(false)
+
+// Perform the actual clear operation (moved from previous clearCalendar implementation)
+const performClearCalendar = async () => {
+  showClearConfirm.value = false
   if (importedDocId.value && currentUser.value && currentUser.value.uid) {
     try {
       await updateDoc(firestoreDoc(db, 'calendar', importedDocId.value), {
@@ -695,6 +928,249 @@ const clearCalendar = async () => {
   hasImportedIcs.value = false
   importedDocId.value = null
   openImportSuccess('Calendar cleared')
+}
+
+// New clearCalendar opens the confirmation modal
+const clearCalendar = () => {
+  showClearConfirm.value = true
+}
+
+// Helpers to build VEVENT strings for appending to ICS
+const pad = (n) => n.toString().padStart(2, '0')
+const toIcsDateTime = (d) => {
+  // return UTC YYYYMMDDTHHMMSSZ
+  const dt = new Date(d)
+  return dt.getUTCFullYear().toString()
+    + pad(dt.getUTCMonth() + 1)
+    + pad(dt.getUTCDate())
+    + 'T'
+    + pad(dt.getUTCHours())
+    + pad(dt.getUTCMinutes())
+    + pad(dt.getUTCSeconds())
+    + 'Z'
+}
+
+const toIcsDate = (d) => {
+  const dt = new Date(d)
+  return dt.getFullYear().toString() + pad(dt.getMonth() + 1) + pad(dt.getDate())
+}
+
+const buildVEventString = (ev, uidOverride) => {
+  // ev: { title, start, end, allDay, description }
+  const uid = uidOverride || `fitu-${Date.now()}@local`
+  const dtstamp = toIcsDateTime(new Date())
+  let dtstart = ''
+  let dtend = ''
+  if (ev.allDay) {
+    dtstart = `DTSTART;VALUE=DATE:${toIcsDate(ev.start)}`
+    if (ev.end) dtend = `DTEND;VALUE=DATE:${toIcsDate(ev.end)}`
+  } else {
+    dtstart = `DTSTART:${toIcsDateTime(ev.start)}`
+    if (ev.end) dtend = `DTEND:${toIcsDateTime(ev.end)}`
+  }
+
+  // Escape simple characters in SUMMARY/DESCRIPTION
+  const esc = (s = '') => String(s).replace(/\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;')
+
+  const lines = [
+    'BEGIN:VEVENT',
+    `UID:${uid}`,
+    `DTSTAMP:${dtstamp}`,
+    `SUMMARY:${esc(ev.title)}`,
+    ev.description ? `DESCRIPTION:${esc(ev.description)}` : null,
+    dtstart,
+    ev.end ? dtend : null,
+    'END:VEVENT'
+  ].filter(Boolean)
+
+  return lines.join('\r\n')
+}
+
+const wrapWithVCalendar = (veventString) => {
+  const header = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//FitU//EN'
+  const footer = 'END:VCALENDAR'
+  return `${header}\r\n${veventString}\r\n${footer}`
+}
+
+// Append created event to user's ICS content in Firestore
+const appendEventToIcs = async (ev) => {
+  // only proceed for signed-in users
+  if (!currentUser.value || !currentUser.value.uid) return
+
+  // normalize event object
+  const evt = {
+    title: ev.title || 'Untitled',
+    start: ev.start,
+    end: ev.end,
+    allDay: !!ev.allDay,
+    description: ev.description || ev.extendedProps?.description || ''
+  }
+
+  const veventString = buildVEventString(evt)
+
+  if (importedDocId.value) {
+    const docRef = firestoreDoc(db, 'calendar', importedDocId.value)
+    const snap = await getDoc(docRef)
+    if (snap.exists()) {
+      const data = snap.data() || {}
+      const currentIcs = data.ics || ''
+      let newIcs = ''
+      if (currentIcs && /END:VCALENDAR/i.test(currentIcs)) {
+        // insert before END:VCALENDAR
+        newIcs = currentIcs.replace(/\r?\n?END:VCALENDAR\s*$/i, '\r\n' + veventString + '\r\nEND:VCALENDAR')
+      } else if (currentIcs) {
+        // no END:VCALENDAR, just append
+        newIcs = currentIcs + '\r\n' + veventString
+      } else {
+        newIcs = wrapWithVCalendar(veventString)
+      }
+
+      await updateDoc(docRef, { ics: newIcs, updatedAt: serverTimestamp() })
+      console.debug('[Calendar] appended VEVENT to existing calendar doc', importedDocId.value)
+      return
+    }
+  }
+
+  // No existing doc: create one
+  const newIcs = wrapWithVCalendar(veventString)
+  // Write into the calendar document whose id == user uid (merge so pre-existing fields are preserved)
+  const userDocRef = firestoreDoc(db, 'calendar', currentUser.value.uid)
+  await setDoc(userDocRef, {
+    userId: currentUser.value.uid,
+    ics: newIcs,
+    createdAt: serverTimestamp()
+  }, { merge: true })
+  importedDocId.value = currentUser.value.uid
+  hasImportedIcs.value = true
+  console.debug('[Calendar] created/merged calendar doc with id (uid) while appending VEVENT', currentUser.value.uid)
+}
+
+// Update an existing VEVENT inside the user's stored ICS content
+const updateEventInIcs = async (editingEventId, ev) => {
+  if (!currentUser.value || !currentUser.value.uid) return
+
+  // Try parse editingEventId for docId and index (docId_idx)
+  let docId = null
+  let idx = null
+  const m = String(editingEventId).match(/^(.+?)_(\d+)$/)
+  if (m) {
+    docId = m[1]
+    idx = parseInt(m[2], 10)
+  }
+
+  const buildAndReplace = async (docRef, currentIcs, targetIndex, existingUid) => {
+    const veventString = buildVEventString(ev, existingUid)
+    // find all VEVENT blocks
+    const veventRegex = /BEGIN:VEVENT[\s\S]*?END:VEVENT/gi
+    const matches = currentIcs.match(veventRegex) || []
+    if (typeof targetIndex === 'number' && targetIndex >= 0 && targetIndex < matches.length) {
+      const original = matches[targetIndex]
+      const newIcs = currentIcs.replace(original, veventString)
+      await updateDoc(docRef, { ics: newIcs, updatedAt: serverTimestamp() })
+      console.debug('[Calendar] updated VEVENT at index', targetIndex, 'in doc', docRef.id)
+      return true
+    }
+    return false
+  }
+
+  if (docId) {
+    try {
+      const docRef = firestoreDoc(db, 'calendar', docId)
+      const snap = await getDoc(docRef)
+      if (!snap.exists()) return
+      const data = snap.data() || {}
+      const currentIcs = data.ics || ''
+      if (!currentIcs) return
+
+      // attempt to preserve existing UID if present in matched VEVENT
+      const veventRegex = /BEGIN:VEVENT[\s\S]*?END:VEVENT/gi
+      const matches = currentIcs.match(veventRegex) || []
+      if (idx !== null && idx < matches.length) {
+        const original = matches[idx]
+        const uidMatch = original.match(/UID:(.+)/i)
+        const existingUid = uidMatch ? uidMatch[1].trim() : undefined
+        const replaced = await buildAndReplace(docRef, currentIcs, idx, existingUid)
+        if (replaced) {
+          console.debug('[Calendar] updated VEVENT by index')
+          return
+        }
+      }
+
+      // fallback: try to match by UID if ev.extendedProps.uid provided
+      const uid = ev.extendedProps?.uid || ev.uid || null
+      if (uid) {
+        const uidRegex = new RegExp(`BEGIN:VEVENT[\\s\\S]*?UID:${uid}[\\s\\S]*?END:VEVENT`, 'i')
+        const match = currentIcs.match(uidRegex)
+        if (match) {
+          const veventString = buildVEventString(ev, uid)
+          const newIcs = currentIcs.replace(match[0], veventString)
+          await updateDoc(docRef, { ics: newIcs, updatedAt: serverTimestamp() })
+          console.debug('[Calendar] updated VEVENT by UID', uid)
+          return
+        }
+      }
+
+      // fallback: try to match by DTSTART and SUMMARY
+      const dtstart = ev.allDay ? toIcsDate(ev.start) : toIcsDateTime(ev.start)
+      const summary = ev.title || ''
+      const summaryEsc = summary.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')
+      const dtRegex = ev.allDay ? new RegExp(`BEGIN:VEVENT[\\s\\S]*?DTSTART;VALUE=DATE:${dtstart}[\\s\\S]*?SUMMARY:${summaryEsc}[\\s\\S]*?END:VEVENT`, 'i') : new RegExp(`BEGIN:VEVENT[\\s\\S]*?DTSTART:${dtstart}[\\s\\S]*?SUMMARY:${summaryEsc}[\\s\\S]*?END:VEVENT`, 'i')
+      const match2 = currentIcs.match(dtRegex)
+      if (match2) {
+        const uidMatch = match2[0].match(/UID:(.+)/i)
+        const existingUid = uidMatch ? uidMatch[1].trim() : undefined
+        const veventString = buildVEventString(ev, existingUid)
+        const newIcs = currentIcs.replace(match2[0], veventString)
+        await updateDoc(docRef, { ics: newIcs, updatedAt: serverTimestamp() })
+        console.debug('[Calendar] updated VEVENT by DTSTART+SUMMARY')
+        return
+      }
+
+      console.warn('[Calendar] could not find VEVENT to update in doc', docId)
+    } catch (err) {
+      console.error('[Calendar] updateEventInIcs error:', err)
+    }
+  } else if (importedDocId.value) {
+    // No index info but we have importedDocId: try by UID or DTSTART+SUMMARY similarly
+    try {
+      const docRef = firestoreDoc(db, 'calendar', importedDocId.value)
+      const snap = await getDoc(docRef)
+      if (!snap.exists()) return
+      const data = snap.data() || {}
+      const currentIcs = data.ics || ''
+      if (!currentIcs) return
+      const uid = ev.extendedProps?.uid || ev.uid || null
+      if (uid) {
+        const uidRegex = new RegExp(`BEGIN:VEVENT[\\s\\S]*?UID:${uid}[\\s\\S]*?END:VEVENT`, 'i')
+        const match = currentIcs.match(uidRegex)
+        if (match) {
+          const veventString = buildVEventString(ev, uid)
+          const newIcs = currentIcs.replace(match[0], veventString)
+          await updateDoc(docRef, { ics: newIcs, updatedAt: serverTimestamp() })
+          console.debug('[Calendar] updated VEVENT by UID in importedDoc')
+          return
+        }
+      }
+      // fallback by DTSTART+SUMMARY
+      const dtstart = ev.allDay ? toIcsDate(ev.start) : toIcsDateTime(ev.start)
+      const summary = ev.title || ''
+      const summaryEsc = summary.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')
+      const dtRegex = ev.allDay ? new RegExp(`BEGIN:VEVENT[\\s\\S]*?DTSTART;VALUE=DATE:${dtstart}[\\s\\S]*?SUMMARY:${summaryEsc}[\\s\\S]*?END:VEVENT`, 'i') : new RegExp(`BEGIN:VEVENT[\\s\\S]*?DTSTART:${dtstart}[\\s\\S]*?SUMMARY:${summaryEsc}[\\s\\S]*?END:VEVENT`, 'i')
+      const match2 = currentIcs.match(dtRegex)
+      if (match2) {
+        const uidMatch = match2[0].match(/UID:(.+)/i)
+        const existingUid = uidMatch ? uidMatch[1].trim() : undefined
+        const veventString = buildVEventString(ev, existingUid)
+        const newIcs = currentIcs.replace(match2[0], veventString)
+        await updateDoc(docRef, { ics: newIcs, updatedAt: serverTimestamp() })
+        console.debug('[Calendar] updated VEVENT by DTSTART+SUMMARY in importedDoc')
+        return
+      }
+      console.warn('[Calendar] could not find VEVENT to update in importedDoc', importedDocId.value)
+    } catch (err) {
+      console.error('[Calendar] updateEventInIcs fallback error:', err)
+    }
+  }
 }
 
 // Utility functions
