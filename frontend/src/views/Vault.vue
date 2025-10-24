@@ -207,25 +207,12 @@
                 Close
               </button>
               <button 
-                v-if="!isOwner(viewingPlaylist) && currentUser"
                 type="button"
                 class="u-btn u-btn--primary"
                 @click="openRatingModal"
               >
-                {{ hasUserReviewed ? 'Edit Review' : 'Rate Workout' }}
+                Rate Workout
               </button>
-              <span 
-                v-else-if="isOwner(viewingPlaylist)"
-                class="text-muted"
-              >
-                You cannot rate your own workout
-              </span>
-              <span 
-                v-else
-                class="text-muted"
-              >
-                Log in to rate this workout
-              </span>
             </div>
           </div>
         </div>
@@ -416,6 +403,135 @@
         </div>
       </div>
 
+      <!-- Reviews Modal -->
+      <div 
+        v-if="showReviewsModal" 
+        class="modal fade show d-block" 
+        tabindex="-1" 
+        style="background-color: rgba(0,0,0,0.7); z-index: 1060;"
+        @click.self="showReviewsModal = false"
+      >
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+          <div class="modal-content u-bg">
+            <div class="modal-header">
+              <h5 class="modal-title">
+                Reviews for "{{ selectedWorkoutForReviews?.name || 'Workout' }}"
+              </h5>
+              <button 
+                type="button" 
+                class="btn-close btn-close-white" 
+                @click="showReviewsModal = false"
+              ></button>
+            </div>
+            
+            <div class="modal-body">
+              <!-- Rating Summary -->
+              <div class="rating-summary mb-4 p-3 border rounded">
+                <div class="row align-items-center">
+                  <div class="col-md-4 text-center">
+                    <div class="overall-rating">
+                      <div class="rating-number">
+                        {{ selectedWorkoutForReviews?.avgRating ? selectedWorkoutForReviews.avgRating.toFixed(1) : '0.0' }}
+                      </div>
+                      <div class="rating-stars-large mb-2">
+                        <img 
+                          v-for="star in 5" 
+                          :key="star"
+                          src="/star.png"
+                          alt="star"
+                          class="star-display-large"
+                          :class="{ 'star-filled': star <= Math.round(selectedWorkoutForReviews?.avgRating || 0) }"
+                        />
+                      </div>
+                      <div class="rating-text">out of 5</div>
+                    </div>
+                  </div>
+                  <div class="col-md-8">
+                    <div class="rating-breakdown">
+                      <div class="total-reviews mb-2">
+                        <strong>{{ selectedWorkoutForReviews?.reviewsCount || 0 }}</strong> total reviews
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Reviews List -->
+              <div class="reviews-container">
+                <div v-if="workoutReviews.length === 0" class="no-reviews text-center py-4">
+                  <i class="fas fa-star text-muted" style="font-size: 3rem; opacity: 0.3;"></i>
+                  <h6 class="mt-3 text-muted">No reviews yet</h6>
+                  <p class="text-muted">Be the first to review this workout!</p>
+                </div>
+                <div v-else class="reviews-list">
+                  <div 
+                    v-for="review in workoutReviews" 
+                    :key="review.id" 
+                    class="review-item-modal mb-3 p-3 border rounded"
+                    :class="{ 'user-own-review': review.userId === currentUser?.id }"
+                  >
+                    <!-- Reviewer Header -->
+                    <div class="reviewer-header d-flex align-items-center gap-2 mb-2">
+                      <div class="reviewer-avatar">
+                        <div class="avatar-circle">
+                          {{ getInitials(review.userName) }}
+                        </div>
+                      </div>
+                      <div class="reviewer-details">
+                        <div class="reviewer-name-row d-flex align-items-center gap-2">
+                          <strong class="reviewer-name">{{ review.userName }}</strong>
+                          <span v-if="review.userId === currentUser?.id" class="badge bg-primary">Your Review</span>
+                        </div>
+                        <div class="review-meta d-flex align-items-center gap-2">
+                          <div class="rating-stars">
+                            <img 
+                              v-for="star in 5" 
+                              :key="star"
+                              src="/star.png"
+                              alt="star"
+                              class="star-display"
+                              :class="{ 'star-filled': star <= review.rating }"
+                            />
+                          </div>
+                          <small class="text-muted">{{ formatDate(review.createdAt) }}</small>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Review Content -->
+                    <div class="review-content">
+                      <p v-if="review.comment && review.comment.trim()" class="review-comment mb-0">
+                        {{ review.comment }}
+                      </p>
+                      <p v-else class="review-comment mb-0 text-muted font-italic">
+                        This user provided a rating without a written review.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="modal-footer">
+              <button 
+                type="button"
+                class="u-btn u-btn--secondary"
+                @click="showReviewsModal = false"
+              >
+                Close
+              </button>
+              <button 
+                type="button"
+                class="u-btn u-btn--primary"
+                @click="openRatingModalFromReviews"
+              >
+                {{ hasUserReviewed ? 'Edit Your Review' : 'Write a Review' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Loading State -->
       <div v-if="loading" class="loading-section text-center py-5">
         <div class="spinner-border text-primary mb-3" role="status">
@@ -553,6 +669,11 @@ const hoverRating = ref(0)
 const submittingRating = ref(false)
 const existingUserReview = ref(null)
 const isUpdatingReview = ref(false)
+const workoutReviews = ref([])
+const isEditingReview = ref(false)
+const showReviewsModal = ref(false)
+const selectedWorkoutForReviews = ref(null)
+const userHasReviewedSelected = ref(false)
 
 // Computed properties
 const currentUser = computed(() => {
@@ -567,9 +688,25 @@ const currentUser = computed(() => {
   return null
 })
 
+const hasUserReviewed = computed(() => {
+  if (!currentUser.value) return false
+  
+  // For reviews modal, use the dedicated reactive variable that checks the database
+  if (selectedWorkoutForReviews.value) {
+    return userHasReviewedSelected.value
+  }
+  
+  // For view modal context, check the loaded reviews
+  if (viewingPlaylist.value) {
+    return workoutReviews.value.some(review => review.userId === currentUser.value.id)
+  }
+  
+  return false
+})
 
 
-const viewWorkoutSet = (workoutSet) => {
+
+const viewWorkoutSet = async (workoutSet) => {
   // Convert workoutSet to playlist format for the modal
   const playlist = {
     ...workoutSet,
@@ -582,19 +719,83 @@ const viewWorkoutSet = (workoutSet) => {
     totalRating: workoutSet.totalRating || 0,
     avgRating: workoutSet.avgRating || 0
   }
-  // console.log('Opening workout with ID:', workoutSet.id) // Debug log
-  // console.log(playlist)
+  
   viewingPlaylist.value = playlist
   userRating.value = 0
   hoverRating.value = 0
   showViewModal.value = true
-}
-const openRatingModal = async () => {
-  if (!currentUser.value) {
-    alert('Please log in to rate workouts')
-    return
-  }
   
+  // Load reviews for this workout
+  await loadWorkoutReviews(workoutSet.id)
+}
+
+const loadWorkoutReviews = async (workoutId) => {
+  try {
+    workoutReviews.value = await workoutVaultService.getWorkoutReviews(workoutId)
+  } catch (error) {
+    console.error('Error loading reviews:', error)
+    workoutReviews.value = []
+  }
+}
+
+const openReviewsModal = async (workoutSet) => {
+  selectedWorkoutForReviews.value = workoutSet
+  showReviewsModal.value = true
+  
+  // Load reviews for this workout
+  try {
+    workoutReviews.value = await workoutVaultService.getWorkoutReviews(workoutSet.id)
+    console.log(`Loaded ${workoutReviews.value.length} reviews for workout:`, workoutSet.name)
+    
+    // Check if current user has already reviewed this workout
+    if (currentUser.value) {
+      const userReview = await workoutVaultService.getUserReviewForWorkout(
+        workoutSet.id, 
+        currentUser.value.id
+      )
+      userHasReviewedSelected.value = !!userReview
+    } else {
+      userHasReviewedSelected.value = false
+    }
+  } catch (error) {
+    console.error('Error loading reviews for modal:', error)
+    workoutReviews.value = []
+    userHasReviewedSelected.value = false
+  }
+}
+
+const getInitials = (name) => {
+  if (!name) return '?'
+  const names = name.split(' ')
+  if (names.length >= 2) {
+    return (names[0][0] + names[names.length - 1][0]).toUpperCase()
+  }
+  return name.substring(0, 2).toUpperCase()
+}
+
+const formatDate = (timestamp) => {
+  if (!timestamp) return 'Unknown date'
+  
+  // Handle Firebase timestamp
+  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  })
+}
+
+const openRatingModalFromReviews = async () => {
+  // Close reviews modal and open rating modal with the selected workout
+  showReviewsModal.value = false
+  
+  // Set the viewing playlist to the selected workout
+  viewingPlaylist.value = selectedWorkoutForReviews.value
+  
+  // Open the rating modal
+  await openRatingModal()
+}
+const openRatingModal = async () => { 
   try {
     // Check if user has already reviewed this workout
     existingUserReview.value = await workoutVaultService.getUserReviewForWorkout(
@@ -606,11 +807,13 @@ const openRatingModal = async () => {
       // User has already reviewed, show update confirmation modal
       isUpdatingReview.value = true
       userRating.value = existingUserReview.value.rating
+      userComment.value = existingUserReview.value.comment || ''
       showUpdateConfirmModal.value = true
     } else {
       // New review
       isUpdatingReview.value = false
       userRating.value = 0
+      userComment.value = ''
       hoverRating.value = 0
       showRatingModal.value = true
     }
@@ -619,6 +822,7 @@ const openRatingModal = async () => {
     // If there's an error checking, proceed as if it's a new review
     isUpdatingReview.value = false
     userRating.value = 0
+    userComment.value = ''
     hoverRating.value = 0
     showRatingModal.value = true
   }
@@ -635,6 +839,7 @@ const cancelUpdate = () => {
   hoverRating.value = 0
   existingUserReview.value = null
   isUpdatingReview.value = false
+  userHasReviewedSelected.value = false
 }
 
 const setRating = (rating) => {
@@ -683,6 +888,9 @@ const submitRating = async () => {
       viewingPlaylist.value.totalRating = updatedWorkoutData.totalRating
       viewingPlaylist.value.avgRating = updatedWorkoutData.avgRating
     }
+    
+    // Refresh the reviews list to show the new/updated review
+    await loadWorkoutReviews(viewingPlaylist.value.id)
     
     // Close modals and show appropriate thank you message
     showViewModal.value = false
