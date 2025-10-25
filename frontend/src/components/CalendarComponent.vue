@@ -115,18 +115,18 @@
       class="modal-backdrop"
       @click.self="closeImportSuccess"
     >
-      <div class="event-form-modal">
-        <div class="modal-header">
-          <h5 class="modal-title">Import Successful</h5>
-          <button @click="closeImportSuccess" class="btn-close btn-close-white"></button>
+        <div class="event-form-modal">
+          <div class="modal-header">
+            <h5 class="modal-title">{{ importSuccessTitle }}</h5>
+            <button @click="closeImportSuccess" class="btn-close btn-close-white"></button>
+          </div>
+          <div class="modal-body">
+            <p>{{ importSuccessMsg }}</p>
+          </div>
+          <div class="modal-footer">
+            <button @click="closeImportSuccess" class="u-btn u-btn--primary">OK</button>
+          </div>
         </div>
-        <div class="modal-body">
-          <p>{{ importSuccessMsg }}</p>
-        </div>
-        <div class="modal-footer">
-          <button @click="closeImportSuccess" class="u-btn u-btn--primary">OK</button>
-        </div>
-      </div>
     </div>
     
     <!-- Calendar Container -->
@@ -271,10 +271,12 @@ const importedDocId = ref(null)
 // Import success popup state
 const showImportSuccess = ref(false)
 const importSuccessMsg = ref('')
+const importSuccessTitle = ref('Import Successful')
 let importSuccessTimeout = null
 
-const openImportSuccess = (msg) => {
+const openImportSuccess = (msg, title) => {
   importSuccessMsg.value = msg || 'Import successful'
+  importSuccessTitle.value = title || 'Import Successful'
   showImportSuccess.value = true
   if (importSuccessTimeout) clearTimeout(importSuccessTimeout)
   importSuccessTimeout = setTimeout(() => {
@@ -774,8 +776,7 @@ const confirmDelete = async () => {
 
   emit('event-deleted', eventId)
   closeEventForm()
-  // Show success popup
-  try { openImportSuccess('Event deleted') } catch(e){}
+  try { openImportSuccess('Event deleted', 'Delete successful') } catch(e){}
 }
 
 // Remove VEVENT from user's stored ICS content
@@ -911,7 +912,7 @@ const performClearCalendar = async () => {
         updatedAt: serverTimestamp()
       })
       console.debug('[Calendar] cleared ICS field from doc', importedDocId.value)
-      openImportSuccess('Calendar cleared')
+      openImportSuccess('Calendar cleared', 'Reset successful')
       // local state will update when snapshot triggers
       return
     } catch (err) {
@@ -927,7 +928,7 @@ const performClearCalendar = async () => {
   }
   hasImportedIcs.value = false
   importedDocId.value = null
-  openImportSuccess('Calendar cleared')
+  openImportSuccess('Calendar cleared', 'Reset successful')
 }
 
 // New clearCalendar opens the confirmation modal
@@ -1456,6 +1457,144 @@ defineExpose({
   .event-form-modal {
     margin: 1rem;
     width: calc(100% - 2rem);
+  }
+}
+
+/* Responsive: shrink FullCalendar toolbar and buttons on small screens */
+@media (max-width: 720px) {
+  .calendar-element {
+    padding: 6px;
+    min-height: 280px;
+  }
+
+  /* Toolbar container spacing */
+  .fc .fc-toolbar {
+    padding: 6px 8px !important;
+    gap: 6px !important;
+  }
+
+  /* Title smaller */
+  .fc .fc-toolbar .fc-toolbar-title {
+    font-size: 14px !important;
+    line-height: 1 !important;
+  }
+
+  /* Buttons: smaller text and reduced padding */
+  .fc .fc-button,
+  .fc .fc-button:where(:not(.fc-button-active)) {
+    font-size: 12px !important;
+    padding: 4px 8px !important;
+    min-width: 36px !important;
+  }
+
+  /* Compact grouping */
+  .fc .fc-toolbar-chunk {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Reduce day number / header click target sizes slightly */
+  .fc .fc-daygrid-day-number,
+  .fc-col-header-cell-cushion {
+    font-size: 12px !important;
+  }
+}
+
+/* Extra-small screens: tighten further under 530px */
+@media (max-width: 530px) {
+  .calendar-element {
+    padding: 4px;
+    min-height: 220px;
+  }
+
+  .fc .fc-toolbar {
+    padding: 4px 6px !important;
+    gap: 4px !important;
+  }
+
+  .fc .fc-toolbar .fc-toolbar-title {
+    font-size: 12px !important;
+  }
+
+  .fc .fc-button,
+  .fc .fc-button:where(:not(.fc-button-active)) {
+    font-size: 11px !important;
+    padding: 3px 6px !important;
+    min-width: 32px !important;
+  }
+
+  .fc .fc-toolbar-chunk {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .fc .fc-daygrid-day-number,
+  .fc-col-header-cell-cushion {
+    font-size: 11px !important;
+  }
+
+  /* Slightly reduce spacing on modal footers for tiny screens */
+  .event-form-modal {
+    padding: 12px !important;
+    max-width: 95% !important;
+  }
+}
+
+/* Very small screens: stack toolbar into rows with title on top */
+@media (max-width: 470px) {
+  /* Make the toolbar vertical */
+  .fc .fc-toolbar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 6px !important;
+  }
+
+  /* Ensure the title is on its own row and centered */
+  .fc .fc-toolbar .fc-toolbar-title {
+    display: block !important;
+    text-align: center !important;
+    width: 100% !important;
+    font-size: 13px !important;
+    margin: 6px 0 !important;
+  }
+
+  /* Make each chunk take the full width and center its contents */
+  .fc .fc-toolbar .fc-toolbar-chunk {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+    gap: 6px !important;
+    flex-wrap: wrap !important;
+  }
+
+  /* Slightly reduce button size for ultra small screens */
+  .fc .fc-button {
+    font-size: 11px !important;
+    padding: 3px 6px !important;
+  }
+}
+
+/* Extra-extra-small screens: make Clear calendar and Add Event buttons smaller (<=432px) */
+@media (max-width: 432px) {
+  .calendar-controls .u-btn.u-btn--primary,
+  .calendar-controls .u-btn.u-btn--danger,
+  .calendar-controls .custom-upload-btn {
+    font-size: 11px !important;
+    padding: 4px 8px !important;
+    min-height: 28px !important;
+    line-height: 1 !important;
+  }
+
+  /* Slightly reduce spacing around the controls */
+  .calendar-controls {
+    padding: 0.5rem !important;
+  }
+
+  /* Ensure the left and right columns remain vertically centered */
+  .calendar-controls .row > [class*="col-"] {
+    display: flex;
+    align-items: center;
   }
 }
 </style>
