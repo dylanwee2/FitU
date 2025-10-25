@@ -142,6 +142,60 @@
                   </div>
                 </div>
               </div>
+
+              <!-- Comments Section -->
+              <div class="comments-section mt-4">
+                <h6 class="mb-3">Reviews & Comments</h6>
+                <div v-if="workoutReviews.length === 0" class="text-muted text-center py-3">
+                  No reviews yet. Be the first to rate this workout!
+                </div>
+                <div v-else class="reviews-list">
+                  <div 
+                    v-for="review in workoutReviews" 
+                    :key="review.id" 
+                    class="review-item mb-3 p-3 border rounded"
+                    :class="{ 'user-own-review': review.userId === currentUser?.id }"
+                  >
+                    <!-- Reviewer Header -->
+                    <div class="reviewer-header d-flex align-items-center gap-2 mb-2">
+                      <div class="reviewer-avatar">
+                        <div class="avatar-circle">
+                          {{ getInitials(review.userName) }}
+                        </div>
+                      </div>
+                      <div class="reviewer-details">
+                        <div class="reviewer-name-row d-flex align-items-center gap-2">
+                          <strong class="reviewer-name">{{ review.userName }}</strong>
+                          <span v-if="review.userId === currentUser?.id" class="badge bg-primary">Your Review</span>
+                        </div>
+                        <div class="review-meta d-flex align-items-center gap-2">
+                          <div class="rating-stars">
+                            <img 
+                              v-for="star in 5" 
+                              :key="star"
+                              src="/star.png"
+                              alt="star"
+                              class="star-display"
+                              :class="{ 'star-filled': star <= review.rating }"
+                            />
+                          </div>
+                          <small class="text-muted">{{ formatDate(review.createdAt) }}</small>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Review Content -->
+                    <div class="review-content">
+                      <p v-if="review.comment && review.comment.trim()" class="review-comment mb-0">
+                        {{ review.comment }}
+                      </p>
+                      <p v-else class="review-comment mb-0 text-muted font-italic">
+                        This user provided a rating without a written review.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
             
             <div class="modal-footer">
@@ -193,7 +247,7 @@
                 {{ isUpdatingReview ? 'Update your rating:' : 'How would you rate this workout?' }}
               </p>
               
-              <div class="stars-rating-container mb-4">
+              <div class="stars-rating-container mb-4 text-center">
                 <img 
                   v-for="star in 5" 
                   :key="star"
@@ -210,10 +264,26 @@
                 />
               </div>
               
-              <div class="rating-feedback mb-3">
+              <div class="rating-feedback mb-4 text-center">
                 <span class="rating-label">
                   {{ userRating > 0 ? userRating : 'Click a star to rate' }}
                 </span>
+              </div>
+
+              <!-- Comment Section -->
+              <div class="comment-section">
+                <label for="reviewComment" class="form-label u-muted">Share your thoughts (optional):</label>
+                <textarea
+                  id="reviewComment"
+                  v-model="userComment"
+                  class="form-control"
+                  rows="4"
+                  placeholder="What did you think about this workout? Share your experience..."
+                  maxlength="500"
+                ></textarea>
+                <div class="text-end mt-1">
+                  <small class="text-muted">{{ userComment.length }}/500</small>
+                </div>
               </div>
             </div>
             
@@ -260,8 +330,12 @@
               <div class="mb-3">
                 <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
               </div>
-              <h6 class="mb-3 ">Thank you for rating this workout!</h6>
-              <p class="mb-0">Your feedback helps the community discover great workouts.</p>
+              <h6 class="mb-3">
+                {{ isEditingReview ? 'Review updated successfully!' : 'Thank you for rating this workout!' }}
+              </h6>
+              <p class="mb-0">
+                {{ isEditingReview ? 'Your updated feedback is now live.' : 'Your feedback helps the community discover great workouts.' }}
+              </p>
             </div>
             <div class="modal-footer border-0 justify-content-center">
               <button 
@@ -323,6 +397,135 @@
                 @click="proceedWithUpdate"
               >
                 Update Rating
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reviews Modal -->
+      <div 
+        v-if="showReviewsModal" 
+        class="modal fade show d-block" 
+        tabindex="-1" 
+        style="background-color: rgba(0,0,0,0.7); z-index: 1060;"
+        @click.self="showReviewsModal = false"
+      >
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+          <div class="modal-content u-bg">
+            <div class="modal-header">
+              <h5 class="modal-title">
+                Reviews for "{{ selectedWorkoutForReviews?.name || 'Workout' }}"
+              </h5>
+              <button 
+                type="button" 
+                class="btn-close btn-close-white" 
+                @click="showReviewsModal = false"
+              ></button>
+            </div>
+            
+            <div class="modal-body">
+              <!-- Rating Summary -->
+              <div class="rating-summary mb-4 p-3 border rounded">
+                <div class="row align-items-center">
+                  <div class="col-md-4 text-center">
+                    <div class="overall-rating">
+                      <div class="rating-number">
+                        {{ selectedWorkoutForReviews?.avgRating ? selectedWorkoutForReviews.avgRating.toFixed(1) : '0.0' }}
+                      </div>
+                      <div class="rating-stars-large mb-2">
+                        <img 
+                          v-for="star in 5" 
+                          :key="star"
+                          src="/star.png"
+                          alt="star"
+                          class="star-display-large"
+                          :class="{ 'star-filled': star <= Math.round(selectedWorkoutForReviews?.avgRating || 0) }"
+                        />
+                      </div>
+                      <div class="rating-text">out of 5</div>
+                    </div>
+                  </div>
+                  <div class="col-md-8">
+                    <div class="rating-breakdown">
+                      <div class="total-reviews mb-2">
+                        <strong>{{ selectedWorkoutForReviews?.reviewsCount || 0 }}</strong> total reviews
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Reviews List -->
+              <div class="reviews-container">
+                <div v-if="workoutReviews.length === 0" class="no-reviews text-center py-4">
+                  <i class="fas fa-star text-muted" style="font-size: 3rem; opacity: 0.3;"></i>
+                  <h6 class="mt-3 text-muted">No reviews yet</h6>
+                  <p class="text-muted">Be the first to review this workout!</p>
+                </div>
+                <div v-else class="reviews-list">
+                  <div 
+                    v-for="review in workoutReviews" 
+                    :key="review.id" 
+                    class="review-item-modal mb-3 p-3 border rounded"
+                    :class="{ 'user-own-review': review.userId === currentUser?.id }"
+                  >
+                    <!-- Reviewer Header -->
+                    <div class="reviewer-header d-flex align-items-center gap-2 mb-2">
+                      <div class="reviewer-avatar">
+                        <div class="avatar-circle">
+                          {{ getInitials(review.userName) }}
+                        </div>
+                      </div>
+                      <div class="reviewer-details">
+                        <div class="reviewer-name-row d-flex align-items-center gap-2">
+                          <strong class="reviewer-name">{{ review.userName }}</strong>
+                          <span v-if="review.userId === currentUser?.id" class="badge bg-primary">Your Review</span>
+                        </div>
+                        <div class="review-meta d-flex align-items-center gap-2">
+                          <div class="rating-stars">
+                            <img 
+                              v-for="star in 5" 
+                              :key="star"
+                              src="/star.png"
+                              alt="star"
+                              class="star-display"
+                              :class="{ 'star-filled': star <= review.rating }"
+                            />
+                          </div>
+                          <small class="text-muted">{{ formatDate(review.createdAt) }}</small>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Review Content -->
+                    <div class="review-content">
+                      <p v-if="review.comment && review.comment.trim()" class="review-comment mb-0">
+                        {{ review.comment }}
+                      </p>
+                      <p v-else class="review-comment mb-0 text-muted font-italic">
+                        This user provided a rating without a written review.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="modal-footer">
+              <button 
+                type="button"
+                class="u-btn u-btn--secondary"
+                @click="showReviewsModal = false"
+              >
+                Close
+              </button>
+              <button 
+                type="button"
+                class="u-btn u-btn--primary"
+                @click="openRatingModalFromReviews"
+              >
+                {{ hasUserReviewed ? 'Edit Your Review' : 'Write a Review' }}
               </button>
             </div>
           </div>
@@ -411,6 +614,7 @@
               <!-- Card Footer -->
               <div class="card-footer d-flex gap-2">
                 <button 
+                  v-if="!isOwner(workoutSet)"
                   @click.stop="viewWorkoutSet(workoutSet)"
                   class="u-btn u-btn--primary flex-fill d-flex align-items-center justify-content-center"
                 >
@@ -419,9 +623,15 @@
                 <button 
                   v-if="isOwner(workoutSet)"
                   @click.stop="editWorkout(workoutSet)"
-                  class="u-btn flex-fill d-flex align-items-center justify-content-center"
+                  class="u-btn u-btn--primary flex-fill d-flex align-items-center justify-content-center"
                 >
                   <p class="text-center footerBtn">Edit</p>
+                </button>
+                <button 
+                  @click.stop="openReviewsModal(workoutSet)"
+                  class="u-btn u-btn--secondary flex-fill d-flex align-items-center justify-content-center"
+                >
+                  <p class="text-center footerBtn">Reviews ({{ workoutSet.reviewsCount || 0 }})</p>
                 </button>
               </div>
             </div>
@@ -454,10 +664,16 @@ const showThankYouModal = ref(false)
 const showUpdateConfirmModal = ref(false)
 const viewingPlaylist = ref(null)
 const userRating = ref(0)
+const userComment = ref('')
 const hoverRating = ref(0)
 const submittingRating = ref(false)
 const existingUserReview = ref(null)
 const isUpdatingReview = ref(false)
+const workoutReviews = ref([])
+const isEditingReview = ref(false)
+const showReviewsModal = ref(false)
+const selectedWorkoutForReviews = ref(null)
+const userHasReviewedSelected = ref(false)
 
 // Computed properties
 const currentUser = computed(() => {
@@ -472,7 +688,25 @@ const currentUser = computed(() => {
   return null
 })
 
-const viewWorkoutSet = (workoutSet) => {
+const hasUserReviewed = computed(() => {
+  if (!currentUser.value) return false
+  
+  // For reviews modal, use the dedicated reactive variable that checks the database
+  if (selectedWorkoutForReviews.value) {
+    return userHasReviewedSelected.value
+  }
+  
+  // For view modal context, check the loaded reviews
+  if (viewingPlaylist.value) {
+    return workoutReviews.value.some(review => review.userId === currentUser.value.id)
+  }
+  
+  return false
+})
+
+
+
+const viewWorkoutSet = async (workoutSet) => {
   // Convert workoutSet to playlist format for the modal
   const playlist = {
     ...workoutSet,
@@ -485,20 +719,83 @@ const viewWorkoutSet = (workoutSet) => {
     totalRating: workoutSet.totalRating || 0,
     avgRating: workoutSet.avgRating || 0
   }
-  // console.log('Opening workout with ID:', workoutSet.id) // Debug log
-  // console.log(playlist)
+  
   viewingPlaylist.value = playlist
   userRating.value = 0
   hoverRating.value = 0
   showViewModal.value = true
+  
+  // Load reviews for this workout
+  await loadWorkoutReviews(workoutSet.id)
 }
 
-const openRatingModal = async () => {
-  if (!currentUser.value) {
-    alert('Please log in to rate workouts')
-    return
+const loadWorkoutReviews = async (workoutId) => {
+  try {
+    workoutReviews.value = await workoutVaultService.getWorkoutReviews(workoutId)
+  } catch (error) {
+    console.error('Error loading reviews:', error)
+    workoutReviews.value = []
   }
+}
+
+const openReviewsModal = async (workoutSet) => {
+  selectedWorkoutForReviews.value = workoutSet
+  showReviewsModal.value = true
   
+  // Load reviews for this workout
+  try {
+    workoutReviews.value = await workoutVaultService.getWorkoutReviews(workoutSet.id)
+    console.log(`Loaded ${workoutReviews.value.length} reviews for workout:`, workoutSet.name)
+    
+    // Check if current user has already reviewed this workout
+    if (currentUser.value) {
+      const userReview = await workoutVaultService.getUserReviewForWorkout(
+        workoutSet.id, 
+        currentUser.value.id
+      )
+      userHasReviewedSelected.value = !!userReview
+    } else {
+      userHasReviewedSelected.value = false
+    }
+  } catch (error) {
+    console.error('Error loading reviews for modal:', error)
+    workoutReviews.value = []
+    userHasReviewedSelected.value = false
+  }
+}
+
+const getInitials = (name) => {
+  if (!name) return '?'
+  const names = name.split(' ')
+  if (names.length >= 2) {
+    return (names[0][0] + names[names.length - 1][0]).toUpperCase()
+  }
+  return name.substring(0, 2).toUpperCase()
+}
+
+const formatDate = (timestamp) => {
+  if (!timestamp) return 'Unknown date'
+  
+  // Handle Firebase timestamp
+  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  })
+}
+
+const openRatingModalFromReviews = async () => {
+  // Close reviews modal and open rating modal with the selected workout
+  showReviewsModal.value = false
+  
+  // Set the viewing playlist to the selected workout
+  viewingPlaylist.value = selectedWorkoutForReviews.value
+  
+  // Open the rating modal
+  await openRatingModal()
+}
+const openRatingModal = async () => { 
   try {
     // Check if user has already reviewed this workout
     existingUserReview.value = await workoutVaultService.getUserReviewForWorkout(
@@ -510,11 +807,13 @@ const openRatingModal = async () => {
       // User has already reviewed, show update confirmation modal
       isUpdatingReview.value = true
       userRating.value = existingUserReview.value.rating
+      userComment.value = existingUserReview.value.comment || ''
       showUpdateConfirmModal.value = true
     } else {
       // New review
       isUpdatingReview.value = false
       userRating.value = 0
+      userComment.value = ''
       hoverRating.value = 0
       showRatingModal.value = true
     }
@@ -523,6 +822,7 @@ const openRatingModal = async () => {
     // If there's an error checking, proceed as if it's a new review
     isUpdatingReview.value = false
     userRating.value = 0
+    userComment.value = ''
     hoverRating.value = 0
     showRatingModal.value = true
   }
@@ -539,6 +839,7 @@ const cancelUpdate = () => {
   hoverRating.value = 0
   existingUserReview.value = null
   isUpdatingReview.value = false
+  userHasReviewedSelected.value = false
 }
 
 const setRating = (rating) => {
@@ -569,7 +870,7 @@ const submitRating = async () => {
       currentUser.value.id,
       currentUser.value.name,
       userRating.value,
-      '' // Empty comment for now, since we're just doing ratings
+      userComment.value || '' // Include the comment
     )
     
     // Refresh the workout data from Firebase to get the updated rating statistics
@@ -588,6 +889,9 @@ const submitRating = async () => {
       viewingPlaylist.value.avgRating = updatedWorkoutData.avgRating
     }
     
+    // Refresh the reviews list to show the new/updated review
+    await loadWorkoutReviews(viewingPlaylist.value.id)
+    
     // Close modals and show appropriate thank you message
     showViewModal.value = false
     showRatingModal.value = false
@@ -605,8 +909,14 @@ const submitRating = async () => {
 }
 
 const editWorkout = (workoutSet) => {
-  // Navigate to workout-sets page for editing
-  router.push('/workout-sets')
+  // Navigate to workout-sets page for editing with the workout ID
+  router.push({
+    path: '/workout-sets',
+    query: { 
+      edit: workoutSet.id,
+      name: workoutSet.name || workoutSet.title
+    }
+  })
 }
 
 const handleImageError = (event) => {
@@ -760,18 +1070,20 @@ onUnmounted(() => {
 .star-display {
   width: 16px;
   height: 16px;
-  opacity: 0.3;
-  filter: grayscale(100%);
+  opacity: 0.3; /* Unfilled stars are dim */
+  filter: grayscale(100%); /* Gray out unfilled stars */
+  transition: all 0.2s ease;
 }
 
 .star-display.star-filled {
-  opacity: 1;
-  filter: grayscale(0%);
+  opacity: 1; /* Filled stars are fully visible */
+  filter: grayscale(0%) hue-rotate(20deg) saturate(1.5); /* Make filled stars yellow */
 }
 
 .rating-text {
   font-size: 0.8rem;
   margin-left: 0.25rem;
+  color: white !important; /* Make rating text white and visible */
 }
 
 .card-body {
@@ -936,6 +1248,217 @@ onUnmounted(() => {
 
 .modal-footer {
   border-top: black !important;
+}
+
+/* Comments Section Styles */
+.comments-section {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 1rem;
+}
+
+.review-item {
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-subtle) !important;
+  transition: all 0.2s ease;
+}
+
+.review-item:hover {
+  background: #4c4c4c;
+}
+
+.user-own-review {
+  border-color: var(--primary) !important;
+  background: rgba(59, 130, 246, 0.1) !important;
+}
+
+.user-own-review:hover {
+  background: rgba(59, 130, 246, 0.15) !important;
+}
+
+.reviewer-info {
+  display: flex;
+  flex-direction: column;
+  color: white;
+  gap: 0.25rem;
+}
+
+.reviewer-name {
+  color: white !important; /* Make reviewer name bright white */
+  font-size: 0.95rem;
+}
+
+.rating-stars {
+  display: flex;
+  gap: 2px;
+  font-size: 1rem;
+}
+
+.star-display {
+  margin-right: 2px;
+}
+
+.review-comment {
+  color: white !important; /* Make review text bright white */
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin-top: 0.5rem;
+}
+
+/* Comment form styles */
+.comment-section textarea {
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-subtle);
+  color: white;
+  resize: vertical;
+  min-height: 100px;
+}
+
+.comment-section textarea:focus {
+  background: var(--surface-subtle);
+  border-color: var(--primary);
+  color: white;
+}
+
+.comment-section textarea::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Reviews Modal Styles */
+.rating-summary {
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-subtle) !important;
+}
+
+.overall-rating .rating-number {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #ffc107 !important; /* Force yellow color for rating number */
+}
+
+.rating-stars-large {
+  display: flex;
+  gap: 3px;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.star-display-large {
+  width: 24px;
+  height: 24px;
+  margin-right: 3px;
+  opacity: 0.3; /* Unfilled stars are dim */
+  filter: grayscale(100%); /* Gray out unfilled stars */
+  transition: all 0.2s ease;
+}
+
+.star-display-large.star-filled {
+  opacity: 1; /* Filled stars are fully visible */
+  filter: grayscale(0%) hue-rotate(20deg) saturate(1.5); /* Make filled stars yellow */
+}
+
+.rating-text {
+  color: white !important; /* Make rating text bright white */
+  font-size: 0.9rem;
+}
+
+.total-reviews {
+  color: white;
+  font-size: 1.1rem;
+}
+
+.review-item-modal {
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-subtle) !important;
+  transition: all 0.2s ease;
+}
+
+.review-item-modal:hover {
+  background: #4c4c4c;
+}
+
+.review-item-modal.user-own-review {
+  border-color: var(--primary) !important;
+  background: rgba(59, 130, 246, 0.1) !important;
+}
+
+.review-item-modal.user-own-review:hover {
+  background: rgba(59, 130, 246, 0.15) !important;
+}
+
+.reviewer-header {
+  margin-bottom: 0.75rem;
+}
+
+.reviewer-avatar {
+  flex-shrink: 0;
+}
+
+.avatar-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 0.875rem;
+}
+
+.reviewer-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.reviewer-name-row {
+  margin-bottom: 0.25rem;
+}
+
+.reviewer-name {
+  color: white !important; /* Make reviewer name bright white */
+  font-size: 1rem;
+  margin: 0;
+}
+
+.review-meta {
+  align-items: center;
+}
+
+/* Make dates white in review sections */
+.review-meta .text-muted,
+.reviewer-details .text-muted,
+.review-comment.text-muted {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.rating-stars {
+  display: flex;
+  gap: 2px;
+  font-size: 0.9rem;
+}
+
+.star-display {
+  margin-right: 1px;
+}
+
+.review-content {
+  margin-left: 48px; /* Align with reviewer details */
+}
+
+.review-comment {
+  color: white !important; /* Make review text bright white */
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.no-reviews {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.font-italic {
+  font-style: italic;
 }
 
 /* Responsive adjustments */
