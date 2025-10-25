@@ -167,6 +167,49 @@ class WorkoutVaultService {
     }
   }
 
+  async updatePublishedWorkout(publishedWorkoutId, updates, userId) {
+    try {
+      // Get the published workout to verify ownership
+      const vaultDoc = await getDoc(doc(db, this.vaultWorkoutsCollection, publishedWorkoutId));
+      if (!vaultDoc.exists()) {
+        throw new Error('Published workout not found');
+      }
+
+      const workoutData = vaultDoc.data();
+      
+      // Verify ownership
+      if (workoutData.userId !== userId) {
+        throw new Error('Unauthorized: You can only update your own published workouts');
+      }
+
+      // Prepare updates for published workout
+      // Only update fields that are safe to update (don't overwrite ratings, etc.)
+      const safeUpdates = {
+        name: updates.name,
+        description: updates.description,
+        exercises: updates.exercises,
+        totalDuration: updates.totalDuration,
+        estimatedDuration: updates.totalDuration, // Keep both for compatibility
+        updatedAt: serverTimestamp()
+      };
+
+      // Remove undefined values
+      Object.keys(safeUpdates).forEach(key => {
+        if (safeUpdates[key] === undefined) {
+          delete safeUpdates[key];
+        }
+      });
+
+      // Update the published workout
+      await updateDoc(doc(db, this.vaultWorkoutsCollection, publishedWorkoutId), safeUpdates);
+
+      return true;
+    } catch (error) {
+      console.error('Error updating published workout:', error);
+      throw error;
+    }
+  }
+
   // Vault operations (published workouts)
   async getVaultWorkouts(sortBy = 'newest', limit = 20) {
     try {
@@ -244,6 +287,42 @@ class WorkoutVaultService {
   }
 
   // Reviews and ratings
+  async hasUserRated(workoutId, userId) {
+    try {
+      const q = query(
+        collection(db, this.reviewsCollection),
+        where('workoutId', '==', workoutId),
+        where('userId', '==', userId)
+      );
+      
+      const querySnapshot = await getDocs(q);
+      return !querySnapshot.empty;
+    } catch (error) {
+      console.error('Error checking if user has rated:', error);
+      throw error;
+    }
+  }
+
+  async getUserReview(workoutId, userId) {
+    try {
+      const q = query(
+        collection(db, this.reviewsCollection),
+        where('workoutId', '==', workoutId),
+        where('userId', '==', userId)
+      );
+      
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        const doc = querySnapshot.docs[0];
+        return { id: doc.id, ...doc.data() };
+      }
+      return null;
+    } catch (error) {
+      console.error('Error getting user review:', error);
+      throw error;
+    }
+  }
+
   async addReview(workoutId, userId, userName, rating, comment) {
     try {
       // Check for existing review by same user for the same workout
@@ -325,19 +404,60 @@ class WorkoutVaultService {
     }
   }
 
+  async updateReview(reviewId, workoutId, newRating, newComment, oldRating) {
+    try {
+      // Update the review document
+      const reviewRef = doc(db, this.reviewsCollection, reviewId);
+      await updateDoc(reviewRef, {
+        rating: newRating,
+        comment: newComment,
+        updatedAt: serverTimestamp()
+      });
+
+      // Update workout's rating statistics
+      const workoutRef = doc(db, this.vaultWorkoutsCollection, workoutId);
+      const ratingDifference = newRating - oldRating;
+      
+      await updateDoc(workoutRef, {
+        totalRating: increment(ratingDifference)
+      });
+
+      // Recalculate average rating
+      const workoutDoc = await getDoc(workoutRef);
+      const workoutData = workoutDoc.data();
+      const newAvgRating = workoutData.totalRating / workoutData.reviewsCount;
+      
+      await updateDoc(workoutRef, {
+        avgRating: newAvgRating
+      });
+
+      return { id: reviewId, workoutId, rating: newRating, comment: newComment };
+    } catch (error) {
+      console.error('Error updating review:', error);
+      throw error;
+    }
+  }
+
   async getWorkoutReviews(workoutId) {
     try {
+      // Simplified query without orderBy to avoid index requirement
       const q = query(
         collection(db, this.reviewsCollection),
-        where('workoutId', '==', workoutId),
-        orderBy('createdAt', 'desc')
+        where('workoutId', '==', workoutId)
       );
 
       const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => ({
+      const reviews = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
+
+      // Sort by createdAt in JavaScript instead of Firestore
+      return reviews.sort((a, b) => {
+        const dateA = a.createdAt?.toDate?.() || new Date(a.createdAt || 0);
+        const dateB = b.createdAt?.toDate?.() || new Date(b.createdAt || 0);
+        return dateB - dateA; // Newest first
+      });
     } catch (error) {
       console.error('Error fetching reviews:', error);
       throw error;

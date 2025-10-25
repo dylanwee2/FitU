@@ -35,16 +35,22 @@ export const getRecipesByIngredients = async (req, res) => {
 
     const number = Number.isInteger(numberParam) && numberParam > 0 ? numberParam : 5;
 
+    console.log('Making request to Spoonacular API with ingredients:', ingredients, 'number:', number);
+
     const response = await axios.get('https://api.spoonacular.com/recipes/findByIngredients', {
       params: {
         ingredients,
         number,
-        apiKey,
+        apiKey, // Primary method: as query parameter
+      },
+      headers: {
+        'x-api-key': apiKey, // Alternative method: as header
       },
       // Small timeout so the server doesn't hang indefinitely
       timeout: 8000,
     });
 
+    console.log('Spoonacular API response status:', response.status);
     return res.status(200).json(response.data);
   } catch (error) {
     console.error('Error fetching recipes:', error?.message || error);

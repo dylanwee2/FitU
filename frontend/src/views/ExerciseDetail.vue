@@ -28,23 +28,16 @@
               </button>
             </div>
           </div>
-        </div>
-        
+        </div>  
         <div class="row">
-          <div class="col-md-6">
-            <div class="exercise-image-section mb-4">
+          <div class="col-md-6" style="text-align: center;">
               <img 
                 v-if="exercise.gifUrl" 
                 :src="exercise.gifUrl" 
                 :alt="exercise.name" 
                 class="img-fluid rounded shadow"
-                style="max-width: 100%; height: auto;"
+                style="width: 65%;"
               >
-              <div v-else class="no-image-placeholder">
-                <i class="fas fa-image"></i>
-                <p>No demonstration available</p>
-              </div>
-            </div>
           </div>
           
           <div class="col-md-6">
