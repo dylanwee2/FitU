@@ -51,7 +51,7 @@
           <!-- Personal Information Card -->
           <div class="card mb-4">
             <div class="card-header text-white">
-              <h5 class="mb-0"><i class="bi bi-person-circle me-2"></i>Personal Information</h5>
+              <h6 class="mb-0"><i class="bi bi-person-circle me-2"></i>Personal Information</h6>
             </div>
             <div class="card-body">
               <form @submit.prevent="saveProfile">
@@ -138,7 +138,7 @@
           <!-- Health & Fitness Goals Card -->
           <div class="card mb-4">
             <div class="card-header text-white">
-              <h5 class="mb-0"><i class="bi bi-trophy me-2"></i>Health & Fitness Goals</h5>
+              <h6 class="mb-0"><i class="bi bi-trophy me-2"></i>Health & Fitness Goals</h6>
             </div>
             <div class="card-body">
               <div class="row">
@@ -225,24 +225,22 @@
           <!-- Account Actions Card -->
           <div class="card mb-4">
             <div class="card-header text-white">
-              <h5 class="mb-0"><i class="bi bi-shield-check me-2"></i>Account Actions</h5>
+              <h6 class="mb-0"><i class="bi bi-shield-check me-2"></i>Account Actions</h6>
             </div>
-            <div class="card-body d-flex flex-wrap gap-2">
-              <button 
-                @click="saveAllData" 
-                class="btn u-btn--primary u-btn--primary-success" 
-                :disabled="isSaving"
-                style="flex: 1"
-              >
-                <i class="bi bi-save me-2"></i>{{ isSaving ? 'Saving...' : 'Save All Changes' }}
-              </button>
-
-              <button 
-                @click="handleLogout" 
+            <div class="card-body d-flex flex-wrap gap-2 justify-content-end">
+              <button
+                @click="handleLogout"
                 class="btn u-btn--primary u-btn--primary-danger"
-                style="flex: 1"
               >
                 <i class="bi bi-box-arrow-right me-2"></i>Logout
+              </button>
+
+              <button
+                @click="saveAllData"
+                class="btn u-btn--primary u-btn--primary-success"
+                :disabled="isSaving"
+              >
+                <i class="bi bi-save me-2"></i>{{ isSaving ? 'Saving...' : 'Save All Changes' }}
               </button>
 
               <hr class="w-100">
@@ -278,7 +276,7 @@
             <!-- Progress Overview Card -->
             <div class="card mb-4">
               <div class="card-header text-white">
-                <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Progress Overview</h5>
+                <h6 class="mb-0"><i class="bi bi-graph-up me-2"></i>Progress Overview</h6>
               </div>
               <div class="card-body">
                 <!-- Weekly Calorie Chart -->
@@ -345,7 +343,7 @@
             <!-- Your Workouts Card -->
             <div class="card mb-4">
               <div class="card-header text-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-lightning-charge me-2"></i>Your Workouts</h5>
+                <h6 class="mb-0"><i class="bi bi-lightning-charge me-2"></i>Your Workouts</h6>
                 <button 
                   @click="viewAllWorkouts" 
                   class="btn btn-sm btn-outline-light"
@@ -364,7 +362,7 @@
 
                 <!-- Empty State -->
                 <div v-else-if="userWorkoutSets.length === 0" class="text-center py-5">
-                  <i class="bi bi-dumbbell" style="font-size: 3rem; color: var(--muted);"></i>
+                  <i class="bi bi-dumbbell" style="font-size: 2.7rem; color: var(--muted);"></i>
                   <h5 class="mt-3">No Published Workouts Yet</h5>
                   <p class="u-muted">Create and publish your first workout set to see it here</p>
                   <button @click="router.push('/exerciselibrary')" class="btn u-btn--primary mt-2">
@@ -443,7 +441,7 @@
       <div class="modal-content-large" style="background-color: var(--bg);">
         <div class="modal-header">
           <h5 class="modal-title">Edit Workout Set</h5>
-          <button @click="showEditModal = false" class="btn-close-white btn-close"></button>
+          <button @click="showEditModal = false" class="btn-close-white">×</button>
         </div>
         
         <div class="modal-body">
@@ -1538,7 +1536,7 @@ async function saveWorkoutEdit() {
 /* Container */
 .profile-container {
   min-height: 100vh;
-  background-color: var(--surface);
+  background-color: var(--bg);
   padding: 20px 0;
 }
 
@@ -1546,157 +1544,97 @@ async function saveWorkoutEdit() {
 .view-toggle-container {
   display: flex;
   justify-content: center;
-  animation: fadeInDown 0.6s ease-out;
 }
 
 .view-toggle {
   display: inline-flex;
   background: var(--surface);
-  border: 2px solid var(--border-subtle);
-  border-radius: 50px;
-  padding: 6px;
-  box-shadow: var(--shadow-card);
-  gap: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  gap: 4px;
 }
 
 .toggle-btn {
-  padding: 12px 32px;
+  padding: 10px 24px;
   border: none;
-  border-radius: 50px;
+  border-radius: 6px;
   background: transparent;
   color: var(--muted);
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 0.86rem;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
+  transition: all 0.2s ease;
   white-space: nowrap;
-}
-
-.toggle-btn i {
-  transition: transform 0.3s ease;
 }
 
 .toggle-btn:hover {
   color: var(--text);
-  transform: translateY(-2px);
-}
-
-.toggle-btn:hover i {
-  transform: scale(1.2);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .toggle-btn.active {
-  background: linear-gradient(135deg, var(--primary) 0%, #7083eb 100%);
+  background: var(--primary);
   color: white;
-  box-shadow: 0 4px 12px rgba(112, 131, 235, 0.4);
-  transform: translateY(-1px);
-}
-
-.toggle-btn.active i {
-  animation: iconPop 0.4s ease-out;
-}
-
-@keyframes iconPop {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.3);
-  }
-}
-
-.toggle-btn:active {
-  transform: translateY(0);
-}
-
-.toggle-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 @media (max-width: 576px) {
   .view-toggle {
     width: 100%;
   }
-  
+
   .toggle-btn {
     flex: 1;
-    padding: 12px 16px;
-    font-size: 0.9rem;
+    padding: 10px 16px;
+    font-size: 0.77rem;
   }
 }
 
-/* Title with animation */
+/* Title */
 .page-title {
   color: var(--text);
-  font-weight: 800;
+  font-weight: 600;
   text-align: center;
-  animation: fadeInDown 0.6s ease-out;
-}
-
-@keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 /* Cards */
 .card {
-  border: 2px solid var(--border-subtle);
-  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
   transition: all 0.3s ease;
   background: var(--surface);
-  box-shadow: var(--shadow-card);
-  animation: fadeInUp 0.6s ease-out backwards;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  margin-bottom: 1rem;
 }
 
 .input-label {
   color: var(--muted);
 }
 
-.card:nth-child(1) { animation-delay: 0.1s; }
-.card:nth-child(2) { animation-delay: 0.2s; }
-.card:nth-child(3) { animation-delay: 0.3s; }
-.card:nth-child(4) { animation-delay: 0.4s; }
-.card:nth-child(5) { animation-delay: 0.5s; }
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 .card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 24px var(--shadow-card);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .card-header {
-  background-color: var(--surface-subtle);
-  color: #ffffff !important;
-  border-radius: 12px 12px 0 0 !important;
-  font-weight: 600;
-  padding: 1rem 1.5rem;
+  background-color: transparent;
+  color: var(--text) !important;
+  border-radius: 0 !important;
+  font-weight: 400;
+  padding: 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.card-header h6 {
+  font-weight: 400;
 }
 
 .card-body {
-  background: var(--bg);
-  border-radius: 0 0 12px 12px;
-  border: 2px solid var(--border-subtle);
-  border-top: 0px;
+  background: var(--surface);
+  border-radius: 0;
+  border: none;
+  padding: 2.75rem;
 }
 
 /* Profile Picture */
@@ -1704,18 +1642,6 @@ async function saveWorkoutEdit() {
   display: flex;
   flex-direction: column;
   align-items: center;
-  animation: scaleIn 0.6s ease-out;
-}
-
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.8);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
 }
 
 .profile-picture {
@@ -1723,14 +1649,13 @@ async function saveWorkoutEdit() {
   height: 150px;
   border-radius: 50%;
   object-fit: cover;
-  box-shadow: var(--shadow-card);
-  transition: all 0.4s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
   position: relative;
 }
 
 .profile-picture:hover {
-  transform: scale(1.1) rotate(5deg);
-  box-shadow: 0 12px 24px var(--shadow-card);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .btn-change-photo {
@@ -1740,7 +1665,7 @@ async function saveWorkoutEdit() {
   border-radius: 8px;
   padding: 10px 20px;
   transition: all 0.3s ease;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .btn-change-photo:hover {
@@ -1756,8 +1681,10 @@ async function saveWorkoutEdit() {
 
 /* Forms */
 .form-label {
-  font-weight: 600;
-  color: var(--text);
+  font-weight: 500;
+  color: #495057;
+  margin-bottom: 0.25rem;
+  font-size: 0.92rem;
   transition: color 0.2s ease;
 }
 
@@ -1791,8 +1718,8 @@ async function saveWorkoutEdit() {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -60%);
-  font-size: 0.8rem;
-  font-weight: bold;
+  font-size: 0.72rem;
+  font-weight: 600;
 }
 
 .form-check-input:focus {
@@ -1859,15 +1786,15 @@ async function saveWorkoutEdit() {
 
 .stat-header h6 {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--text);
 }
 
 .stat-header h3 {
   margin: 0;
-  font-size: 1.8rem;
-  font-weight: 700;
+  font-size: 1.62rem;
+  font-weight: 600;
   color: var(--text);
   animation: pulse 2s ease-in-out infinite;
 }
@@ -1897,7 +1824,7 @@ async function saveWorkoutEdit() {
   justify-content: flex-end;
   padding-right: 10px;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.81rem;
   position: relative;
   overflow: hidden;
 }
@@ -1976,17 +1903,11 @@ async function saveWorkoutEdit() {
   overflow: hidden;
 }
 
-.u-btn--primary-danger:hover::before {
-  width: 300px;
-  height: 300px;
-}
-
 .u-btn--primary-danger:hover {
   color: white;
-  border-color: rgb(224, 41, 41);
-  background-color: rgb(224, 41, 41);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(255, 91, 91, 0.4);
+  border-color: var(--danger);
+  background-color: var(--danger);
+  filter: brightness(0.92);
 }
 
 .btn-outline-secondary:active {
@@ -2000,28 +1921,19 @@ async function saveWorkoutEdit() {
 }
 
 .btn-outline-danger {
-  color: rgb(224, 41, 41);
+  color: var(--danger);
   background-color: var(--surface);
-  border: 1px solid rgb(224, 41, 41);
-  transition: all 0.3s ease;
+  border: 1px solid var(--danger);
+  transition: all 0.2s ease;
   font-weight: 600;
-}
-
-.btn-outline-danger:hover::before {
-  width: 300px;
-  height: 300px;
+  border-radius: 10px;
 }
 
 .btn-outline-danger:hover {
   color: white;
-  border-color: rgb(224, 41, 41);
-  background-color: rgb(224, 41, 41);
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 6px 18px rgba(255, 91, 91, 0.4);
-}
-
-.btn-outline-danger:active {
-  transform: translateY(1px);
+  border-color: var(--danger);
+  background-color: var(--danger);
+  filter: brightness(0.92);
 }
 
 .btn-primary:disabled,
@@ -2068,13 +1980,13 @@ async function saveWorkoutEdit() {
 .alert-info {
   background-color: var(--surface);
   color: var(--text);
-  border: 2px solid var(--border-subtle);
+  border: none;
 }
 
 .alert-light {
   background-color: var(--surface);
   color: var(--text);
-  border: 2px solid var(--border-subtle);
+  border: none;
 }
 
 .btn-close {
@@ -2083,7 +1995,7 @@ async function saveWorkoutEdit() {
   opacity: 0.8;
   background: transparent;
   border: none;
-  font-size: 1.5rem;
+  font-size: 1.35rem;
   cursor: pointer;
   width: 1em;
   height: 1em;
@@ -2153,8 +2065,8 @@ async function saveWorkoutEdit() {
 .card-body .form-control,
 .card-body .form-select {
   width: 100%;
-  padding: 0.5rem 0.75rem;
-  font-size: 1rem;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.81rem;
   line-height: 1.5;
   border: 1px solid var(--border-subtle);
   border-radius: 6px;
@@ -2162,7 +2074,8 @@ async function saveWorkoutEdit() {
   color: var(--text);
   transition: all 0.3s ease;
   box-sizing: border-box;
-  height: calc(1.5em + 1rem + 2px);
+  height: auto;
+  min-height: calc(1.5em + 1.1rem + 2px);
 }
 
 .card-body input[type="number"].form-control {
@@ -2178,7 +2091,8 @@ async function saveWorkoutEdit() {
 
 .card-body textarea.form-control {
   height: auto;
-  min-height: calc(1.5em + 1rem + 2px);
+  min-height: 100px;
+  padding: 0.55rem 0.75rem;
 }
 
 /* Input focus */
@@ -2206,15 +2120,15 @@ async function saveWorkoutEdit() {
   }
 
   .stat-header h3 {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
   }
 
   .page-title {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
   }
 
   .card:hover {
-    transform: translateY(-4px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   }
 }
 
@@ -2236,20 +2150,19 @@ html {
 /* Workout Mini Cards */
 .workout-mini-card {
   background: var(--surface);
-  border: 2px solid var(--border-subtle);
-  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
   padding: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
   height: 100%;
   display: flex;
   flex-direction: column;
-  box-shadow: var(--shadow-card);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .workout-mini-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px var(--shadow-card);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   border-color: var(--primary);
 }
 
@@ -2262,7 +2175,7 @@ html {
 
 .workout-mini-title {
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 0.9rem;
   margin: 0;
   color: var(--text);
   flex: 1;
@@ -2270,13 +2183,13 @@ html {
 }
 
 .workout-mini-count {
-  font-size: 0.75rem;
+  font-size: 0.68rem;
   white-space: nowrap;
   margin-left: 0.5rem;
 }
 
 .workout-mini-description {
-  font-size: 0.85rem;
+  font-size: 0.77rem;
   line-height: 1.4;
   margin-bottom: 0.75rem;
   flex-grow: 1;
@@ -2315,15 +2228,15 @@ html {
 }
 
 .workout-mini-duration {
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: 0.68rem;
+  font-weight: 600;
 }
 
 /* Button styling for View All */
 .btn-outline-light {
   color: white;
   border-color: rgba(255, 255, 255, 0.5);
-  font-size: 0.875rem;
+  font-size: 0.79rem;
   padding: 0.375rem 0.75rem;
   transition: all 0.3s ease;
 }
@@ -2367,42 +2280,29 @@ html {
 
 .modal-content-large {
   background: var(--bg);
-  border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
   max-width: 1200px;
   width: 95%;
   max-height: 95vh;
   overflow-y: auto;
-  animation: slideUp 0.3s ease;
-  border: 2px solid var(--border-subtle);
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  border: none;
 }
 
 /* Small Modal for Delete Confirmation */
 .modal-content-small {
   background: var(--bg);
-  border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
   max-width: 500px;
   width: 95%;
-  animation: slideUp 0.3s ease;
-  border: 2px solid var(--border-subtle);
+  border: none;
   overflow: hidden;
 }
 
 .modal-header-delete {
   padding: 1.5rem 2rem;
-  border-bottom: 2px solid var(--border-subtle);
+  border-bottom: none;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -2413,8 +2313,8 @@ html {
 
 .modal-header-delete .modal-title {
   color: white;
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: 1.13rem;
+  font-weight: 600;
   margin: 0;
 }
 
@@ -2430,7 +2330,7 @@ html {
 
 .modal-footer-delete {
   padding: 1.5rem 2rem;
-  border-top: 2px solid var(--border-subtle);
+  border-top: none;
   display: flex;
   gap: 1rem;
   justify-content: flex-end;
@@ -2440,15 +2340,16 @@ html {
 
 .modal-header {
   padding: 1.5rem;
-  border-bottom: 2px solid var(--border-subtle);
+  border-bottom: none;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: var(--surface-subtle);
+  background: var(--surface);
+  position: relative;
 }
 
 .modal-header.bg-danger {
-  background: rgb(224, 41, 41) !important;
+  background: var(--danger) !important;
   color: white !important;
 }
 
@@ -2457,8 +2358,8 @@ html {
 }
 
 .modal-title {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 1.35rem;
+  font-weight: 600;
   margin: 0;
   color: var(--text);
 }
@@ -2466,57 +2367,77 @@ html {
 .btn-close-white {
   background: transparent;
   border: none;
-  font-size: 1.5rem;
+  font-size: 1.8rem;
+  line-height: 1;
   cursor: pointer;
   color: var(--text);
-  transition: all 0.3s ease;
-  opacity: 0.7;
+  transition: opacity 0.2s ease;
+  opacity: 0.6;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
 }
 
 .btn-close-white:hover {
   opacity: 1;
-  transform: scale(1.1) rotate(90deg);
 }
 
 .modal-body {
   max-height: 70vh;
   overflow-y: auto;
   color: white;
+  padding: 1.5rem;
 }
 
 .modal-footer {
   padding: 1.5rem;
-  border-top: 2px solid var(--border-subtle);
+  border-top: none;
   display: flex;
   gap: 1rem;
-  justify-content: center;
-  background: var(--surface-subtle);
+  justify-content: flex-end;
+  background: var(--surface);
+}
+
+.card-body .row {
+  margin-bottom: 0.5rem;
+}
+
+.card-body .mb-3 {
+  margin-bottom: 0.75rem !important;
 }
 
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .form-label {
   display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-  color: var(--text);
-  font-size: 0.95rem;
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+  color: #495057;
+  font-size: 0.92rem;
 }
 
 .form-control {
   width: 100%;
-  padding: 0.75rem;
-  border: 2px solid var(--border-subtle);
-  border-radius: 8px;
-  font-size: 1rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  font-size: 0.81rem;
   line-height: 1.5;
   background: var(--surface);
   color: var(--text);
   transition: all 0.3s ease;
   box-sizing: border-box;
-  height: calc(1.5em + 1.5rem + 4px);
+  height: auto;
+  min-height: calc(1.5em + 1.1rem + 2px);
 }
 
 .form-control[type="number"] {
@@ -2544,12 +2465,13 @@ textarea.form-control {
   resize: vertical;
   min-height: 100px;
   height: auto;
+  padding: 0.55rem 0.75rem;
 }
 
 .current-exercises {
   max-height: 400px;
   overflow-y: auto;
-  border: 2px solid var(--border-subtle);
+  border: none;
   border-radius: 8px;
   padding: 0.75rem;
   background: var(--surface);
@@ -2560,7 +2482,7 @@ textarea.form-control {
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem;
-  border: 1px solid var(--border-subtle);
+  border: none;
   border-radius: 8px;
   margin-bottom: 0.5rem;
   background: var(--bg);
@@ -2572,7 +2494,6 @@ textarea.form-control {
 }
 
 .exercise-item:hover {
-  border-color: var(--primary);
   transform: translateX(4px);
 }
 
@@ -2581,20 +2502,20 @@ textarea.form-control {
 }
 
 .exercise-name {
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 600;
   margin-bottom: 0.25rem;
   color: var(--text);
 }
 
 .exercise-target {
-  font-size: 0.85rem;
+  font-size: 0.77rem;
   margin: 0;
-  color: var(--muted);
+  color: var(--text);
 }
 
 .exercise-equipment {
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   color: var(--muted);
   margin: 0.25rem 0 0 0;
 }
@@ -2614,7 +2535,7 @@ textarea.form-control {
 
 .input-group .btn {
   padding: 0.75rem 1rem;
-  border: 2px solid var(--border-subtle);
+  border: none;
   background: var(--surface);
   color: var(--text);
   border-radius: 8px;
@@ -2624,13 +2545,12 @@ textarea.form-control {
 
 .input-group .btn:hover {
   background: var(--surface-hover);
-  border-color: var(--primary);
 }
 
 .search-results {
   max-height: 500px;
   overflow-y: auto;
-  border: 2px solid var(--border-subtle);
+  border: none;
   border-radius: 8px;
   padding: 0.75rem;
   background: var(--surface);
@@ -2641,7 +2561,7 @@ textarea.form-control {
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem;
-  border: 1px solid var(--border-subtle);
+  border: none;
   border-radius: 8px;
   margin-bottom: 0.5rem;
   background: var(--bg);
@@ -2653,7 +2573,6 @@ textarea.form-control {
 }
 
 .search-result-item:hover {
-  border-color: var(--primary);
   transform: translateX(4px);
   background: var(--surface-subtle);
 }
@@ -2668,27 +2587,23 @@ textarea.form-control {
 
 .btn-sm {
   padding: 0.5rem 1rem;
-  font-size: 0.875rem;
+  font-size: 0.79rem;
 }
 
 .btn-danger {
-  background-color: rgb(224, 41, 41);
-  color: white;
+  background: var(--danger);
+  color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   font-weight: 600;
+  padding: 0.6rem 1rem;
 }
 
 .btn-danger:hover {
-  background-color: rgb(200, 35, 35);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(224, 41, 41, 0.3);
-}
-
-.btn-danger:active {
-  transform: translateY(0);
+  filter: brightness(0.92);
+  text-decoration: none;
 }
 
 @media (max-width: 768px) {
@@ -2712,7 +2627,7 @@ textarea.form-control {
   }
   
   .modal-title {
-    font-size: 1.25rem;
+    font-size: 1.13rem;
   }
 }
 
@@ -2735,25 +2650,25 @@ textarea.form-control {
 
 .modal-content {
   background-color: var(--bg) !important;
-  border: 2px solid var(--border-subtle) !important;
+  border: none !important;
   border-radius: 12px !important;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
 }
 
 /* Simplified Workout Card */
 .workout-card-simple {
-  background: var(--surface-subtle);
-  border-radius: 12px;
+  background: var(--surface);
+  border-radius: 8px;
   padding: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   position: relative;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .workout-card-simple:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   border-color: var(--primary);
 }
 
@@ -2845,15 +2760,15 @@ textarea.form-control {
   }
 
   .workout-name {
-    font-size: 0.95rem;
+    font-size: 0.86rem;
   }
 
   .stat-item-simple {
-    font-size: 0.8rem;
+    font-size: 0.72rem;
   }
 
   .exercise-tag-simple {
-    font-size: 0.7rem;
+    font-size: 0.63rem;
     padding: 0.2rem 0.6rem;
   }
 }
