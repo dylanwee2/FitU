@@ -11,9 +11,9 @@
             <div>
               <h1>{{ exercise.name }}</h1>
               <div class="exercise-badges mb-3">
-                <span class="badge bg-primary me-2">{{ exercise.target }}</span>
-                <span class="badge bg-secondary me-2">{{ exercise.bodyPart }}</span>
-                <span class="badge bg-info">{{ exercise.equipment }}</span>
+                <span class="badge target-muscle-badge me-2">{{ exercise.target }}</span>
+                <span class="badge body-part-badge me-2">{{ exercise.bodyPart }}</span>
+                <span class="badge equipment-badge">{{ exercise.equipment }}</span>
               </div>
             </div>
             <div class="exercise-actions">
@@ -154,9 +154,46 @@ onMounted(() => {
 }
 
 .exercise-badges .badge {
-  font-size: 0.9rem;
-  padding: 0.5rem 0.75rem;
+  position: relative;
+  font-size: 0.85rem;
+  padding: 0.25rem 0.6rem 0.25rem 1.2rem;
+  background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
+  color: #e9e9e9 !important;
+  border: 1px solid rgba(201, 162, 39, 0.28) !important;
+  border-radius: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  width: auto;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
+
+.exercise-badges .badge::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 40%);
+  pointer-events: none;
+}
+
+.exercise-badges .badge::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.target-muscle-badge::before { background: #e74c3c; box-shadow: 0 0 2px rgba(231, 76, 60, 0.28); }
+.body-part-badge::before { background: #3498db; box-shadow: 0 0 2px rgba(52, 152, 219, 0.28); }
+.equipment-badge::before { background: #27ae60; box-shadow: 0 0 2px rgba(39, 174, 96, 0.28); }
 
 .exercise-image-section {
   text-align: center;
