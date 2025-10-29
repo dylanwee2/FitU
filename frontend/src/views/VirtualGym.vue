@@ -1,8 +1,8 @@
 <template>
   <div class="virtual-gym container-fluid py-3">
     <!-- --- UI refactor start --- -->
-    <div class="d-flex align-items-center justify-content-between mb-3">
-      <h2 class="m-0" style="color: var(--primary)">Virtual Gym (Beta)</h2>
+    <div class="d-flex align-items-center justify-content-center mb-3">
+      <h2 class="u-text">Virtual Gym</h2>
     </div>
 
     <div class="row g-3">
@@ -45,17 +45,13 @@
           <div class="card mb-3">
             <div class="card-body py-2">
               <div class="btn-group w-100" role="group">
-                <button class="btn btn-outline-primary btn-sm" @click="resetView" 
+                <button class="btn btn-outline-primary btn-sm rounded-pill justify-content-center align-items-center" @click="resetView" 
                         aria-label="Reset camera position" title="Reset camera position">
-                  <i class="fas fa-home"></i> Reset
+                  Reset
                 </button>
-                <button class="btn btn-outline-success btn-sm" @click="focusOnSelection" 
+                <button class="btn btn-outline-success btn-sm rounded-pill justify-content-center align-items-center" @click="focusOnSelection" 
                         :disabled="!selection" aria-label="Focus on selected equipment" title="Focus on selected equipment">
-                  <i class="fas fa-crosshairs"></i> Focus
-                </button>
-                <button class="btn btn-outline-info btn-sm" @click="saveLayout" 
-                        aria-label="Save current layout" title="Save current layout">
-                  <i class="fas fa-save"></i> Save
+                   Focus
                 </button>
               </div>
             </div>

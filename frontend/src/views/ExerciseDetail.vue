@@ -11,9 +11,9 @@
             <div>
               <h1>{{ exercise.name }}</h1>
               <div class="exercise-badges mb-3">
-                <span class="badge bg-primary me-2">{{ exercise.target }}</span>
-                <span class="badge bg-secondary me-2">{{ exercise.bodyPart }}</span>
-                <span class="badge bg-info">{{ exercise.equipment }}</span>
+                <span class="badge target-muscle-badge me-1">{{ formatTarget(exercise.target) }}</span>
+                <span class="badge body-part-badge me-1">{{ formatBodyPart(exercise.bodyPart) }}</span>
+                <span class="badge equipment-badge">{{ formatEquipment(exercise.equipment) }}</span>
               </div>
             </div>
             <div class="exercise-actions">
@@ -44,11 +44,11 @@
             <div class="exercise-details">
               <h5>Exercise Information</h5>
               <ul class="list-unstyled">
-                <li><strong>Primary Target:</strong> {{ exercise.target }}</li>
-                <li><strong>Body Part:</strong> {{ exercise.bodyPart }}</li>
-                <li><strong>Equipment:</strong> {{ exercise.equipment }}</li>
+                <li><strong>Primary Target:</strong> {{ formatTarget(exercise.target) }}</li>
+                <li><strong>Body Part:</strong> {{ formatBodyPart(exercise.bodyPart) }}</li>
+                <li><strong>Equipment:</strong> {{ formatEquipment(exercise.equipment) }}</li>
                 <li v-if="exercise.secondaryMuscles && exercise.secondaryMuscles.length">
-                  <strong>Secondary Muscles:</strong> {{ exercise.secondaryMuscles.join(', ') }}
+                  <strong>Secondary Muscles:</strong> {{ exercise.secondaryMuscles.map(muscle => capitalizeFirstLetter(muscle)).join(', ') }}
                 </li>
               </ul>
             </div>
@@ -133,6 +133,40 @@ const addToCart = () => {
   }
 }
 
+// Format functions to clean up and capitalize text
+const formatTarget = (target) => {
+  if (!target) return 'Full Body'
+  if (Array.isArray(target)) {
+    return target.map(item => capitalizeFirstLetter(item)).join(', ')
+  }
+  return capitalizeFirstLetter(target.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', '))
+}
+
+const formatBodyPart = (bodyPart) => {
+  if (!bodyPart) return 'General'
+  if (Array.isArray(bodyPart)) {
+    return bodyPart.map(item => capitalizeFirstLetter(item)).join(', ')
+  }
+  return capitalizeFirstLetter(bodyPart.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', '))
+}
+
+const formatEquipment = (equipment) => {
+  if (!equipment) return 'Bodyweight'
+  if (Array.isArray(equipment)) {
+    return equipment.map(item => capitalizeFirstLetter(item)).join(', ')
+  }
+  return capitalizeFirstLetter(equipment.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', '))
+}
+
+const capitalizeFirstLetter = (text) => {
+  if (!text) return ''
+  return text
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
+
 onMounted(() => {
   if (exerciseId.value) {
     loadExercise()
@@ -156,6 +190,43 @@ onMounted(() => {
 .exercise-badges .badge {
   font-size: 0.9rem;
   padding: 0.5rem 0.75rem;
+}
+
+/* Color-coded badge styles */
+.target-muscle-badge {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
+  color: white !important;
+  border: none;
+}
+
+.target-muscle-badge:hover {
+  background: linear-gradient(135deg, #c0392b 0%, #a93226 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+.body-part-badge {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
+  color: white !important;
+  border: none;
+}
+
+.body-part-badge:hover {
+  background: linear-gradient(135deg, #2980b9 0%, #21618c 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.equipment-badge {
+  background: linear-gradient(135deg, #27ae60 0%, #229954 100%) !important;
+  color: white !important;
+  border: none;
+}
+
+.equipment-badge:hover {
+  background: linear-gradient(135deg, #229954 0%, #1e8449 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
 }
 
 .exercise-image-section {
