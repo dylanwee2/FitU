@@ -114,7 +114,7 @@
                 </div>
                 <div class="stat-item">
                   <i class="fas fa-clock text-info"></i>
-                  <span>{{ formatDuration(playlist.totalDuration) }}</span>
+                  <span>{{ formatPlaylistDuration(playlist) }}</span>
                 </div>
                 <div class="stat-item">
                   <i class="fas fa-calendar text-success"></i>
@@ -454,6 +454,7 @@ import { useWorkoutCartStore } from '../stores/workoutCart'
 import { workoutVaultService } from '@/services/workoutVaultService.js'
 import { auth } from '@/firebase.js'
 import { onAuthStateChanged } from 'firebase/auth'
+import { formatDuration as formatWorkoutDuration } from '@/types/workout.js'
 
 // Props
 const props = defineProps({
@@ -600,12 +601,27 @@ const updateWorkoutDurations = async (playlists) => {
   }
 }
 
-const formatDuration = (minutes) => {
-  if (!minutes || minutes === 0) return '0 min'
-  if (minutes < 60) return `${minutes} min`
-  const hours = Math.floor(minutes / 60)
-  const remainingMinutes = minutes % 60
-  return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`
+const formatPlaylistDuration = (playlist) => {
+  let totalMinutes = 0;
+  
+  // Calculate duration from exercises using 5 minutes per set rule
+  if (playlist.exercises && playlist.exercises.length > 0) {
+    totalMinutes = playlist.exercises.reduce((total, exercise) => {
+      const sets = exercise.sets || 3; // Default to 3 sets
+      return total + (sets * 5); // 5 minutes per set
+    }, 0);
+  } else if (playlist.totalDuration) {
+    // Use stored totalDuration as fallback
+    totalMinutes = playlist.totalDuration;
+  }
+  
+  // If we still have 0 and there are exercises, use a basic fallback
+  if (totalMinutes === 0 && playlist.exercises && playlist.exercises.length > 0) {
+    // Each exercise gets 3 sets by default = 15 minutes per exercise
+    totalMinutes = playlist.exercises.length * 3 * 5;
+  }
+  
+  return formatWorkoutDuration(totalMinutes);
 }
 
 const formatWorkoutDays = (days) => {
@@ -617,8 +633,11 @@ const formatWorkoutDays = (days) => {
 
 const calculateWorkoutDuration = (exercises) => {
   if (!exercises || exercises.length === 0) return 0
-  // Simple calculation: assume 3 minutes per exercise plus 1 minute rest
-  return exercises.length * 4
+  // Use 5 minutes per set rule (same as everywhere else)
+  return exercises.reduce((total, exercise) => {
+    const sets = exercise.sets || 3; // Default to 3 sets
+    return total + (sets * 5); // 5 minutes per set
+  }, 0);
 }
 
 // Exercise search functions for edit modal

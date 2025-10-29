@@ -69,8 +69,8 @@
                   </div>
                   <div class="col-4">
                     <div class="stat-item">
-                      <div class="stat-number text-white">{{ Math.round(viewingPlaylist?.totalDuration || 0) }}</div>
-                      <div class="stat-label">Minutes</div>
+                      <div class="stat-number text-white">{{ formatWorkoutDuration(viewingPlaylist) }}</div>
+                      <div class="stat-label">Duration</div>
                     </div>
                   </div>
                   <div class="col-4">
@@ -604,7 +604,7 @@
                   </div>
 
                   <div class="stat">
-                    <span class="u-muted">{{ workoutSet.estimatedDuration || 30 }}min</span>
+                    <span class="u-muted">{{ formatWorkoutDuration(workoutSet) }}</span>
                   </div>
                 </div>
 
@@ -647,6 +647,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { workoutVaultService } from '@/services/workoutVaultService.js'
 import { auth } from '@/firebase.js'
+import { formatDuration } from '@/types/workout.js'
 
 const router = useRouter()
 
@@ -783,6 +784,29 @@ const formatDate = (timestamp) => {
     month: 'short',
     day: 'numeric'
   })
+}
+
+const formatWorkoutDuration = (workoutSet) => {
+  let totalMinutes = 0;
+  
+  // Calculate duration from exercises using 5 minutes per set rule
+  if (workoutSet.exercises && workoutSet.exercises.length > 0) {
+    totalMinutes = workoutSet.exercises.reduce((total, exercise) => {
+      const sets = exercise.sets || 3; // Default to 3 sets
+      return total + (sets * 5); // 5 minutes per set
+    }, 0);
+  } else if (workoutSet.estimatedDuration || workoutSet.totalDuration) {
+    // Use stored duration as fallback
+    totalMinutes = workoutSet.estimatedDuration || workoutSet.totalDuration;
+  }
+  
+  // If we still have 0 and there are exercises, use a basic fallback
+  if (totalMinutes === 0 && workoutSet.exercises && workoutSet.exercises.length > 0) {
+    // Each exercise gets 3 sets by default = 15 minutes per exercise
+    totalMinutes = workoutSet.exercises.length * 3 * 5;
+  }
+  
+  return formatDuration(totalMinutes);
 }
 
 const openRatingModalFromReviews = async () => {
