@@ -227,43 +227,38 @@
             <div class="card-header text-white">
               <h6 class="mb-0"><i class="bi bi-shield-check me-2"></i>Account Actions</h6>
             </div>
-            <div class="card-body d-flex flex-wrap gap-2 justify-content-end">
-              <button
-                @click="handleLogout"
-                class="btn u-btn--primary u-btn--primary-danger"
-              >
-                <i class="bi bi-box-arrow-right me-2"></i>Logout
-              </button>
+            <div class="card-body">
+              <div class="d-flex flex-wrap gap-2 align-items-start mb-3">
+                <button
+                  @click="handleLogout"
+                  class="btn u-btn--primary u-btn--primary-danger account-action-btn"
+                >
+                  <i class="bi bi-box-arrow-right me-2"></i>Logout
+                </button>
 
-              <button
-                @click="saveAllData"
-                class="btn u-btn--primary u-btn--primary-success"
-                :disabled="isSaving"
-              >
-                <i class="bi bi-save me-2"></i>{{ isSaving ? 'Saving...' : 'Save All Changes' }}
-              </button>
-
-              <hr class="w-100">
-            
-              <div class="row">
-                <div class="col-12">
-                  <button 
-                  @click="confirmDeleteAccount" 
-                  class="btn btn-outline-danger btn-sm py-2 px-3"
+                <button
+                  @click="saveAllData"
+                  class="btn u-btn--primary u-btn--primary-success account-action-btn"
                   :disabled="isSaving"
                 >
-                  <span v-if="isSaving" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                  
-                  {{ isSaving ? 'Deleting Account...' : 'Delete Account' }}
+                  <i class="bi bi-save me-2"></i>{{ isSaving ? 'Saving...' : 'Save All Changes' }}
                 </button>
-                </div>
-
-                <div class="col-12">
-                  <small class="input-label d-block mt-2">
-                    Account deletion cannot be undone
-                  </small>
-                </div>
               </div>
+
+              <hr class="w-100 mb-3">
+
+              <button
+                @click="confirmDeleteAccount"
+                class="btn btn-outline-danger account-action-btn"
+                :disabled="isSaving"
+              >
+                <span v-if="isSaving" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                {{ isSaving ? 'Deleting Account...' : 'Delete Account' }}
+              </button>
+
+              <small class="input-label d-block mt-2">
+                Account deletion cannot be undone
+              </small>
             </div>
           </div>
 
@@ -1857,6 +1852,27 @@ async function saveWorkoutEdit() {
 }
 
 /* Buttons */
+.account-action-btn {
+  min-width: 200px;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.account-action-btn i {
+  margin-right: 0.5rem;
+  margin-left: -1rem;
+}
+
+.account-action-btn .spinner-border {
+  margin-right: 0.5rem;
+  margin-left: -1rem;
+}
+
 .u-btn--primary-success::before {
   content: '';
   position: absolute;
