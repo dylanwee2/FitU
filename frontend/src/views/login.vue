@@ -1,5 +1,8 @@
 <template>
-  <div class="auth-container">
+  <div class="auth-page">
+    <video class="bg-video" autoplay muted loop playsinline preload="auto">
+      <source src="/videos/UserLoginPageAnimation.mp4" type="video/mp4" />
+    </video>
     <div class="auth-card">
       <!-- Header -->
       <div class="auth-header">
@@ -54,7 +57,7 @@
           <router-link to="/signup" style="color: var(--secondary); text-decoration: underline;">Sign up</router-link>
         </p>
       </form>
-    </div>
+      </div>
   </div>
 </template>
 
@@ -100,21 +103,42 @@ export default {
 </script>
 
 <style scoped>
-.auth-container {
-  height: 100vh;
+.auth-page {
+  position: relative;
+  min-height: 100vh;
+  padding-top: 60px;
+  padding-bottom: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
 }
 
+.bg-video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  z-index: 0;
+  pointer-events: none;
+}
+
+
+
+
 .auth-card {
-  background: var(--surface-subtle);
-  border-radius: 24px;
-  padding: 3rem;
   width: 100%;
   max-width: 420px;
-  box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
+  border-radius: 24px;
+  padding: 2.5rem;
+  background: var(--surface-subtle);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  position: relative;
+  z-index: 1;
 }
 
 .auth-header {
