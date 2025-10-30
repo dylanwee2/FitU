@@ -12,7 +12,6 @@
         <div class="row justify-content-center">
           <div class="col-md-10 col-lg-8">
             <div class="search-container">
-              <span class="search-icon" aria-hidden="true">🔎</span>
               <input
                 v-model="searchQuery"
                 @input="handleSearch"
