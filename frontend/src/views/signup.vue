@@ -56,6 +56,11 @@
           Create Account
         </button>
 
+        <!-- Inline Error Message -->
+        <p v-if="errorMessage" class="text-center" style="color: #dc3545; margin-top: 0.5rem;">
+          {{ errorMessage }}
+        </p>
+
         <!-- Login Link -->
         <p class="u-muted text-center">
           Already have an account? 
@@ -81,6 +86,7 @@ export default {
     const emailInput = ref('');
     const nameInput = ref('');
     const passwordInput = ref('');
+    const errorMessage = ref('');
 
     const signup = async () => {
       try {
@@ -129,20 +135,21 @@ export default {
         console.error(error.code, error.message);
         
         // Provide more specific error messages
-        let errorMsg = 'Sign Up failed.';
+        let message = 'Sign up failed.';
         if (error.code === 'auth/email-already-in-use') {
-          errorMsg = 'This email is already registered. Please login instead.';
+          message = 'This email is already registered. Please login instead.';
         } else if (error.code === 'auth/weak-password') {
-          errorMsg = 'Password should be at least 6 characters.';
+          message = 'Password should be at least 6 characters.';
         } else if (error.code === 'auth/invalid-email') {
-          errorMsg = 'Please enter a valid email address.';
+          message = 'Please enter a valid email address.';
         }
         
-        alert(errorMsg);
+        // Show inline error message instead of alert
+        errorMessage.value = message;
       }
     }
 
-    return { emailInput, nameInput, passwordInput, signup };
+    return { emailInput, nameInput, passwordInput, signup, errorMessage };
   }
 }
 </script>
