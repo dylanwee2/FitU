@@ -26,21 +26,22 @@
           <!-- View Toggle -->
           <div class="view-toggle-container mb-4">
             <div class="view-toggle">
-              <button 
+              <div class="toggle-slider" :class="{ 'slider-right': currentView === 'profile' }"></div>
+              <button
                 class="toggle-btn"
                 :class="{ active: currentView === 'progress' }"
                 @click="currentView = 'progress'"
               >
-                <i class="bi bi-graph-up me-2"></i>
-                Progress Overview
+                <i class="bi bi-graph-up"></i>
+                <span>Progress Overview</span>
               </button>
-              <button 
+              <button
                 class="toggle-btn"
                 :class="{ active: currentView === 'profile' }"
                 @click="currentView = 'profile'"
               >
-                <i class="bi bi-person-circle me-2"></i>
-                Profile Details
+                <i class="bi bi-person-circle"></i>
+                <span>Profile Details</span>
               </button>
             </div>
           </div>
@@ -287,16 +288,15 @@
                     <h3>{{ goalsData.workoutFrequency || 0 }} days</h3>
                   </div>
                   <div class="progress-full">
-                    <div 
-                      class="progress-bar" 
-                      role="progressbar" 
-                      :style="{ 
-                        width: Math.min(((goalsData.workoutFrequency || 0) / (goalsData.workoutStreakGoal || 1) * 100), 100) + '%', 
-                        background: (goalsData.workoutFrequency || 0) >= (goalsData.workoutStreakGoal || 1) ? '#42b06e' : 'var(--text)',
-                        transition: 'all 0.5s ease'
+                    <div
+                      class="progress-bar"
+                      role="progressbar"
+                      :style="{
+                        width: workoutStreakWidth + '%',
+                        background: (goalsData.workoutFrequency || 0) >= (goalsData.workoutStreakGoal || 1) ? '#42b06e' : 'var(--text)'
                       }"
-                      :aria-valuenow="goalsData.workoutFrequency || 0" 
-                      aria-valuemin="0" 
+                      :aria-valuenow="goalsData.workoutFrequency || 0"
+                      aria-valuemin="0"
                       :aria-valuemax="goalsData.workoutStreakGoal || 1"
                     ></div>
                   </div>
@@ -310,23 +310,22 @@
                     <h3>{{ todayConsumed || 0 }} kcal</h3>
                   </div>
                   <div class="progress-full">
-                    <div 
-                      class="progress-bar" 
-                      role="progressbar" 
-                      :style="{ 
-                        width: ((todayConsumed || 0) / (goalsData.dailyGoal || 2000) * 100) + '%', 
-                        background: (todayConsumed || 0) >= (goalsData.dailyGoal || 2000) ? '#42b06e' : 'var(--text)',
-                        transition: 'all 0.5s ease'
+                    <div
+                      class="progress-bar"
+                      role="progressbar"
+                      :style="{
+                        width: caloriesConsumedWidth + '%',
+                        background: (todayConsumed || 0) >= (goalsData.dailyGoal || 2000) ? '#42b06e' : 'var(--text)'
                       }"
-                      :aria-valuenow="todayConsumed || 0" 
-                      aria-valuemin="0" 
+                      :aria-valuenow="todayConsumed || 0"
+                      aria-valuemin="0"
                       :aria-valuemax="goalsData.dailyGoal || 2000"
                     ></div>
                   </div>
                   <small class="input-label">
                     {{ (todayConsumed || 0) >= (goalsData.dailyGoal || 2000)
-                      ? 'Goal reached! Great job!' 
-                      : `${(goalsData.dailyGoal || 2000) - (todayConsumed || 0)} kcal remaining for today` 
+                      ? 'Goal reached! Great job!'
+                      : `${(goalsData.dailyGoal || 2000) - (todayConsumed || 0)} kcal remaining for today`
                     }}
                   </small>
                 </div>
@@ -708,6 +707,10 @@ const chartInstance = ref(null);
 const weeklyCalorieData = ref([]);
 const todayConsumed = ref(0);
 
+// Progress bar animation states
+const workoutStreakWidth = ref(0);
+const caloriesConsumedWidth = ref(0);
+
 // User's workout sets
 const userWorkoutSets = ref([]);
 const loadingWorkouts = ref(false);
@@ -737,17 +740,17 @@ const calculatedBMI = computed(() => {
   try {
     const height = profileData.value.height;
     const weight = profileData.value.weight;
-    
+
     if (height && weight && height > 0 && weight > 0) {
       const heightInMeters = height / 100;
       const bmi = (weight / (heightInMeters * heightInMeters)).toFixed(1);
-      
+
       let category = '';
       if (bmi < 18.5) category = 'Underweight';
       else if (bmi < 25) category = 'Normal';
       else if (bmi < 30) category = 'Overweight';
       else category = 'Obese';
-      
+
       return { value: bmi, category };
     }
     return null;
@@ -755,6 +758,15 @@ const calculatedBMI = computed(() => {
     console.error('Error calculating BMI:', error);
     return null;
   }
+});
+
+// Computed properties for target progress bar widths
+const workoutStreakTargetWidth = computed(() => {
+  return Math.min(((goalsData.value.workoutFrequency || 0) / (goalsData.value.workoutStreakGoal || 1) * 100), 100);
+});
+
+const caloriesConsumedTargetWidth = computed(() => {
+  return ((todayConsumed.value || 0) / (goalsData.value.dailyGoal || 2000) * 100);
 });
 
 // Lifecycle Hooks
@@ -771,6 +783,54 @@ onMounted(() => {
   });
 });
 
+/**
+ * Animate progress bars on page load
+ */
+function animateProgressBars() {
+  // Reset widths to 0 first
+  workoutStreakWidth.value = 0;
+  caloriesConsumedWidth.value = 0;
+
+  // Start animation after a small delay
+  setTimeout(() => {
+    // Animate workout streak progress bar
+    const workoutTarget = workoutStreakTargetWidth.value;
+    const workoutDuration = 1000; // 1 second
+    const workoutSteps = 60;
+    const workoutIncrement = workoutTarget / workoutSteps;
+    let workoutStep = 0;
+
+    const workoutInterval = setInterval(() => {
+      workoutStep++;
+      workoutStreakWidth.value = Math.min(workoutIncrement * workoutStep, workoutTarget);
+
+      if (workoutStep >= workoutSteps) {
+        clearInterval(workoutInterval);
+        workoutStreakWidth.value = workoutTarget;
+      }
+    }, workoutDuration / workoutSteps);
+
+    // Animate calories consumed progress bar with slight delay
+    setTimeout(() => {
+      const caloriesTarget = caloriesConsumedTargetWidth.value;
+      const caloriesDuration = 1000; // 1 second
+      const caloriesSteps = 60;
+      const caloriesIncrement = caloriesTarget / caloriesSteps;
+      let caloriesStep = 0;
+
+      const caloriesInterval = setInterval(() => {
+        caloriesStep++;
+        caloriesConsumedWidth.value = Math.min(caloriesIncrement * caloriesStep, caloriesTarget);
+
+        if (caloriesStep >= caloriesSteps) {
+          clearInterval(caloriesInterval);
+          caloriesConsumedWidth.value = caloriesTarget;
+        }
+      }, caloriesDuration / caloriesSteps);
+    }, 200); // 200ms delay for staggered effect
+  }, 100);
+}
+
 async function loadUserData(uid) {
   try {
     isLoading.value = true;
@@ -780,7 +840,7 @@ async function loadUserData(uid) {
 
     if (userDoc.exists()) {
       const data = userDoc.data();
-      
+
       // Load profile data
       profileData.value = {
         fullName: data.fullName || currentUser.value.displayName || '',
@@ -800,7 +860,7 @@ async function loadUserData(uid) {
         workoutFrequency: data.workoutFrequency || 3,
         workoutStreakGoal: data.workoutStreakGoal || 3
       };
-      
+
       // Load calorie data from caloriesService
       try {
         const calorieData = await caloriesService.getUserCalories();
@@ -818,7 +878,7 @@ async function loadUserData(uid) {
         // Set default values on error
         weeklyCalorieData.value = [];
         todayConsumed.value = 0;
-        
+
       }
     await setupWorkoutListener(uid);
 
@@ -831,6 +891,8 @@ async function loadUserData(uid) {
     errorMessage.value = 'Failed to load profile data. Please refresh the page.';
   } finally {
     isLoading.value = false;
+    // Animate progress bars after data is loaded
+    animateProgressBars();
   }
 }
 
@@ -1542,36 +1604,69 @@ async function saveWorkoutEdit() {
 }
 
 .view-toggle {
-  display: inline-flex;
+  display: flex;
   background: var(--surface);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   gap: 4px;
+  position: relative;
+  width: fit-content;
+}
+
+/* Sliding background element */
+.toggle-slider {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: calc(50% - 6px);
+  height: calc(100% - 8px);
+  background: linear-gradient(135deg, var(--primary) 0%, #7083eb 100%);
+  border-radius: 8px;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  z-index: 0;
+}
+
+.toggle-slider.slider-right {
+  transform: translateX(calc(100% + 4px));
 }
 
 .toggle-btn {
-  padding: 10px 24px;
+  padding: 10px 20px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   background: transparent;
-  color: var(--muted);
+  color: var(--text);
   font-weight: 600;
   font-size: 0.86rem;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+  position: relative;
+  z-index: 1;
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  opacity: 1
+}
+
+.toggle-btn i {
+  flex-shrink: 0;
+  margin-right: 0.5rem;
 }
 
 .toggle-btn:hover {
-  color: var(--text);
-  background: rgba(255, 255, 255, 0.05);
+  opacity: 1;
 }
 
 .toggle-btn.active {
-  background: var(--primary);
-  color: white;
+  color: #ffffff;
+  opacity: 1;
 }
 
 @media (max-width: 576px) {
@@ -1583,6 +1678,9 @@ async function saveWorkoutEdit() {
     flex: 1;
     padding: 10px 16px;
     font-size: 0.77rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
@@ -1822,6 +1920,7 @@ async function saveWorkoutEdit() {
   font-size: 0.81rem;
   position: relative;
   overflow: hidden;
+  transition: width 0.05s linear, background-color 0.3s ease;
 }
 
 .progress-full .progress-bar::after {
