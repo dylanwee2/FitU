@@ -1,30 +1,12 @@
 <template>
   <div class="page-bg-wrap">
-    <!-- Top-half local video Carousel -->
+    <!-- Top-half hero video -->
     <section class="video-carousel" v-reveal>
-      <div class="carousel-inner">
-        <div
-          v-for="(vid, idx) in videoIds"
-          :key="vid"
-          class="carousel-item"
-          :class="{ active: idx === currentSlide }"
-          role="group"
-          :aria-label="`Slide ${idx+1} of ${videoIds.length}`"
-        >
-          <div class="iframe-wrap">
-            <video
-              :title="`Video slide ${idx+1}`"
-              :src="vid"
-              :autoplay="idx === currentSlide"
-              muted
-              loop
-              playsinline
-              :ref="el => registerVideoRef(el, idx)"
-            ></video>
-          </div>
-        </div>
+      <div class="iframe-wrap">
+        <video class="hero-video" src="/videos/fitu.mp4" autoplay muted loop playsinline></video>
       </div>
-      <!-- Overlay hero copy on top of videos -->
+
+      <!-- Overlay hero copy on top of video -->
       <div class="vc-content">
         <div class="vc-content-wrap">
             <div class="container vc-hero-container">
@@ -32,18 +14,13 @@
               <p class="mb-3">Unlock your fitness potential with personalized workout plans, meal tracking, and expert guidance.</p>
               <div class="d-flex gap-3">
                 <router-link :to="isAuthenticated ? '/home' : '/signup'" class="u-special-btn" style="padding-left: 60px; padding-right:60px;">
-                  {{ isAuthenticated ? 'Get Started' : 'Join FitU Now!' }}
+                  {{ isAuthenticated ? 'Start Using FitU' : 'Join FitU Now!' }}
                 </router-link>
               </div>
             </div>
         </div>
       </div>
     </section>
-    <!-- Background local video -->
-    <div class="bg-video" aria-hidden="true">
-      <video src="/videos/fitu.mp4" autoplay muted loop playsinline></video>
-    </div>
-    <div class="bg-overlay" aria-hidden="true"></div>
 
       <div class="container mt-4">
       <!-- Starfield wrapper starts: applies from here onwards -->
@@ -189,71 +166,28 @@
 </template>
 
 <script>
-import { ref, onMounted, onBeforeUnmount, watch } from "vue";
+import { ref, onMounted } from "vue";
 import BackgroundGradientAnimation from '../components/BackgroundGradientAnimation.vue'
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { useRouter } from 'vue-router'
-
 
 export default {
   components: {
     BackgroundGradientAnimation,
   },
   setup() {
-    const router = useRouter()
+    const router = useRouter();
     const auth = getAuth();
     const isAuthenticated = ref(false);
-    const videoIds = ref([
-      '/videos/fitu.mp4'
-    ])
-    const currentSlide = ref(0)
-    let intervalHandle = null
-    const videoEls = ref([])
-    const registerVideoRef = (el, idx) => {
-      if (!el) return
-      videoEls.value[idx] = el
-    }
-    const nextSlide = () => { currentSlide.value = (currentSlide.value + 1) % videoIds.value.length }
-    const prevSlide = () => { currentSlide.value = (currentSlide.value - 1 + videoIds.value.length) % videoIds.value.length }
 
-    onMounted(() => {        
-        onAuthStateChanged(auth, async (userCredential) => {
-            if (userCredential) {
-              isAuthenticated.value = true;
-              //router.push(`/home`)
-            } else {
-              isAuthenticated.value = false;
-              //router.push(`/`)
-            }
-        });
-        // Auto-advance disabled; each video loops on its own
-        // intervalHandle = setInterval(nextSlide, 8000)
+    // Auth state watcher
+    onMounted(() => {
+      onAuthStateChanged(auth, (user) => {
+        isAuthenticated.value = !!user;
+      });
     });
-    // Pause/play when slide changes
-    onBeforeUnmount(() => { if (intervalHandle) clearInterval(intervalHandle) })
 
-    watch(currentSlide, (idx) => {
-      videoEls.value.forEach((v, i) => {
-        if (!v) return
-        try { i === idx ? v.play() : v.pause() } catch {}
-      })
-    })
-
-    // Pause videos when tab is hidden, resume active on visible
-    const onVisibility = () => {
-      const active = videoEls.value[currentSlide.value]
-      if (document.hidden) {
-        videoEls.value.forEach(v => { try { v && v.pause() } catch {} })
-      } else if (active) {
-        try { active.play() } catch {}
-      }
-    }
-    if (typeof document !== 'undefined') {
-      document.addEventListener('visibilitychange', onVisibility)
-      onBeforeUnmount(() => document.removeEventListener('visibilitychange', onVisibility))
-    }
-
-    // Reviews state
+    // Reviews state (unchanged)
     const reviews = ref([
       { id: 'r1', name: 'Aisha K.', course: 'Computer Science', year: 'Year 2', rating: 5, comment: 'FitU keeps me on track during exam season. Love the clean visuals!' },
       { id: 'r2', name: 'Liam D.', course: 'Mechanical Eng.', year: 'Year 3', rating: 5, comment: 'The workout planner and calorie tracker combo is perfect.' },
@@ -288,13 +222,8 @@ export default {
 
     onMounted(loadReviews)
 
-    return { 
+    return {
       isAuthenticated,
-      videoIds,
-      currentSlide,
-      nextSlide,
-      prevSlide,
-      registerVideoRef,
       reviews,
       newReview,
       submitReview
@@ -304,8 +233,6 @@ export default {
 </script>
 
 <style scoped>
-
-
 input.form-control {
   max-width: 100%;
 }
@@ -370,7 +297,7 @@ input.form-control {
   box-shadow: 0 12px 24px rgba(15,23,42,0.12);
 }
 
-/* Full-bleed stats bar that overlays the features section */
+/* Full-width safe stats bar that overlays the features section */
 .stats-bleed {
   background-color: rgb(21, 21, 21);
   width: 100vw;
@@ -387,32 +314,29 @@ input.form-control {
 
 /* Make carousel full width and remove border radius/shadow */
 .home-carousel {
-  width: 100vw !important;
-  margin-left: calc(-50vw + 50%) !important;
+  width: 100% !important;
+  margin-left: 0 !important;
   border-radius: 0 !important;
   box-shadow: none !important;
+  overflow: hidden;
 }
 
 /* Ensure carousel images fill width and height */
 .home-carousel .carousel-item img {
-  width: 100vw !important;
+  width: 100% !important;
   object-fit: cover;
   height: 360px;
   border-radius: 0 !important;
 }
 
-.carousel-text:hover {
-  cursor: default;
-}
-.carousel-item img{
-  filter: brightness(40%);
-}
+.carousel-text:hover { cursor: default; }
+.carousel-item img{ filter: brightness(40%); }
 
-/* Top-half carousel */
+/* Top-half hero video */
 .video-carousel {
   position: relative;
-  width: 100vw;
-  margin-left: calc(-50vw + 50%);
+  width: 100%;
+  margin-left: 0;
   height: 65vh;
   min-height: 420px;
   max-height: 900px;
@@ -426,23 +350,22 @@ input.form-control {
   transition: opacity .5s ease;
 }
 .video-carousel .carousel-item.active { opacity: 1; }
-.video-carousel .iframe-wrap { position: relative; width: 100%; height: 100%; background: #000; }
-.video-carousel video {
+.video-carousel .iframe-wrap { position: relative; width: 100%; height: 100%; background: #000; overflow: hidden; }
+.video-carousel video,
+.video-carousel .hero-video {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 120vw;
-  height: 67.5vw;
-  min-width: 177.78vh;
+  width: 100%;
+  height: 100%;
+  min-width: 100%;
   min-height: 100%;
+  object-fit: cover;
   pointer-events: none;
 }
 /* Darken carousel video and add an internal overlay so hero text is readable */
-.video-carousel video {
-  filter: brightness(0.8) contrast(0.8);
-  z-index: 0;
-}
+.video-carousel video { filter: brightness(0.8) contrast(0.8); z-index: 0; }
 .video-carousel::before {
   content: "";
   position: absolute;
@@ -476,8 +399,8 @@ input.form-control {
 .vc-sub { max-width: 680px; }
 
 /* Limit background to page content (exclude navbar & footer) */
-.page-bg-wrap { position: relative; }
-.page-bg-wrap > .bg-video { position: absolute; top: 0; left: 0; right: 0; height: 65vh; }
+.page-bg-wrap { position: relative; overflow-x: hidden; }
+.page-bg-wrap > .bg-video { position: absolute; top: 0; left: 0; right: 0; height: 65vh; overflow: hidden; }
 .page-bg-wrap > .bg-overlay { position: absolute; top: 0; left: 0; right: 0; height: 65vh; }
 
 /* Background video covering the landing content area */
@@ -492,10 +415,11 @@ input.form-control {
   left: 50%;
   transform: translate(-50%, -50%);
   /* Cover technique for 16:9 video */
-  width: 120vw;
-  height: 67.5vw; /* 120 * 9/16 */
-  min-width: 177.78vh; /* 100 * 16/9 to cover tall screens */
+  width: 100%;
+  height: 100%;
+  min-width: 100%;
   min-height: 100%;
+  object-fit: cover;
   pointer-events: none; /* allow page interaction */
   /* Darken the video for better overlay contrast. Adjust brightness value as needed. */
   filter: brightness(0.28) contrast(0.9);
