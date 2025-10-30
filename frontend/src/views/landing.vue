@@ -113,97 +113,103 @@
         blendingValue="overlay"
         :interactive="true"
       >
-      <section class="p-3 mb-4 mt-4">
-        <h2 class="mb-3">Built for Student Life</h2>
-        <div class="row g-3">
-          <div class="col-12 col-md-6 col-lg-3">
-            <div class="feature-simple">
-              <div class="feature-icon-wrap">
-                <!-- stopwatch icon -->
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <path d="M9 2h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M12 7v6l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  <circle cx="12" cy="14" r="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+        <section class="p-3 mb-4 mt-4">
+          <div class="container">
+            <h2 class="mb-3">Built for Student Life</h2>
+            <div class="row g-3">
+              <div class="col-12 col-md-6 col-lg-3">
+                <div class="feature-simple">
+                  <div class="feature-icon-wrap">
+                    <!-- stopwatch icon -->
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                      <path d="M9 2h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M12 7v6l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <circle cx="12" cy="14" r="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                  <h6 class="mb-1">15-Minute Workouts</h6>
+                  <small class="u-muted">Fit exercise between lectures</small>
+                </div>
               </div>
-              <h6 class="mb-1">15-Minute Workouts</h6>
-              <small class="u-muted">Fit exercise between lectures</small>
-            </div>
-          </div>
-          <div class="col-12 col-md-6 col-lg-3">
-            <div class="feature-simple">
-              <div class="feature-icon-wrap">
-                <!-- dumbbell icon -->
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <path d="M2 12h2v2H2zM20 12h2v2h-2z" fill="currentColor"/>
-                  <path d="M9 12h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M4 10v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M20 10v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </div>
-              <h6 class="mb-1">No Equipment</h6>
-              <small class="u-muted">Bodyweight exercises anywhere</small>
-            </div>
-          </div>
-          <div class="col-12 col-md-6 col-lg-3">
-            <div class="feature-simple">
-              <div class="feature-icon-wrap">
-                <!-- users icon -->
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </div>
-              <h6 class="mb-1">Student Community</h6>
-              <small class="u-muted">Connect with campus fitness groups</small>
-            </div>
-          </div>
-          <div class="col-12 col-md-6 col-lg-3">
-            <div class="feature-simple">
-              <div class="feature-icon-wrap">
-                <!-- lightning/fast results icon -->
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </div>
-              <h6 class="mb-1">Quick Results</h6>
-              <small class="u-muted">See progress in just weeks</small>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      <!-- Stats Section (removed duplicate - moved above features) -->
-
-      <!-- Reviews Section -->
-      <div class="p-3 mb-4" v-reveal>
-        <h2 class="mb-3">Student Reviews</h2>
-        <div v-if="reviews.length === 0" class="u-muted">No reviews yet.</div>
-        <div class="row">
-          <div v-for="(r, i) in reviews" :key="r.id" class="col-12 col-md-6 col-lg-6 mb-3">
-            <div class="p-3 h-100 u-card review-card" :style="{ animationDelay: (i * 0.1) + 's' }">
-              <div class="d-flex justify-content-between align-items-center mb-1">
-                <strong>{{ r.name }}</strong>
-                <span class="u-muted">{{ r.course }} • {{ r.year }}</span>
+              <div class="col-12 col-md-6 col-lg-3">
+                <div class="feature-simple">
+                  <div class="feature-icon-wrap">
+                    <!-- dumbbell icon -->
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                      <path d="M2 12h2v2H2zM20 12h2v2h-2z" fill="currentColor"/>
+                      <path d="M9 12h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M4 10v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M20 10v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                  <h6 class="mb-1">No Equipment</h6>
+                  <small class="u-muted">Bodyweight exercises anywhere</small>
+                </div>
               </div>
-              <div class="mb-1" :aria-label="`Rating ${r.rating} out of 5`">
-                <span v-for="n in 5" :key="n" :style="{ color: n <= r.rating ? 'gold' : '#d9d9d9' }">★</span>
-              </div>
-              <p class="m-0">{{ r.comment }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      <!-- Bottom CTA -->
-        <div class="p-4 text-center">
+              <div class="col-12 col-md-6 col-lg-3">
+                <div class="feature-simple">
+                  <div class="feature-icon-wrap">
+                    <!-- users icon -->
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                  <h6 class="mb-1">Student Community</h6>
+                  <small class="u-muted">Connect with campus fitness groups</small>
+                </div>
+              </div>
+
+              <div class="col-12 col-md-6 col-lg-3">
+                <div class="feature-simple">
+                  <div class="feature-icon-wrap">
+                    <!-- lightning/fast results icon -->
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                      <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                  <h6 class="mb-1">Quick Results</h6>
+                  <small class="u-muted">See progress in just weeks</small>
+                </div>
+              </div>
+            </div> <!-- .row -->
+          </div> <!-- .container -->
+        </section>
+
+        <!-- Reviews Section -->
+        <section class="p-3 mb-4" v-reveal>
+          <div class="container">
+            <h2 class="mb-3">Student Reviews</h2>
+            <div v-if="reviews.length === 0" class="u-muted">No reviews yet.</div>
+
+            <div class="row">
+              <div v-for="(r, i) in reviews" :key="r.id" class="col-12 col-md-6 col-lg-6 mb-3">
+                <div class="p-3 h-100 u-card review-card" :style="{ animationDelay: (i * 0.1) + 's' }">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <strong>{{ r.name }}</strong>
+                    <span class="u-muted">{{ r.course }} • {{ r.year }}</span>
+                  </div>
+                  <div class="mb-1" :aria-label="`Rating ${r.rating} out of 5`">
+                    <span v-for="n in 5" :key="n" :style="{ color: n <= r.rating ? 'gold' : '#d9d9d9' }">★</span>
+                  </div>
+                  <p class="m-0">{{ r.comment }}</p>
+                </div>
+              </div>
+            </div> <!-- .row -->
+          </div> <!-- .container -->
+        </section>
+
+        <!-- Bottom CTA -->
+        <section class="p-4 text-center">
           <h2 class="mb-2" style="color: var(--text)">Ready to Transform Your Campus Fitness?</h2>
           <p class="u-muted mb-3">Join thousands of students getting stronger, healthier, and more energized.</p>
           <div class="d-flex gap-3 justify-content-center">
             <router-link to="/signup" class="u-special-btn" style="padding-left: 60px; padding-right:60px;">Get Started For Free &nbsp;&nbsp;></router-link>
           </div>
-        </div>
+        </section>
       </BackgroundGradientAnimation>
 
       </div> <!-- end starfield-wrap -->
