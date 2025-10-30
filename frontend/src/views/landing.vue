@@ -27,13 +27,15 @@
       <!-- Overlay hero copy on top of videos -->
       <div v-if="!isAuthenticated" class="vc-content">
         <div class="vc-content-wrap">
-          <h1 class="mb-3 vc-title">UNLEASH YOUR<br>BEST SELF</h1>
-          <p class="mb-3 u-muted vc-sub">Unlock your fitness potential with personalized workout plans, meal tracking, and expert guidance.</p>
-          <div class="d-flex gap-3">
-            <router-link to="/signup" class="u-special-btn" style="padding-left: 60px; padding-right:60px;">
-              Join FitU Now!
-            </router-link>
-          </div>
+            <div class="container vc-hero-container">
+              <h1 class="mb-3 vc-title">UNLEASH YOUR<br>BEST SELF</h1>
+              <p class="mb-3">Unlock your fitness potential with personalized workout plans, meal tracking, and expert guidance.</p>
+              <div class="d-flex gap-3">
+                <router-link to="/signup" class="u-special-btn" style="padding-left: 60px; padding-right:60px;">
+                  Join FitU Now!
+                </router-link>
+              </div>
+            </div>
         </div>
       </div>
     </section>
@@ -42,35 +44,6 @@
       <video src="/videos/fitu.mp4" autoplay muted loop playsinline></video>
     </div>
     <div class="bg-overlay" aria-hidden="true"></div>
-
-    <!-- Carousel: moved outside container for full width -->
-    <!-- <div id="homeCarousel" class="carousel slide mb-4 home-carousel" data-bs-ride="carousel" v-reveal
-      style="width: 100vw; margin-left: calc(-50vw + 50%); border-radius: 0; box-shadow: none;">
-      <div class="carousel-inner">
-        <div class="carousel-item active">
-          <img src="../assets/carousel/hyrox-background.webp" class="d-block w-100" alt="Workout motivation" style="object-fit: cover; height: 360px;">
-          <div class="carousel-caption d-none d-md-block">
-            <h1 class="fw-bold carousel-text" style="font-size: 70px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);">Plan. Track. Improve.</h1>
-          </div>
-        </div>
-        <div class="carousel-item carousel-gradient">
-          <img src="../assets/carousel/gym-background.jpg" class="d-block w-100" alt="Workout motivation" style="object-fit: cover; height: 360px;">
-          <div class="carousel-caption d-none d-md-block">
-            <h1 class="fw-bold carousel-text" style="font-size: 60px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);">Visualize. Believe. Achieve.</h1>
-          </div>
-        </div>
-      </div>
-      <button class="carousel-control-prev" type="button" data-bs-target="#homeCarousel" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Previous</span>
-      </button>
-      <button class="carousel-control-next" type="button" data-bs-target="#homeCarousel" data-bs-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Next</span>
-      </button>
-    </div> -->
 
     <div class="container mt-4">
       <!-- Logged In User Section -->
@@ -107,70 +80,93 @@
           <div class="shooting_star"></div>
         </div>
 
-      <!-- Feature Highlights (moved above today's calories) -->
-      <section class="p-3 mb-4" v-reveal>
-        <h2 class="h4 mb-3">Built for Student Life</h2>
-        <div class="row g-3">
-          <div class="col-12 col-md-6 col-lg-3">
-            <div class="feature-card">
-              <img src="/images/feature/quick.jpg" alt="Quick Workouts" />
-              <div class="feature-card-overlay">
-                <h6 class="mb-1">15-Minute Workouts</h6>
-                <small class="u-muted">Fit exercise between lectures</small>
-              </div>
+      <!-- Stats Section (full-bleed white bar placed above features) -->
+      <section class="stats-bleed" v-reveal>
+        <div class="container py-3">
+          <div class="row text-center">
+            <div class="col-4 mb-3 mb-md-0">
+              <div class="h3 m-0">500K+</div>
+              <div class="u-muted">Active Students</div>
             </div>
-          </div>
-          <div class="col-12 col-md-6 col-lg-3">
-            <div class="feature-card">
-              <img src="/images/feature/no-equipment.jpg" alt="No Equipment" />
-              <div class="feature-card-overlay">
-                <h6 class="mb-1">No Equipment</h6>
-                <small class="u-muted">Bodyweight exercises anywhere</small>
-              </div>
+            <div class="col-4 mb-3 mb-md-0">
+              <div class="h3 m-0">200+</div>
+              <div class="u-muted">Workouts</div>
             </div>
-          </div>
-          <div class="col-12 col-md-6 col-lg-3">
-            <div class="feature-card">
-              <img src="/images/feature/community.jpg" alt="Community" />
-              <div class="feature-card-overlay">
-                <h6 class="mb-1">Student Community</h6>
-                <small class="u-muted">Connect with campus fitness groups</small>
-              </div>
-            </div>
-          </div>
-          <div class="col-12 col-md-6 col-lg-3">
-            <div class="feature-card">
-              <img src="/images/feature/results.jpg" alt="Quick Results" />
-              <div class="feature-card-overlay">
-                <h6 class="mb-1">Quick Results</h6>
-                <small class="u-muted">See progress in just weeks</small>
-              </div>
+            <div class="col-4">
+              <div class="h3 m-0">★ 4.9</div>
+              <div class="u-muted">App Rating</div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Stats Section -->
-      <div class="p-3 mb-4" v-reveal>
-        <div class="row text-center">
-          <div class="col-12 col-md-4 mb-3 mb-md-0">
-            <div class="h3 m-0">500K+</div>
-            <div class="u-muted">Active Students</div>
+      <!-- Feature Highlights (simplified: icons above text, no cards) -->
+      <section class="p-3 mb-4 mt-4" v-reveal>
+        <h2 class="mb-3">Built for Student Life</h2>
+        <div class="row g-3">
+          <div class="col-12 col-md-6 col-lg-3">
+            <div class="feature-simple">
+              <div class="feature-icon-wrap">
+                <!-- stopwatch icon -->
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M9 2h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M12 7v6l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="12" cy="14" r="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <h6 class="mb-1">15-Minute Workouts</h6>
+              <small class="u-muted">Fit exercise between lectures</small>
+            </div>
           </div>
-          <div class="col-12 col-md-4 mb-3 mb-md-0">
-            <div class="h3 m-0">200+</div>
-            <div class="u-muted">Workouts</div>
+          <div class="col-12 col-md-6 col-lg-3">
+            <div class="feature-simple">
+              <div class="feature-icon-wrap">
+                <!-- dumbbell icon -->
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M2 12h2v2H2zM20 12h2v2h-2z" fill="currentColor"/>
+                  <path d="M9 12h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M4 10v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M20 10v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <h6 class="mb-1">No Equipment</h6>
+              <small class="u-muted">Bodyweight exercises anywhere</small>
+            </div>
           </div>
-          <div class="col-12 col-md-4">
-            <div class="h3 m-0">★ 4.9</div>
-            <div class="u-muted">App Rating</div>
+          <div class="col-12 col-md-6 col-lg-3">
+            <div class="feature-simple">
+              <div class="feature-icon-wrap">
+                <!-- users icon -->
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <h6 class="mb-1">Student Community</h6>
+              <small class="u-muted">Connect with campus fitness groups</small>
+            </div>
+          </div>
+          <div class="col-12 col-md-6 col-lg-3">
+            <div class="feature-simple">
+              <div class="feature-icon-wrap">
+                <!-- lightning/fast results icon -->
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <h6 class="mb-1">Quick Results</h6>
+              <small class="u-muted">See progress in just weeks</small>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
+
+      <!-- Stats Section (removed duplicate - moved above features) -->
 
       <!-- Reviews Section -->
       <div class="p-3 mb-4" v-reveal>
-        <h5 class="mb-3">Student Reviews</h5>
+        <h2 class="mb-3">Student Reviews</h2>
         <div v-if="reviews.length === 0" class="u-muted">No reviews yet.</div>
         <div class="row">
           <div v-for="(r, i) in reviews" :key="r.id" class="col-12 col-md-6 col-lg-6 mb-3">
@@ -193,7 +189,7 @@
         <h2 class="mb-2" style="color: var(--text)">Ready to Transform Your Campus Fitness?</h2>
         <p class="u-muted mb-3">Join thousands of students getting stronger, healthier, and more energized.</p>
         <div class="d-flex gap-3 justify-content-center">
-        <router-link to="/signup" class="u-special-btn" style="padding-left: 60px; padding-right:60px;">Get Started Free</router-link>
+        <router-link to="/signup" class="u-special-btn" style="padding-left: 60px; padding-right:60px;">Get Started For Free &nbsp;&nbsp;></router-link>
 
         </div>
       </section>
@@ -272,7 +268,7 @@ export default {
     const reviews = ref([
       { id: 'r1', name: 'Aisha K.', course: 'Computer Science', year: 'Year 2', rating: 5, comment: 'FitU keeps me on track during exam season. Love the clean visuals!' },
       { id: 'r2', name: 'Liam D.', course: 'Mechanical Eng.', year: 'Year 3', rating: 5, comment: 'The workout planner and calorie tracker combo is perfect.' },
-      { id: 'r3', name: 'Sophia M.', course: 'Medicine', year: 'Year 1', rating: 4, comment: 'Simple, fast, and the red/cream theme is beautiful.' },
+      { id: 'r3', name: 'Sophia M.', course: 'Medicine', year: 'Year 1', rating: 4, comment: 'Simple, fast, and the dark theme is beautiful.' },
       { id: 'r4', name: 'Noah P.', course: 'Business Analytics', year: 'Year 4', rating: 5, comment: 'Weekly charts + quick add makes tracking effortless.' }
     ])
     const newReview = ref({ name: '', rating: 5, comment: '', course: '', year: '' })
@@ -372,6 +368,34 @@ input.form-control {
 .feature-card:hover { transform: translateY(-6px); box-shadow: 0 22px 40px -18px rgba(0,0,0,.6); }
 .feature-card:hover img { transform: scale(1.06); filter: brightness(.95); }
 
+/* Simplified feature layout (icons above text) */
+.feature-simple { display: flex; flex-direction: column; align-items: center; gap: .5rem; padding: .75rem 0; text-align: center; }
+.feature-simple .feature-icon-wrap { width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; color: var(--primary); margin-bottom: .25rem; transition: transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .22s cubic-bezier(.2,.8,.2,1); will-change: transform; }
+.feature-simple h6 { margin: 0; }
+.feature-simple small { display: block; }
+
+/* Pop-out effect on icon when hovering the feature */
+.feature-simple:hover .feature-icon-wrap,
+.feature-simple:focus-within .feature-icon-wrap {
+  transform: translateY(-6px) scale(1.08);
+  box-shadow: 0 12px 24px rgba(15,23,42,0.12);
+}
+
+/* Full-bleed stats bar that overlays the features section */
+.stats-bleed {
+  background-color: rgb(21, 21, 21);
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  box-shadow: 0 8px 24px rgba(18, 38, 63, 0.06);
+  position: relative;
+  z-index: 4;
+}
+.stats-bleed .h3 { color: var(--text); }
+.stats-bleed .u-muted { color: var(--muted); }
+
+/* Remove top gap between the hero video area and the main container so the stats bar sits directly under the video */
+.page-bg-wrap > .container { margin-top: 0 !important; }
+
 /* Make carousel full width and remove border radius/shadow */
 .home-carousel {
   width: 100vw !important;
@@ -400,9 +424,9 @@ input.form-control {
   position: relative;
   width: 100vw;
   margin-left: calc(-50vw + 50%);
-  height: 50vh;
-  min-height: 320px;
-  max-height: 600px;
+  height: 65vh;
+  min-height: 420px;
+  max-height: 900px;
   overflow: hidden;
 }
 .video-carousel .carousel-inner { position: relative; height: 100%; }
@@ -423,6 +447,19 @@ input.form-control {
   height: 67.5vw;
   min-width: 177.78vh;
   min-height: 100%;
+  pointer-events: none;
+}
+/* Darken carousel video and add an internal overlay so hero text is readable */
+.video-carousel video {
+  filter: brightness(0.8) contrast(0.8);
+  z-index: 0;
+}
+.video-carousel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 1; /* sits above the video but below .vc-content (z-index:2) */
   pointer-events: none;
 }
 .video-carousel .nav {
@@ -451,8 +488,8 @@ input.form-control {
 
 /* Limit background to page content (exclude navbar & footer) */
 .page-bg-wrap { position: relative; }
-.page-bg-wrap > .bg-video { position: absolute; top: 0; left: 0; right: 0; height: 50vh; }
-.page-bg-wrap > .bg-overlay { position: absolute; top: 0; left: 0; right: 0; height: 50vh; }
+.page-bg-wrap > .bg-video { position: absolute; top: 0; left: 0; right: 0; height: 65vh; }
+.page-bg-wrap > .bg-overlay { position: absolute; top: 0; left: 0; right: 0; height: 65vh; }
 
 /* Background video covering the landing content area */
 .bg-video {
@@ -471,8 +508,10 @@ input.form-control {
   min-width: 177.78vh; /* 100 * 16/9 to cover tall screens */
   min-height: 100%;
   pointer-events: none; /* allow page interaction */
+  /* Darken the video for better overlay contrast. Adjust brightness value as needed. */
+  filter: brightness(0.28) contrast(0.9);
 }
-.bg-overlay { z-index: -1; background: rgba(0,0,0,0.45); }
+.bg-overlay { z-index: -1; background: rgba(0,0,0,0.72); }
 
 /* Reviews animations */
 @keyframes review-fade-up {
@@ -492,7 +531,7 @@ input.form-control {
   100% { background-position: 200% 50%; }
 }
 .vc-title {
-  background: linear-gradient(90deg, #ffffff, #8ab4ff, #6ee7b7, #ffffff);
+  background: linear-gradient(90deg, #ffffff, #846fff, #ffffff);
   background-size: 200% 100%;
   -webkit-background-clip: text;
   background-clip: text;
@@ -504,9 +543,6 @@ input.form-control {
 @keyframes cta-pulse {
   0%, 100% { transform: translateY(0) scale(1); box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4); }
   50% { transform: translateY(-2px) scale(1.02); box-shadow: 0 14px 28px rgba(102, 126, 234, 0.5); }
-}
-.vc-content .u-special-btn {
-  animation: cta-pulse 2.8s ease-in-out infinite;
 }
 
 /* 3D tilt + lift on cards */
