@@ -25,14 +25,14 @@
         </div>
       </div>
       <!-- Overlay hero copy on top of videos -->
-      <div v-if="!isAuthenticated" class="vc-content">
+      <div class="vc-content">
         <div class="vc-content-wrap">
             <div class="container vc-hero-container">
               <h1 class="mb-3 vc-title">UNLEASH YOUR<br>BEST SELF</h1>
               <p class="mb-3">Unlock your fitness potential with personalized workout plans, meal tracking, and expert guidance.</p>
               <div class="d-flex gap-3">
-                <router-link to="/signup" class="u-special-btn" style="padding-left: 60px; padding-right:60px;">
-                  Join FitU Now!
+                <router-link :to="isAuthenticated ? '/home' : '/signup'" class="u-special-btn" style="padding-left: 60px; padding-right:60px;">
+                  {{ isAuthenticated ? 'Get Started' : 'Join FitU Now!' }}
                 </router-link>
               </div>
             </div>
@@ -45,40 +45,10 @@
     </div>
     <div class="bg-overlay" aria-hidden="true"></div>
 
-    <div class="container mt-4">
-      <!-- Logged In User Section -->
-      <div v-if="isAuthenticated" class="mb-4" v-reveal>
-        <div class="p-4 text-center">
-          <h2 class="h3 mb-3">Welcome back to FitU!</h2>
-          <p class="mb-3">Ready to continue your fitness journey?</p>
-          <div class="d-flex gap-3 justify-content-center">
-            <router-link to="/home" class="u-special-btn">
-            Start Using FitU Website
-            </router-link>
-          </div>
-          
-        </div>
-      </div>
-
-      <!-- Not Logged In - Show Sign Up/Login Section -->
-      <!-- Hero content moved into video overlay above -->
-
+      <div class="container mt-4">
       <!-- Starfield wrapper starts: applies from here onwards -->
       <div class="starfield-wrap">
-        <div class="night" aria-hidden="true">
-          <div class="shooting_star"></div>
-          <div class="shooting_star"></div>
-          <div class="shooting_star"></div>
-          <div class="shooting_star"></div>
-          <div class="shooting_star"></div>
-          <div class="shooting_star"></div>
-          <div class="shooting_star"></div>
-          <div class="shooting_star"></div>
-          <div class="shooting_star"></div>
-          <div class="shooting_star"></div>
-          <div class="shooting_star"></div>
-          <div class="shooting_star"></div>
-        </div>
+        
 
       <!-- Stats Section (full-bleed white bar placed above features) -->
       <section class="stats-bleed" v-reveal>
