@@ -3,14 +3,15 @@
     <div class="auth-card">
       <!-- Header -->
       <div class="auth-header">
-        <h1 class="auth-title">Welcome Back</h1>
-        <p class="auth-subtitle">Sign in to your account</p>
+        <h1 >Welcome Back</h1>
+        <p class="u-muted">Sign in to your account</p>
       </div>
 
       <!-- Form -->
       <form @submit.prevent="login" class="auth-form">
         <!-- Email Input -->
         <div class="input-group">
+          Email
           <input
             type="email"
             id="email"
@@ -23,6 +24,7 @@
 
         <!-- Password Input -->
         <div class="input-group">
+          Password
           <input
             type="password"
             id="password"
@@ -37,14 +39,19 @@
         </div>
 
         <!-- Sign In Button -->
-        <button type="submit" class="u-btn u-btn--primary" style="height: 50px; display: flex; justify-content: center;">
+        <button type="submit" class="u-special-btn" style="height: 50px; display: flex; justify-content: center;">
           Sign In
         </button>
 
+        <!-- Inline Error Message -->
+        <p v-if="errorMessage" class="text-center" style="color: #dc3545; margin-top: 0.5rem;">
+          {{ errorMessage }}
+        </p>
+
         <!-- Register Link -->
-        <p class="register-link">
+        <p class="u-muted text-center">
           Don't have an account? 
-          <router-link to="/signup" class="register-text" style="color: black;">Sign up</router-link>
+          <router-link to="/signup" style="color: var(--secondary); text-decoration: underline;">Sign up</router-link>
         </p>
       </form>
     </div>
@@ -65,6 +72,7 @@ export default {
 
     const emailInput = ref('');
     const passwordInput = ref('');
+    const errorMessage = ref('');
 
     const login = async () => {
       try {
@@ -72,11 +80,21 @@ export default {
         router.push('/home');
       } catch (error) {
         console.error(error.code, error.message);
-        alert('Sign In failed.')
+        let message = 'Sign in failed.';
+        if (error.code === 'auth/invalid-email') {
+          message = 'Please enter a valid email address.';
+        } else if (error.code === 'auth/user-not-found') {
+          message = 'No account found with this email.';
+        } else if (error.code === 'auth/wrong-password') {
+          message = 'Incorrect password. Please try again.';
+        } else if (error.code === 'auth/too-many-requests') {
+          message = 'Too many attempts. Please try again later.';
+        }
+        errorMessage.value = message;
       }
     }
 
-    return { emailInput, passwordInput, login };
+    return { emailInput, passwordInput, login, errorMessage };
   }
 }
 </script>
@@ -87,13 +105,11 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: white;
   padding: 2rem;
 }
 
 .auth-card {
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--surface-subtle);
   border-radius: 24px;
   padding: 3rem;
   width: 100%;

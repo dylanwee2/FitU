@@ -3,14 +3,15 @@
     <div class="auth-card">
       <!-- Header -->
       <div class="auth-header">
-        <h1 class="auth-title">Create Account</h1>
-        <p class="auth-subtitle">Sign up to get started</p>
+        <h1>Create Account</h1>
+        <p class="u-muted">Sign up to get started</p>
       </div>
 
       <!-- Form -->
       <form @submit.prevent="signup" class="auth-form">
         <!-- Name Input -->
         <div class="input-group">
+          Full Name
           <input
             type="text"
             id="name"
@@ -23,11 +24,12 @@
 
         <!-- Email Input -->
         <div class="input-group">
+          Email
           <input
             type="email"
             id="email"
             v-model="emailInput"
-            class="auth-input"
+            class="auth-input "
             placeholder="Email Address"
             required
           />
@@ -35,6 +37,7 @@
 
         <!-- Password Input -->
         <div class="input-group">
+          Password
           <input
             type="password"
             id="password"
@@ -49,14 +52,19 @@
         </div>
 
         <!-- Sign Up Button -->
-        <button type="submit" class="u-btn u-btn--primary" style="height: 50px; display: flex; justify-content: center;">
+        <button type="submit" class="u-special-btn" style="height: 50px; display: flex; justify-content: center;">
           Create Account
         </button>
 
+        <!-- Inline Error Message -->
+        <p v-if="errorMessage" class="text-center" style="color: #dc3545; margin-top: 0.5rem;">
+          {{ errorMessage }}
+        </p>
+
         <!-- Login Link -->
-        <p class="register-link">
+        <p class="u-muted text-center">
           Already have an account? 
-          <router-link to="/login" class="register-text" style="color: black;" >Sign in</router-link>
+          <router-link to="/login" class="register-text" style="color:var(--secondary); text-decoration: underline;">Sign in</router-link>
         </p>
       </form>
     </div>
@@ -78,6 +86,7 @@ export default {
     const emailInput = ref('');
     const nameInput = ref('');
     const passwordInput = ref('');
+    const errorMessage = ref('');
 
     const signup = async () => {
       try {
@@ -126,20 +135,21 @@ export default {
         console.error(error.code, error.message);
         
         // Provide more specific error messages
-        let errorMsg = 'Sign Up failed.';
+        let message = 'Sign up failed.';
         if (error.code === 'auth/email-already-in-use') {
-          errorMsg = 'This email is already registered. Please login instead.';
+          message = 'This email is already registered. Please login instead.';
         } else if (error.code === 'auth/weak-password') {
-          errorMsg = 'Password should be at least 6 characters.';
+          message = 'Password should be at least 6 characters.';
         } else if (error.code === 'auth/invalid-email') {
-          errorMsg = 'Please enter a valid email address.';
+          message = 'Please enter a valid email address.';
         }
         
-        alert(errorMsg);
+        // Show inline error message instead of alert
+        errorMessage.value = message;
       }
     }
 
-    return { emailInput, nameInput, passwordInput, signup };
+    return { emailInput, nameInput, passwordInput, signup, errorMessage };
   }
 }
 </script>
@@ -150,15 +160,13 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: white;
   padding: 2rem;
   margin: 0;
   box-sizing: border-box;
 }
 
 .auth-card {
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--surface-subtle);
   border-radius: 24px;
   padding: 3rem;
   width: 100%;
