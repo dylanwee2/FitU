@@ -10,27 +10,46 @@
       <!-- Search Bar -->
       <div class="search-section mb-4">
         <div class="row justify-content-center">
-          <div class="col-md-8 col-lg-6">
+          <div class="col-md-10 col-lg-8">
             <div class="search-container">
+              <span class="search-icon" aria-hidden="true">🔎</span>
               <input
                 v-model="searchQuery"
                 @input="handleSearch"
                 type="text"
                 class="form-control search-input"
-                placeholder="Search exercises by name (e.g., push-up, squat, bicep)..."
+                placeholder="Search by name, target, body part or equipment..."
                 :disabled="loading"
+                aria-label="Search exercises"
               >
+              <button v-if="searchQuery" class="clear-btn" @click="clearSearch" aria-label="Clear search">✕</button>
+            </div>
+
+            <!-- Quick filters -->
+            <div class="filters mt-3">
+              <div class="chip" @click="searchByTarget('chest')">Chest</div>
+              <div class="chip" @click="searchByTarget('back')">Back</div>
+              <div class="chip" @click="searchByBodyPart('legs')">Legs</div>
+              <div class="chip" @click="searchByEquipment('dumbbell')">Dumbbell</div>
+              <div class="chip" @click="searchByEquipment('barbell')">Barbell</div>
+              <div class="chip" @click="searchByEquipment('bodyweight')">Bodyweight</div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Loading State -->
-      <div v-if="loading" class="loading-section text-center py-5">
-        <div class="spinner-border text-primary mb-3" role="status">
-          <span class="visually-hidden">Loading...</span>
+      <div v-if="loading" class="loading-section py-4">
+        <div class="row g-4">
+          <div v-for="n in 8" :key="n" class="col-sm-6 col-md-4 col-lg-3">
+            <div class="skeleton-card">
+              <div class="skeleton media"></div>
+              <div class="skeleton line"></div>
+              <div class="skeleton line short"></div>
+              <div class="skeleton pill"></div>
+            </div>
+          </div>
         </div>
-        <p class="loading-text">Loading exercises...</p>
       </div>
 
       <!-- Error State -->
@@ -419,14 +438,43 @@ onMounted(() => {
   transition: all 0.3s ease;
 }
 
+.search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: .7;
+}
+
+.clear-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: 0;
+  color: #bbb;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.filters { display: flex; flex-wrap: wrap; gap: .5rem; }
+.chip {
+  padding: .4rem .75rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-subtle);
+  color: var(--text);
+  font-size: .9rem;
+  cursor: pointer;
+  transition: transform .15s ease, background .15s ease;
+}
+.chip:hover { transform: translateY(-1px); background: color-mix(in srgb, var(--surface-subtle) 85%, #fff 15%); }
+
 
 /* Loading */
 .loading-section {
-  min-height: 300px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  min-height: 260px;
 }
 
 .loading-text {
@@ -652,6 +700,14 @@ onMounted(() => {
 .exercise-actions {
   padding: 0 1.5rem 1.5rem;
 }
+
+/* Skeletons */
+.skeleton-card { border-radius: 12px; overflow: hidden; background: var(--surface-subtle); border: 1px solid var(--border-subtle); }
+.skeleton.media { height: 180px; background: linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,.1), rgba(255,255,255,.06)); background-size: 200% 100%; animation: shimmer 1.2s infinite; }
+.skeleton.line { height: 16px; margin: 12px; border-radius: 6px; background: linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,.1), rgba(255,255,255,.06)); background-size: 200% 100%; animation: shimmer 1.2s infinite; }
+.skeleton.line.short { width: 60%; }
+.skeleton.pill { height: 28px; margin: 12px; width: 40%; border-radius: 999px; background: linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,.1), rgba(255,255,255,.06)); background-size: 200% 100%; animation: shimmer 1.2s infinite; }
+@keyframes shimmer { 0% { background-position: 0 0; } 100% { background-position: -200% 0; } }
 
 .cart-toggle-btn {
   width: 100%;
