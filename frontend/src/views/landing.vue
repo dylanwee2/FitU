@@ -164,11 +164,10 @@
       </div> <!-- end starfield-wrap -->
 
     </div>
-  </div>
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import BackgroundGradientAnimation from '../components/BackgroundGradientAnimation.vue'
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { useRouter } from 'vue-router'
