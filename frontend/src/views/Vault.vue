@@ -90,7 +90,7 @@
                     :key="muscle"
                     class="badge bg-primary me-1 mb-1"
                   >
-                    {{ muscle }}
+                    {{ formatMuscleGroup(muscle) }}
                   </span>
                 </div>
               </div>
@@ -123,9 +123,9 @@
                           <h6 class="exercise-name mb-1" style="text-transform: capitalize;">{{ exercise.name }}</h6>
                           <p class="exercise-target mb-1 u-muted">{{ exercise.target }}</p>
                           <div class="exercise-badges">
-                            <span class="badge target-muscle-badge me-1">{{ exercise.target }}</span>
-                            <span class="badge body-part-badge me-1">{{ exercise.bodyPart }}</span>
-                            <span class="badge equipment-badge">{{ exercise.equipment }}</span>
+                            <span class="badge target-muscle-badge me-1 clickable-badge">{{ formatTarget(exercise.target) }}</span>
+                            <span class="badge body-part-badge me-1 clickable-badge">{{ formatBodyPart(exercise.bodyPart) }}</span>
+                            <span class="badge equipment-badge clickable-badge">{{ formatEquipment(exercise.equipment) }}</span>
                           </div>
                         </div>
                       </div>
@@ -1034,6 +1034,48 @@ watch(() => sortBy.value, () => {
   setupRealtimeListener()
 })
 
+// Format functions to clean up and capitalize text
+const formatTarget = (target) => {
+  if (!target) return 'Full Body'
+  if (Array.isArray(target)) {
+    return target.map(item => capitalizeFirstLetter(item)).join(', ')
+  }
+  return capitalizeFirstLetter(target.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', '))
+}
+
+const formatBodyPart = (bodyPart) => {
+  if (!bodyPart) return 'General'
+  if (Array.isArray(bodyPart)) {
+    return bodyPart.map(item => capitalizeFirstLetter(item)).join(', ')
+  }
+  return capitalizeFirstLetter(bodyPart.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', '))
+}
+
+const formatEquipment = (equipment) => {
+  if (!equipment) return 'Bodyweight'
+  if (Array.isArray(equipment)) {
+    return equipment.map(item => capitalizeFirstLetter(item)).join(', ')
+  }
+  return capitalizeFirstLetter(equipment.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', '))
+}
+
+const formatMuscleGroup = (muscleGroup) => {
+  if (!muscleGroup) return 'General'
+  if (Array.isArray(muscleGroup)) {
+    return muscleGroup.map(item => capitalizeFirstLetter(item)).join(', ')
+  }
+  return capitalizeFirstLetter(muscleGroup.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', '))
+}
+
+const capitalizeFirstLetter = (text) => {
+  if (!text) return ''
+  return text
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
+
 // Lifecycle
 onMounted(() => {
   loadWorkouts()
@@ -1520,58 +1562,101 @@ onUnmounted(() => {
   }
 }
 
-/* Color-coded badge styles */
-.target-muscle-badge {
-  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
-  color: white !important;
-  border: none;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
-  font-weight: 500;
-  transition: all 0.3s ease;
+/* Exercise Badge Styling - Matching Exercise Detail */
+.exercise-badges {
+  margin-bottom: 1rem;
+}
+
+.clickable-badge {
   cursor: pointer;
-}
-
-.target-muscle-badge:hover {
-  background: linear-gradient(135deg, #c0392b 0%, #a93226 100%) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
-}
-
-.body-part-badge {
-  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
-  color: white !important;
-  border: none;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
-  font-weight: 500;
   transition: all 0.3s ease;
-  cursor: pointer;
+  position: relative;
+  overflow: hidden;
 }
 
-.body-part-badge:hover {
-  background: linear-gradient(135deg, #2980b9 0%, #21618c 100%) !important;
+.clickable-badge:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-.equipment-badge {
-  background: linear-gradient(135deg, #27ae60 0%, #229954 100%) !important;
-  color: white !important;
-  border: none;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
+.clickable-badge:active {
+  transform: translateY(0);
+}
+
+.clickable-badge.bg-primary:hover {
+  background-color: #0056b3 !important;
+}
+
+.clickable-badge.bg-secondary:hover {
+  background-color: #495057 !important;
+}
+
+/* Nuanced charcoal pill theme for badges with color-coded dots */
+.exercise-badges .badge {
+  position: relative;
+  background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
+  color: #e9e9e9 !important;
+  border: 1px solid rgba(201, 162, 39, 0.28) !important;
   border-radius: 12px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  padding: 0.25rem 0.6rem 0.25rem 1.2rem; /* extra space between dot and text */
+  width: auto; /* let content decide */
+  max-width: 100%;
+  justify-self: start; /* prevent grid stretch */
+  white-space: nowrap; /* single line */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.25);
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+  display: inline-block;
 }
 
-.equipment-badge:hover {
-  background: linear-gradient(135deg, #229954 0%, #1e8449 100%) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+@media (max-width: 420px) {
+  .exercise-badges {
+    grid-template-columns: 1fr;
+  }
+}
+
+.exercise-badges .badge:hover {
+  transform: none;
+  border-color: rgba(201, 162, 39, 0.42) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.28);
+}
+
+.exercise-badges .badge::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 40%);
+  pointer-events: none;
+}
+
+.exercise-badges .badge::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.target-muscle-badge::before { 
+  background: #e74c3c; 
+  box-shadow: 0 0 2px rgba(231, 76, 60, 0.28); 
+}
+
+.body-part-badge::before { 
+  background: #3498db; 
+  box-shadow: 0 0 2px rgba(52, 152, 219, 0.28); 
+}
+
+.equipment-badge::before { 
+  background: #27ae60; 
+  box-shadow: 0 0 2px rgba(39, 174, 96, 0.28); 
 }
 </style>
