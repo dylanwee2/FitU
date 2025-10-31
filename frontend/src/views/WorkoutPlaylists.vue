@@ -132,19 +132,21 @@
                 <div class="playlist-exercises">
                   <div v-if="playlist.exercises && playlist.exercises.length > 0" class="exercise-preview">
                     <div class="exercise-tags">
-                      <span 
-                        v-for="exercise in playlist.exercises.slice(0, 3)" 
-                        :key="exercise.id"
-                        class="exercise-tag"
-                      >
-                        {{ exercise.name }}
-                      </span>
-                      <span 
-                        v-if="playlist.exercises.length > 3" 
-                        class="exercise-tag more-exercises"
-                      >
-                        +{{ playlist.exercises.length - 3 }} more
-                      </span>
+                      <ul class="exercise-list">
+                        <li 
+                          v-for="exercise in playlist.exercises.slice(0, 3)" 
+                          :key="exercise.id"
+                          class="exercise-tag"
+                        >
+                          {{ formatExerciseName(exercise.name) }}
+                        </li>
+                        <li 
+                          v-if="playlist.exercises.length > 3" 
+                          class="exercise-tag more-exercises"
+                        >
+                          +{{ playlist.exercises.length - 3 }} more
+                        </li>
+                      </ul>
                     </div>
                   </div>
                   <div v-else class="no-exercises">
