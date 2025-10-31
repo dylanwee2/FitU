@@ -118,7 +118,7 @@
             </div>
             <div class="stat">
               <span class="stat-label">Est. Duration:</span>
-              <span class="stat-value">{{ cartTotalDurationFormatted }}</span>
+              <span class="stat-value">{{ Math.round(cartTotalDuration) }} min</span>
             </div>
             <div class="stat">
               <span class="stat-label">Muscle Groups:</span>
@@ -205,6 +205,43 @@
       </div>
     </div>
 
+    <!-- Clear Cart Confirmation Modal -->
+    <div v-if="showClearCartConfirm" class="modal-overlay" @click.self="cancelClearCart">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Clear Workout Cart?</h5>
+          <button @click="cancelClearCart" class="btn-close-white btn-close"></button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="clear-cart-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <p class="clear-cart-message">
+            Are you sure you want to clear your workout cart? This will remove all <strong>{{ cartItemCount }}</strong> exercise{{ cartItemCount !== 1 ? 's' : '' }} from your cart.
+          </p>
+          <p class="clear-cart-warning u-muted">
+            This action cannot be undone.
+          </p>
+        </div>
+        
+        <div class="modal-footer">
+          <button 
+            @click="cancelClearCart"
+            class="u-btn u-btn--secondary"
+          >
+            Cancel
+          </button>
+          <button 
+            @click="confirmClearCart"
+            class="u-btn u-btn--danger"
+          >
+            Clear Cart
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Save Workout Modal -->
     <div v-if="showSavePlaylistModal" class="modal-overlay" @click.self="showSavePlaylistModal = false">
       <div class="modal-content">
@@ -243,7 +280,7 @@
             <h6>Preview:</h6>
             <div class="preview-stats">
               <span>{{ cartItemCount }} exercises</span>
-              <span>{{ cartTotalDurationFormatted }}</span>
+              <span>{{ Math.round(cartTotalDuration) }} min</span>
               <span>{{ cartMuscleGroups.join(', ') }}</span>
             </div>
           </div>
@@ -279,6 +316,7 @@ const cartStore = useWorkoutCartStore()
 // Local state
 const isOpen = ref(false)
 const showSavePlaylistModal = ref(false)
+const showClearCartConfirm = ref(false)
 const newPlaylistName = ref('')
 const newPlaylistDescription = ref('')
 const showEquipmentSection = ref(false)
@@ -287,7 +325,6 @@ const showEquipmentSection = ref(false)
 const cartItems = computed(() => cartStore.cartItems)
 const cartItemCount = computed(() => cartStore.cartItemCount)
 const cartTotalDuration = computed(() => cartStore.cartTotalDuration)
-const cartTotalDurationFormatted = computed(() => cartStore.cartTotalDurationFormatted)
 const cartMuscleGroups = computed(() => cartStore.cartMuscleGroups)
 const isAuthenticated = computed(() => cartStore.isAuthenticated)
 
@@ -327,9 +364,17 @@ const updateCartItem = (exerciseId, updates) => {
 }
 
 const clearCart = () => {
-  if (confirm('Are you sure you want to clear your workout cart?')) {
-    cartStore.clearCart()
-  }
+  showClearCartConfirm.value = true
+}
+
+const confirmClearCart = () => {
+  cartStore.clearCart()
+  showClearCartConfirm.value = false
+  isOpen.value = false
+}
+
+const cancelClearCart = () => {
+  showClearCartConfirm.value = false
 }
 
 const savePlaylist = async () => {
@@ -376,31 +421,193 @@ const capitalizeFirstLetter = (text) => {
 
 // Equipment icon mapping
 const getEquipmentIcon = (equipment) => {
+  if (!equipment) return '/images/equipment/default.svg'
+  
+  // Normalize equipment name: lowercase, trim, and handle variations
+  let normalized = equipment.toLowerCase().trim()
+  
+  // Handle variations and synonyms - check compound names first
+  // "ez barbell", "ez bar", "ez-bar", "ez barbell" -> "ez-bar"
+  if ((normalized.includes('ez') && (normalized.includes('bar') || normalized.includes('barbell'))) || normalized === 'ez-bar') {
+    normalized = 'ez-bar'
+  }
+  // "trap bar" or "trap-bar" -> "trap-bar"
+  else if (normalized.includes('trap') && normalized.includes('bar')) {
+    normalized = 'trap-bar'
+  }
+  // "resistance band" or "resistance-band" -> "resistance-band"
+  else if (normalized.includes('resistance') && normalized.includes('band')) {
+    normalized = 'resistance-band'
+  }
+  // "exercise band" -> "exercise-band"
+  else if (normalized.includes('exercise') && normalized.includes('band')) {
+    normalized = 'exercise-band'
+  }
+  // "mini band" -> "mini-band"
+  else if ((normalized.includes('mini') && normalized.includes('band')) || normalized === 'mini-band') {
+    normalized = 'mini-band'
+  }
+  // "pull-up bar", "pull up bar", or "pullup-bar" -> "pullup-bar"
+  else if ((normalized.includes('pull') && normalized.includes('up') && normalized.includes('bar')) || 
+           (normalized.includes('pullup') && normalized.includes('bar'))) {
+    normalized = 'pullup-bar'
+  }
+  // "medicine ball" or "medicine-ball" -> "medicine-ball"
+  else if (normalized.includes('medicine') && normalized.includes('ball')) {
+    normalized = 'medicine-ball'
+  }
+  // "yoga mat" or "yoga-mat" -> "yoga-mat"
+  else if (normalized.includes('yoga') && normalized.includes('mat')) {
+    normalized = 'yoga-mat'
+  }
+  // "stability ball" or "stability-ball" -> "stability-ball"
+  else if (normalized.includes('stability') && normalized.includes('ball')) {
+    normalized = 'stability-ball'
+  }
+  // "foam roller" or "foam-roller" -> "foam-roller"
+  else if (normalized.includes('foam') && normalized.includes('roller')) {
+    normalized = 'foam-roller'
+  }
+  // "weight plate" or "weight-plate" -> "weight-plate"
+  else if (normalized.includes('weight') && normalized.includes('plate')) {
+    normalized = 'weight-plate'
+  }
+  // "weighted vest" -> "weighted-vest"
+  else if (normalized.includes('weighted') && normalized.includes('vest')) {
+    normalized = 'weighted-vest'
+  }
+  // "weighted ball" -> "weighted-ball" (different from medicine ball)
+  else if (normalized.includes('weighted') && normalized.includes('ball')) {
+    normalized = 'weighted-ball'
+  }
+  // "weighted dumbbell" -> "weighted-dumbbell"
+  else if (normalized.includes('weighted') && normalized.includes('dumbbell')) {
+    normalized = 'weighted-dumbbell'
+  }
+  // "weighted bar" or "weighted barbell" -> "weighted-bar"
+  else if (normalized.includes('weighted') && (normalized.includes('bar') || normalized.includes('barbell'))) {
+    normalized = 'weighted-bar'
+  }
+  // "suspension trainer" or "suspension-trainer" -> "suspension-trainer"
+  else if (normalized.includes('suspension') && normalized.includes('trainer')) {
+    normalized = 'suspension-trainer'
+  }
+  // "body weight", "bodyweight", or "body-weight" -> "bodyweight"
+  else if ((normalized.includes('body') && normalized.includes('weight')) || normalized === 'bodyweight') {
+    normalized = 'bodyweight'
+  }
+  // Machine-specific mappings
+  // "smith machine" or "smith" -> "smith-machine"
+  else if (normalized.includes('smith')) {
+    normalized = 'smith-machine'
+  }
+  // "leg press" or "leg press machine" -> "leg-press-machine"
+  else if (normalized.includes('leg') && normalized.includes('press')) {
+    normalized = 'leg-press-machine'
+  }
+  // "treadmill" -> "treadmill"
+  else if (normalized.includes('treadmill')) {
+    normalized = 'treadmill'
+  }
+  // "stationary bike" or "bike" -> "stationary-bike"
+  else if (normalized.includes('stationary') && normalized.includes('bike')) {
+    normalized = 'stationary-bike'
+  }
+  else if (normalized === 'bike') {
+    normalized = 'stationary-bike'
+  }
+  // "lat pulldown" or "lat pulldown machine" -> "lat-pulldown"
+  else if (normalized.includes('lat') && normalized.includes('pulldown')) {
+    normalized = 'lat-pulldown'
+  }
+  // "chest press" or "chest press machine" -> "chest-press"
+  else if (normalized.includes('chest') && normalized.includes('press')) {
+    normalized = 'chest-press'
+  }
+  // "seated row" or "seated row machine" -> "seated-row"
+  else if (normalized.includes('seated') && normalized.includes('row')) {
+    normalized = 'seated-row'
+  }
+  // "cable cross" or "cable crossover" -> "cable-cross"
+  else if (normalized.includes('cable') && (normalized.includes('cross') || normalized.includes('crossover'))) {
+    normalized = 'cable-cross'
+  }
+  // "hack squat" or "hack squat machine" -> "hack-squat"
+  else if (normalized.includes('hack') && normalized.includes('squat')) {
+    normalized = 'hack-squat'
+  }
+  // "leg curl" or "leg curl machine" -> "leg-curl"
+  else if (normalized.includes('leg') && normalized.includes('curl')) {
+    normalized = 'leg-curl'
+  }
+  // "leg extension" or "leg extension machine" -> "leg-extension"
+  else if (normalized.includes('leg') && normalized.includes('extension')) {
+    normalized = 'leg-extension'
+  }
+  // "preacher curl" or "preacher curl machine" -> "preacher-curl"
+  else if (normalized.includes('preacher') && normalized.includes('curl')) {
+    normalized = 'preacher-curl'
+  }
+  // "shoulder press" or "shoulder press machine" -> "shoulder-press"
+  else if (normalized.includes('shoulder') && normalized.includes('press')) {
+    normalized = 'shoulder-press'
+  }
+  // "leverage machine" or "leverage" -> "leverage-machine"
+  else if (normalized.includes('leverage')) {
+    normalized = 'leverage-machine'
+  }
+  // Replace remaining spaces with hyphens for consistency
+  else {
+    normalized = normalized.replace(/\s+/g, '-').replace(/-+/g, '-')
+  }
+  
+  // Map normalized names to icon files
   const equipmentIcons = {
-    'body weight': '/images/equipment/bodyweight.svg',
+    'bodyweight': '/images/equipment/bodyweight.svg',
+    'body-weight': '/images/equipment/bodyweight.svg',
     'dumbbell': '/images/equipment/dumbbell.svg',
     'barbell': '/images/equipment/barbell.svg',
     'kettlebell': '/images/equipment/kettlebell.svg',
-    'resistance band': '/images/equipment/default.svg',
-    'cable': '/images/equipment/default.svg',
-    'machine': '/images/equipment/default.svg',
-    'bench': '/images/equipment/default.svg',
-    'pull-up bar': '/images/equipment/default.svg',
-    'medicine ball': '/images/equipment/default.svg',
-    'trx': '/images/equipment/default.svg',
-    'yoga mat': '/images/equipment/default.svg',
-    'stability ball': '/images/equipment/default.svg',
-    'foam roller': '/images/equipment/default.svg',
-    'weight plate': '/images/equipment/default.svg',
-    'ez bar': '/images/equipment/default.svg',
-    'trap bar': '/images/equipment/default.svg',
-    'suspension trainer': '/images/equipment/default.svg',
-    'box': '/images/equipment/default.svg',
-    'step': '/images/equipment/default.svg'
+    'resistance-band': '/images/equipment/resistance-band.svg',
+    'exercise-band': '/images/equipment/exercise-band.svg',
+    'mini-band': '/images/equipment/mini-band.svg',
+    'cable': '/images/equipment/cable.svg',
+    'machine': '/images/equipment/machine.svg',
+    'bench': '/images/equipment/bench.svg',
+    'pullup-bar': '/images/equipment/pullup-bar.svg',
+    'medicine-ball': '/images/equipment/medicine-ball.svg',
+    'trx': '/images/equipment/trx.svg',
+    'yoga-mat': '/images/equipment/yoga-mat.svg',
+    'stability-ball': '/images/equipment/stability-ball.svg',
+    'foam-roller': '/images/equipment/foam-roller.svg',
+    'weight-plate': '/images/equipment/weight-plate.svg',
+    'weighted-vest': '/images/equipment/weighted-vest.svg',
+    'weighted-ball': '/images/equipment/weighted-ball.svg',
+    'weighted-dumbbell': '/images/equipment/weighted-dumbbell.svg',
+    'weighted-bar': '/images/equipment/weighted-bar.svg',
+    'ez-bar': '/images/equipment/ez-bar.svg',
+    'trap-bar': '/images/equipment/trap-bar.svg',
+    'suspension-trainer': '/images/equipment/suspension-trainer.svg',
+    'box': '/images/equipment/box.svg',
+    'step': '/images/equipment/step.svg',
+    // Machine icons
+    'smith-machine': '/images/equipment/smith-machine.svg',
+    'leg-press-machine': '/images/equipment/leg-press-machine.svg',
+    'treadmill': '/images/equipment/treadmill.svg',
+    'stationary-bike': '/images/equipment/stationary-bike.svg',
+    'lat-pulldown': '/images/equipment/lat-pulldown.svg',
+    'chest-press': '/images/equipment/chest-press.svg',
+    'seated-row': '/images/equipment/seated-row.svg',
+    'cable-cross': '/images/equipment/cable-cross.svg',
+    'hack-squat': '/images/equipment/hack-squat.svg',
+    'leg-curl': '/images/equipment/leg-curl.svg',
+    'leg-extension': '/images/equipment/leg-extension.svg',
+    'preacher-curl': '/images/equipment/preacher-curl.svg',
+    'shoulder-press': '/images/equipment/shoulder-press.svg',
+    'leverage-machine': '/images/equipment/leverage-machine.svg'
   }
   
-  const normalizedEquipment = equipment.toLowerCase().trim()
-  return equipmentIcons[normalizedEquipment] || '/images/equipment/default.svg'
+  return equipmentIcons[normalized] || '/images/equipment/default.svg'
 }
 
 const handleEquipmentIconError = (event) => {
@@ -795,6 +1002,38 @@ const toggleEquipmentSection = () => {
   display: flex;
   gap: 0.5rem;
   justify-content: flex-end;
+}
+
+/* Clear Cart Confirmation Modal Styles */
+.clear-cart-icon {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.clear-cart-icon i {
+  font-size: 3rem;
+  color: #dc3545;
+  opacity: 0.9;
+}
+
+.clear-cart-message {
+  text-align: center;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+  color: var(--text);
+}
+
+.clear-cart-message strong {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.clear-cart-warning {
+  text-align: center;
+  font-size: 0.875rem;
+  font-style: italic;
+  margin-bottom: 0;
 }
 
 /* Responsive */

@@ -1,8 +1,16 @@
 <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="32" height="32" rx="4" fill="#f8f9fa"/>
-  <rect x="2" y="12" width="4" height="8" rx="2" fill="#6c757d"/>
-  <rect x="26" y="12" width="4" height="8" rx="2" fill="#6c757d"/>
+  <defs>
+    <linearGradient id="dbGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4facfe;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00f2fe;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="4" fill="#0f172a"/>
+  <rect x="2" y="12" width="4" height="8" rx="2" fill="url(#dbGrad)"/>
+  <rect x="26" y="12" width="4" height="8" rx="2" fill="url(#dbGrad)"/>
   <rect x="6" y="14" width="20" height="4" rx="2" fill="#495057"/>
   <circle cx="8" cy="16" r="1" fill="#f8f9fa"/>
   <circle cx="24" cy="16" r="1" fill="#f8f9fa"/>
+  <rect x="3" y="13" width="2" height="2" rx="0.5" fill="#1e293b"/>
+  <rect x="27" y="13" width="2" height="2" rx="0.5" fill="#1e293b"/>
 </svg>

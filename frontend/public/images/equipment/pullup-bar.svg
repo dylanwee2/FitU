@@ -1,0 +1,17 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pullupGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="4" fill="#0f172a"/>
+  <rect x="5" y="4" width="22" height="3" rx="1.5" fill="url(#pullupGrad)" opacity="0.9"/>
+  <line x1="2" y1="5.5" x2="30" y2="5.5" stroke="#64748b" stroke-width="1"/>
+  <path d="M8 12 Q16 8 24 12" stroke="url(#pullupGrad)" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.8"/>
+  <path d="M10 16 Q16 12 22 16" stroke="url(#pullupGrad)" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.6"/>
+  <circle cx="16" cy="10" r="2" fill="#334155"/>
+</svg>
+
+
+
