@@ -59,6 +59,11 @@
           Create Account
         </button>
 
+        <!-- Inline Success Message -->
+        <p v-if="successMessage" class="text-center" style="color: #28a745; margin-top: 0.5rem;">
+          {{ successMessage }}
+        </p>
+
         <!-- Inline Error Message -->
         <p v-if="errorMessage" class="text-center" style="color: #dc3545; margin-top: 0.5rem;">
           {{ errorMessage }}
@@ -67,47 +72,9 @@
         <!-- Login Link -->
         <p class="u-muted text-center">
           Already have an account? 
-          <router-link to="/login" class="register-text" style="color:var(--secondary); text-decoration: underline;">Sign in</router-link>
+          <router-link to="/login" class="register-text" style="color:var(--text); text-decoration: underline;">Sign in</router-link>
         </p>
       </form>
-    </div>
-
-    <!-- Success Modal -->
-    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content u-card">
-          <div class="modal-header border-0">
-            <h5 class="modal-title text-success" id="successModalLabel">Account Created Successfully!</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <p class="mb-0">Your account has been created. You will be redirected to the login page.</p>
-          </div>
-          <div class="modal-footer border-0">
-            <button type="button" class="u-btn u-btn--primary" data-bs-dismiss="modal" @click="goToLogin">
-              Go to Login
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Error Modal -->
-    <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content u-card">
-          <div class="modal-header border-0">
-            <h5 class="modal-title text-danger" id="errorModalLabel">Sign Up Failed</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <p class="mb-0">{{ errorMessage }}</p>
-          </div>
-          <div class="modal-footer border-0">
-            <button type="button" class="u-btn u-btn--secondary" data-bs-dismiss="modal">Try Again</button>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -118,7 +85,6 @@ import { useRouter } from 'vue-router';
 import { db } from "../firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { Modal } from 'bootstrap';
 
 export default {
   name: 'Signup',
@@ -129,6 +95,7 @@ export default {
     const nameInput = ref('');
     const passwordInput = ref('');
     const errorMessage = ref('');
+    const successMessage = ref('');
 
     const signup = async () => {
       try {
@@ -172,8 +139,11 @@ export default {
         });
 
         // Show success modal
-        const modal = new Modal(document.getElementById('successModal'));
-        modal.show();
+        // Redirect to login page after successful signup
+        successMessage.value = 'Account created successfully! Redirecting to login...';
+        setTimeout(() => {
+          router.push('/login');
+        }, 2000);
       } catch (error) {
         console.error(error.code, error.message);
         
@@ -188,9 +158,8 @@ export default {
           errorMessage.value = 'Sign Up failed. Please try again.';
         }
         
-        // Show error modal
-        const modal = new Modal(document.getElementById('errorModal'));
-        modal.show();
+        // Display error message inline (no modal)
+        console.error('Signup error:', errorMessage.value);
       }
     }
 
@@ -198,7 +167,7 @@ export default {
       router.push('/login');
     }
 
-    return { emailInput, nameInput, passwordInput, errorMessage, signup, goToLogin };
+    return { emailInput, nameInput, passwordInput, errorMessage, successMessage, signup, goToLogin };
   }
 }
 </script>
@@ -223,10 +192,11 @@ export default {
   object-fit: cover;
   z-index: 0;
   pointer-events: none;
+  filter: brightness(0.4) contrast(1.1);
 }
 
 
-.auth-container { }
+
 
 .auth-card {
   width: 100%;
