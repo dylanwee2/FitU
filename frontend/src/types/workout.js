@@ -23,6 +23,19 @@ export const calculateWorkoutDuration = (exercises) => {
   }, 0);
 };
 
+// Format duration as "Xh Ym" or "Ym"
+export const formatDuration = (totalMinutes) => {
+  if (!totalMinutes || isNaN(totalMinutes)) return '0m';
+  
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = Math.round(totalMinutes % 60);
+  
+  if (hours > 0) {
+    return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+  }
+  return `${minutes}m`;
+};
+
 export const extractMuscleGroups = (exercises) => {
   const muscles = new Set();
   exercises.forEach(exercise => {

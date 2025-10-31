@@ -61,7 +61,7 @@
             </div>
             <div class="col-auto" v-if="searchQuery">
               <button @click="clearSearch" class="btn btn-outline-secondary btn-sm">
-                <i class="fas fa-times me-1"></i>Clear Search
+                Clear Search
               </button>
             </div>
           </div>

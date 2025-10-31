@@ -118,7 +118,7 @@
             </div>
             <div class="stat">
               <span class="stat-label">Est. Duration:</span>
-              <span class="stat-value">{{ Math.round(cartTotalDuration) }} min</span>
+              <span class="stat-value">{{ cartTotalDurationFormatted }}</span>
             </div>
             <div class="stat">
               <span class="stat-label">Muscle Groups:</span>
@@ -243,7 +243,7 @@
             <h6>Preview:</h6>
             <div class="preview-stats">
               <span>{{ cartItemCount }} exercises</span>
-              <span>{{ Math.round(cartTotalDuration) }} min</span>
+              <span>{{ cartTotalDurationFormatted }}</span>
               <span>{{ cartMuscleGroups.join(', ') }}</span>
             </div>
           </div>
@@ -287,6 +287,7 @@ const showEquipmentSection = ref(false)
 const cartItems = computed(() => cartStore.cartItems)
 const cartItemCount = computed(() => cartStore.cartItemCount)
 const cartTotalDuration = computed(() => cartStore.cartTotalDuration)
+const cartTotalDurationFormatted = computed(() => cartStore.cartTotalDurationFormatted)
 const cartMuscleGroups = computed(() => cartStore.cartMuscleGroups)
 const isAuthenticated = computed(() => cartStore.isAuthenticated)
 
