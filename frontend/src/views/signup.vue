@@ -70,7 +70,45 @@
           <router-link to="/login" class="register-text" style="color:var(--secondary); text-decoration: underline;">Sign in</router-link>
         </p>
       </form>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content u-card">
+          <div class="modal-header border-0">
+            <h5 class="modal-title text-success" id="successModalLabel">Account Created Successfully!</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p class="mb-0">Your account has been created. You will be redirected to the login page.</p>
+          </div>
+          <div class="modal-footer border-0">
+            <button type="button" class="u-btn u-btn--primary" data-bs-dismiss="modal" @click="goToLogin">
+              Go to Login
+            </button>
+          </div>
+        </div>
       </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content u-card">
+          <div class="modal-header border-0">
+            <h5 class="modal-title text-danger" id="errorModalLabel">Sign Up Failed</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p class="mb-0">{{ errorMessage }}</p>
+          </div>
+          <div class="modal-footer border-0">
+            <button type="button" class="u-btn u-btn--secondary" data-bs-dismiss="modal">Try Again</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -80,6 +118,7 @@ import { useRouter } from 'vue-router';
 import { db } from "../firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { Modal } from 'bootstrap';
 
 export default {
   name: 'Signup',
@@ -132,27 +171,34 @@ export default {
           updatedAt: serverTimestamp()
         });
 
-        // Navigate to login page
-        router.push('/login');
+        // Show success modal
+        const modal = new Modal(document.getElementById('successModal'));
+        modal.show();
       } catch (error) {
         console.error(error.code, error.message);
         
         // Provide more specific error messages
-        let message = 'Sign up failed.';
         if (error.code === 'auth/email-already-in-use') {
-          message = 'This email is already registered. Please login instead.';
+          errorMessage.value = 'This email is already registered. Please login instead.';
         } else if (error.code === 'auth/weak-password') {
-          message = 'Password should be at least 6 characters.';
+          errorMessage.value = 'Password should be at least 6 characters.';
         } else if (error.code === 'auth/invalid-email') {
-          message = 'Please enter a valid email address.';
+          errorMessage.value = 'Please enter a valid email address.';
+        } else {
+          errorMessage.value = 'Sign Up failed. Please try again.';
         }
         
-        // Show inline error message instead of alert
-        errorMessage.value = message;
+        // Show error modal
+        const modal = new Modal(document.getElementById('errorModal'));
+        modal.show();
       }
     }
 
-    return { emailInput, nameInput, passwordInput, signup, errorMessage };
+    const goToLogin = () => {
+      router.push('/login');
+    }
+
+    return { emailInput, nameInput, passwordInput, errorMessage, signup, goToLogin };
   }
 }
 </script>

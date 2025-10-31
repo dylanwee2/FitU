@@ -6,39 +6,24 @@
       <div v-if="loading">Loading...</div>
       <div v-else-if="error">Error: {{ error }}</div>
       <div v-else>
-        <div class="row g-4 align-items-start">
-          <!-- Left: all text/content -->
-          <div class="col-md-6">
-            <div class="exercise-header mb-3">
-              <div class="d-flex justify-content-between align-items-start">
-                <div>
-                  <h1>{{ exercise.name }}</h1>
-                  <div class="exercise-badges mb-3">
-                    <span class="badge bg-primary me-2">{{ exercise.target }}</span>
-                    <span class="badge bg-secondary me-2">{{ exercise.bodyPart }}</span>
-                    <span class="badge bg-info">{{ exercise.equipment }}</span>
-                  </div>
-                </div>
-                <div class="exercise-actions d-md-none">
-                  <button
-                    @click="toggleCartDetail"
-                    class="u-btn"
-                    :class="isInCart ? 'u-btn--danger' : 'u-btn--primary'"
-                    :title="isInCart ? 'Remove from workout cart' : 'Add to workout cart'"
-                  >
-                    {{ isInCart ? 'Remove from Cart' : 'Add to Cart' }}
-                  </button>
-                </div>
+        <div class="exercise-header mb-4">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <h1>{{ exercise.name }}</h1>
+              <div class="exercise-badges mb-3">
+                <span class="badge target-muscle-badge me-1">{{ formatTarget(exercise.target) }}</span>
+                <span class="badge body-part-badge me-1">{{ formatBodyPart(exercise.bodyPart) }}</span>
+                <span class="badge equipment-badge">{{ formatEquipment(exercise.equipment) }}</span>
               </div>
             </div>
             <div class="exercise-details u-card mb-3">
               <h5>Exercise Information</h5>
               <ul class="list-unstyled">
-                <li><strong>Primary Target:</strong> {{ exercise.target }}</li>
-                <li><strong>Body Part:</strong> {{ exercise.bodyPart }}</li>
-                <li><strong>Equipment:</strong> {{ exercise.equipment }}</li>
+                <li><strong>Primary Target:</strong> {{ formatTarget(exercise.target) }}</li>
+                <li><strong>Body Part:</strong> {{ formatBodyPart(exercise.bodyPart) }}</li>
+                <li><strong>Equipment:</strong> {{ formatEquipment(exercise.equipment) }}</li>
                 <li v-if="exercise.secondaryMuscles && exercise.secondaryMuscles.length">
-                  <strong>Secondary Muscles:</strong> {{ exercise.secondaryMuscles.join(', ') }}
+                  <strong>Secondary Muscles:</strong> {{ exercise.secondaryMuscles.map(muscle => capitalizeFirstLetter(muscle)).join(', ') }}
                 </li>
               </ul>
             </div>
@@ -146,14 +131,38 @@ const addToCart = () => {
   }
 }
 
-// Toggle add/remove from cart on detail page
-const toggleCartDetail = () => {
-  if (!exercise.value || !exercise.value.id) return
-  if (isInCart.value) {
-    cartStore.removeFromCart(exercise.value.id)
-  } else {
-    cartStore.addToCart(exercise.value)
+// Format functions to clean up and capitalize text
+const formatTarget = (target) => {
+  if (!target) return 'Full Body'
+  if (Array.isArray(target)) {
+    return target.map(item => capitalizeFirstLetter(item)).join(', ')
   }
+  return capitalizeFirstLetter(target.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', '))
+}
+
+const formatBodyPart = (bodyPart) => {
+  if (!bodyPart) return 'General'
+  if (Array.isArray(bodyPart)) {
+    return bodyPart.map(item => capitalizeFirstLetter(item)).join(', ')
+  }
+  return capitalizeFirstLetter(bodyPart.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', '))
+}
+
+const formatEquipment = (equipment) => {
+  if (!equipment) return 'Bodyweight'
+  if (Array.isArray(equipment)) {
+    return equipment.map(item => capitalizeFirstLetter(item)).join(', ')
+  }
+  return capitalizeFirstLetter(equipment.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', '))
+}
+
+const capitalizeFirstLetter = (text) => {
+  if (!text) return ''
+  return text
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
 }
 
 onMounted(() => {
@@ -193,8 +202,67 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
 }
 
 .exercise-badges .badge {
-  font-size: 0.9rem;
-  padding: 0.5rem 0.75rem;
+  position: relative;
+  font-size: 0.85rem;
+  padding: 0.25rem 0.6rem 0.25rem 1.2rem;
+  background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
+  color: #e9e9e9 !important;
+  border: 1px solid rgba(201, 162, 39, 0.28) !important;
+  border-radius: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  width: auto;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.25);
+}
+
+.exercise-badges .badge::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 40%);
+  pointer-events: none;
+}
+
+/* Color-coded badge styles */
+.target-muscle-badge {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
+  color: white !important;
+  border: none;
+}
+
+.target-muscle-badge:hover {
+  background: linear-gradient(135deg, #c0392b 0%, #a93226 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+.body-part-badge {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
+  color: white !important;
+  border: none;
+}
+
+.body-part-badge:hover {
+  background: linear-gradient(135deg, #2980b9 0%, #21618c 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.equipment-badge {
+  background: linear-gradient(135deg, #27ae60 0%, #229954 100%) !important;
+  color: white !important;
+  border: none;
+}
+
+.equipment-badge:hover {
+  background: linear-gradient(135deg, #229954 0%, #1e8449 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
 }
 
 .exercise-image-section {
