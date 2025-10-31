@@ -405,7 +405,7 @@ export default {
       }
 
       try {
-        const API_URL = 'http://localhost:3000/api/recipes'
+        const API_URL = 'http://18.139.200.231:3000/api/recipes'
         const resp = await axios.get(API_URL, {
           params: {
             ingredients: ingredients.value,
