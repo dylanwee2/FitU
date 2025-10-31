@@ -1,84 +1,31 @@
 <template>
   <div class="page-bg-wrap">
-    <!-- Top-half local video Carousel -->
+    <!-- Top-half hero video -->
     <section class="video-carousel" v-reveal>
-      <div class="carousel-inner">
-        <div
-          v-for="(vid, idx) in videoIds"
-          :key="vid"
-          class="carousel-item"
-          :class="{ active: idx === currentSlide }"
-          role="group"
-          :aria-label="`Slide ${idx+1} of ${videoIds.length}`"
-        >
-          <div class="iframe-wrap">
-            <video
-              :title="`Video slide ${idx+1}`"
-              :src="vid"
-              :autoplay="idx === currentSlide"
-              muted
-              loop
-              playsinline
-              :ref="el => registerVideoRef(el, idx)"
-            ></video>
-          </div>
-        </div>
+      <div class="iframe-wrap">
+        <video class="hero-video" src="/videos/fitu.mp4" autoplay muted loop playsinline></video>
       </div>
-      <!-- Overlay hero copy on top of videos -->
-      <div v-if="!isAuthenticated" class="vc-content">
+
+      <!-- Overlay hero copy on top of video -->
+      <div class="vc-content">
         <div class="vc-content-wrap">
             <div class="container vc-hero-container">
               <h1 class="mb-3 vc-title">UNLEASH YOUR<br>BEST SELF</h1>
               <p class="mb-3">Unlock your fitness potential with personalized workout plans, meal tracking, and expert guidance.</p>
               <div class="d-flex gap-3">
-                <router-link to="/signup" class="u-special-btn" style="padding-left: 60px; padding-right:60px;">
-                  Join FitU Now!
+                <router-link :to="isAuthenticated ? '/home' : '/signup'" class="u-special-btn" style="padding-left: 60px; padding-right:60px;">
+                  {{ isAuthenticated ? 'Start Using FitU' : 'Join FitU Now!' }}
                 </router-link>
               </div>
             </div>
         </div>
       </div>
     </section>
-    <!-- Background local video -->
-    <div class="bg-video" aria-hidden="true">
-      <video src="/videos/fitu.mp4" autoplay muted loop playsinline></video>
-    </div>
-    <div class="bg-overlay" aria-hidden="true"></div>
 
-    <div class="container mt-4">
-      <!-- Logged In User Section -->
-      <div v-if="isAuthenticated" class="mb-4" v-reveal>
-        <div class="p-4 text-center">
-          <h2 class="h3 mb-3">Welcome back to FitU!</h2>
-          <p class="mb-3">Ready to continue your fitness journey?</p>
-          <div class="d-flex gap-3 justify-content-center">
-            <router-link to="/home" class="u-special-btn">
-            Start Using FitU Website
-            </router-link>
-          </div>
-          
-        </div>
-      </div>
-
-      <!-- Not Logged In - Show Sign Up/Login Section -->
-      <!-- Hero content moved into video overlay above -->
-
+      <div class="container mt-4">
       <!-- Starfield wrapper starts: applies from here onwards -->
       <div class="starfield-wrap">
-        <div class="night" aria-hidden="true">
-          <div class="shooting_star"></div>
-          <div class="shooting_star"></div>
-          <div class="shooting_star"></div>
-          <div class="shooting_star"></div>
-          <div class="shooting_star"></div>
-          <div class="shooting_star"></div>
-          <div class="shooting_star"></div>
-          <div class="shooting_star"></div>
-          <div class="shooting_star"></div>
-          <div class="shooting_star"></div>
-          <div class="shooting_star"></div>
-          <div class="shooting_star"></div>
-        </div>
+        
 
       <!-- Stats Section (full-bleed white bar placed above features) -->
       <section class="stats-bleed" v-reveal>
@@ -101,98 +48,118 @@
       </section>
 
       <!-- Feature Highlights (simplified: icons above text, no cards) -->
-      <section class="p-3 mb-4 mt-4" v-reveal>
-        <h2 class="mb-3">Built for Student Life</h2>
-        <div class="row g-3">
-          <div class="col-12 col-md-6 col-lg-3">
-            <div class="feature-simple">
-              <div class="feature-icon-wrap">
-                <!-- stopwatch icon -->
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <path d="M9 2h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M12 7v6l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  <circle cx="12" cy="14" r="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+      <BackgroundGradientAnimation
+        gradientBackgroundStart="rgb(8,10,18)"
+        gradientBackgroundEnd="rgb(18,22,40)"
+        firstColor="24, 40, 100"
+        secondColor="90, 40, 120"
+        thirdColor="40, 120, 140"
+        fourthColor="120, 40, 60"
+        fifthColor="90, 90, 60"
+        pointerColor="100, 90, 220"
+        blendingValue="overlay"
+        :interactive="true"
+      >
+        <section class="p-3 mb-4 mt-4">
+          <div class="container">
+            <h2 class="mb-3">Built for Student Life</h2>
+            <div class="row g-3">
+              <div class="col-12 col-md-6 col-lg-3">
+                <div class="feature-simple">
+                  <div class="feature-icon-wrap">
+                    <!-- stopwatch icon -->
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                      <path d="M9 2h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M12 7v6l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <circle cx="12" cy="14" r="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                  <h6 class="mb-1">15-Minute Workouts</h6>
+                  <small class="u-muted">Fit exercise between lectures</small>
+                </div>
               </div>
-              <h6 class="mb-1">15-Minute Workouts</h6>
-              <small class="u-muted">Fit exercise between lectures</small>
-            </div>
-          </div>
-          <div class="col-12 col-md-6 col-lg-3">
-            <div class="feature-simple">
-              <div class="feature-icon-wrap">
-                <!-- dumbbell icon -->
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <path d="M2 12h2v2H2zM20 12h2v2h-2z" fill="currentColor"/>
-                  <path d="M9 12h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M4 10v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M20 10v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </div>
-              <h6 class="mb-1">No Equipment</h6>
-              <small class="u-muted">Bodyweight exercises anywhere</small>
-            </div>
-          </div>
-          <div class="col-12 col-md-6 col-lg-3">
-            <div class="feature-simple">
-              <div class="feature-icon-wrap">
-                <!-- users icon -->
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </div>
-              <h6 class="mb-1">Student Community</h6>
-              <small class="u-muted">Connect with campus fitness groups</small>
-            </div>
-          </div>
-          <div class="col-12 col-md-6 col-lg-3">
-            <div class="feature-simple">
-              <div class="feature-icon-wrap">
-                <!-- lightning/fast results icon -->
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </div>
-              <h6 class="mb-1">Quick Results</h6>
-              <small class="u-muted">See progress in just weeks</small>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      <!-- Stats Section (removed duplicate - moved above features) -->
+              <div class="col-12 col-md-6 col-lg-3">
+                <div class="feature-simple">
+                  <div class="feature-icon-wrap">
+                    <!-- dumbbell icon -->
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                      <path d="M2 12h2v2H2zM20 12h2v2h-2z" fill="currentColor"/>
+                      <path d="M9 12h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M4 10v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M20 10v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                  <h6 class="mb-1">No Equipment</h6>
+                  <small class="u-muted">Bodyweight exercises anywhere</small>
+                </div>
+              </div>
 
-      <!-- Reviews Section -->
-      <div class="p-3 mb-4" v-reveal>
-        <h2 class="mb-3">Student Reviews</h2>
-        <div v-if="reviews.length === 0" class="u-muted">No reviews yet.</div>
-        <div class="row">
-          <div v-for="(r, i) in reviews" :key="r.id" class="col-12 col-md-6 col-lg-6 mb-3">
-            <div class="p-3 h-100 u-card review-card" :style="{ animationDelay: (i * 0.1) + 's' }">
-              <div class="d-flex justify-content-between align-items-center mb-1">
-                <strong>{{ r.name }}</strong>
-                <span class="u-muted">{{ r.course }} • {{ r.year }}</span>
+              <div class="col-12 col-md-6 col-lg-3">
+                <div class="feature-simple">
+                  <div class="feature-icon-wrap">
+                    <!-- users icon -->
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                  <h6 class="mb-1">Student Community</h6>
+                  <small class="u-muted">Connect with campus fitness groups</small>
+                </div>
               </div>
-              <div class="mb-1" :aria-label="`Rating ${r.rating} out of 5`">
-                <span v-for="n in 5" :key="n" :style="{ color: n <= r.rating ? 'gold' : '#d9d9d9' }">★</span>
+
+              <div class="col-12 col-md-6 col-lg-3">
+                <div class="feature-simple">
+                  <div class="feature-icon-wrap">
+                    <!-- lightning/fast results icon -->
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                      <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                  <h6 class="mb-1">Quick Results</h6>
+                  <small class="u-muted">See progress in just weeks</small>
+                </div>
               </div>
-              <p class="m-0">{{ r.comment }}</p>
-            </div>
+            </div> <!-- .row -->
+          </div> <!-- .container -->
+        </section>
+
+        <!-- Reviews Section -->
+        <section class="p-3 mb-4" v-reveal>
+          <div class="container">
+            <h2 class="mb-3">Student Reviews</h2>
+            <div v-if="reviews.length === 0" class="u-muted">No reviews yet.</div>
+
+            <div class="row">
+              <div v-for="(r, i) in reviews" :key="r.id" class="col-12 col-md-6 col-lg-6 mb-3">
+                <div class="p-3 h-100 u-card review-card" :style="{ animationDelay: (i * 0.1) + 's' }">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <strong>{{ r.name }}</strong>
+                    <span class="u-muted">{{ r.course }} • {{ r.year }}</span>
+                  </div>
+                  <div class="mb-1" :aria-label="`Rating ${r.rating} out of 5`">
+                    <span v-for="n in 5" :key="n" :style="{ color: n <= r.rating ? 'gold' : '#d9d9d9' }">★</span>
+                  </div>
+                  <p class="m-0">{{ r.comment }}</p>
+                </div>
+              </div>
+            </div> <!-- .row -->
+          </div> <!-- .container -->
+        </section>
+
+        <!-- Bottom CTA -->
+        <section class="p-4 text-center">
+          <h2 class="mb-2" style="color: var(--text)">Ready to Transform Your Campus Fitness?</h2>
+          <p class="u-muted mb-3">Join thousands of students getting stronger, healthier, and more energized.</p>
+          <div class="d-flex gap-3 justify-content-center">
+            <router-link to="/signup" class="u-special-btn" style="padding-left: 60px; padding-right:60px;">Get Started For Free &nbsp;&nbsp;></router-link>
           </div>
-        </div>
-      </div>
+        </section>
+      </BackgroundGradientAnimation>
 
-      <!-- Bottom CTA -->
-      <section class="p-4 text-center" v-reveal>
-        <h2 class="mb-2" style="color: var(--text)">Ready to Transform Your Campus Fitness?</h2>
-        <p class="u-muted mb-3">Join thousands of students getting stronger, healthier, and more energized.</p>
-        <div class="d-flex gap-3 justify-content-center">
-        <router-link to="/signup" class="u-special-btn" style="padding-left: 60px; padding-right:60px;">Get Started For Free &nbsp;&nbsp;></router-link>
-
-        </div>
-      </section>
+      </div> <!-- end starfield-wrap -->
 
       </div> <!-- end starfield-wrap -->
 
@@ -201,17 +168,17 @@
 </template>
 
 <script>
-import { ref, onMounted, onBeforeUnmount, watch } from "vue";
+import { ref, onMounted } from "vue";
+import BackgroundGradientAnimation from '../components/BackgroundGradientAnimation.vue'
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { useRouter } from 'vue-router'
 
-
 export default {
   components: {
-
+    BackgroundGradientAnimation,
   },
   setup() {
-    const router = useRouter()
+    const router = useRouter();
     const auth = getAuth();
     const isAuthenticated = ref(false);
     const videoIds = ref([
@@ -227,18 +194,11 @@ export default {
     const nextSlide = () => { currentSlide.value = (currentSlide.value + 1) % videoIds.value.length }
     const prevSlide = () => { currentSlide.value = (currentSlide.value - 1 + videoIds.value.length) % videoIds.value.length }
 
-    onMounted(() => {        
-        onAuthStateChanged(auth, async (userCredential) => {
-            if (userCredential) {
-              isAuthenticated.value = true;
-              //router.push(`/home`)
-            } else {
-              isAuthenticated.value = false;
-              //router.push(`/`)
-            }
-        });
-        // Auto-advance disabled; each video loops on its own
-        // intervalHandle = setInterval(nextSlide, 8000)
+    // Auth state watcher
+    onMounted(() => {
+      onAuthStateChanged(auth, (user) => {
+        isAuthenticated.value = !!user;
+      });
     });
     // Pause/play when slide changes
     onBeforeUnmount(() => { if (intervalHandle) clearInterval(intervalHandle) })
@@ -264,7 +224,7 @@ export default {
       onBeforeUnmount(() => document.removeEventListener('visibilitychange', onVisibility))
     }
 
-    // Reviews state
+    // Reviews state (unchanged)
     const reviews = ref([
       { id: 'r1', name: 'Aisha K.', course: 'Computer Science', year: 'Year 2', rating: 5, comment: 'FitU keeps me on track during exam season. Love the clean visuals!' },
       { id: 'r2', name: 'Liam D.', course: 'Mechanical Eng.', year: 'Year 3', rating: 5, comment: 'The workout planner and calorie tracker combo is perfect.' },
@@ -299,7 +259,7 @@ export default {
 
     onMounted(loadReviews)
 
-    return { 
+    return {
       isAuthenticated,
       videoIds,
       currentSlide,
@@ -315,8 +275,6 @@ export default {
 </script>
 
 <style scoped>
-
-
 input.form-control {
   max-width: 100%;
 }
@@ -381,7 +339,7 @@ input.form-control {
   box-shadow: 0 12px 24px rgba(15,23,42,0.12);
 }
 
-/* Full-bleed stats bar that overlays the features section */
+/* Full-width safe stats bar that overlays the features section */
 .stats-bleed {
   background-color: rgb(21, 21, 21);
   width: 100vw;
@@ -398,32 +356,29 @@ input.form-control {
 
 /* Make carousel full width and remove border radius/shadow */
 .home-carousel {
-  width: 100vw !important;
-  margin-left: calc(-50vw + 50%) !important;
+  width: 100% !important;
+  margin-left: 0 !important;
   border-radius: 0 !important;
   box-shadow: none !important;
+  overflow: hidden;
 }
 
 /* Ensure carousel images fill width and height */
 .home-carousel .carousel-item img {
-  width: 100vw !important;
+  width: 100% !important;
   object-fit: cover;
   height: 360px;
   border-radius: 0 !important;
 }
 
-.carousel-text:hover {
-  cursor: default;
-}
-.carousel-item img{
-  filter: brightness(40%);
-}
+.carousel-text:hover { cursor: default; }
+.carousel-item img{ filter: brightness(40%); }
 
-/* Top-half carousel */
+/* Top-half hero video */
 .video-carousel {
   position: relative;
-  width: 100vw;
-  margin-left: calc(-50vw + 50%);
+  width: 100%;
+  margin-left: 0;
   height: 65vh;
   min-height: 420px;
   max-height: 900px;
@@ -437,23 +392,22 @@ input.form-control {
   transition: opacity .5s ease;
 }
 .video-carousel .carousel-item.active { opacity: 1; }
-.video-carousel .iframe-wrap { position: relative; width: 100%; height: 100%; background: #000; }
-.video-carousel video {
+.video-carousel .iframe-wrap { position: relative; width: 100%; height: 100%; background: #000; overflow: hidden; }
+.video-carousel video,
+.video-carousel .hero-video {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 120vw;
-  height: 67.5vw;
-  min-width: 177.78vh;
+  width: 100%;
+  height: 100%;
+  min-width: 100%;
   min-height: 100%;
+  object-fit: cover;
   pointer-events: none;
 }
 /* Darken carousel video and add an internal overlay so hero text is readable */
-.video-carousel video {
-  filter: brightness(0.8) contrast(0.8);
-  z-index: 0;
-}
+.video-carousel video { filter: brightness(0.8) contrast(0.8); z-index: 0; }
 .video-carousel::before {
   content: "";
   position: absolute;
@@ -487,8 +441,8 @@ input.form-control {
 .vc-sub { max-width: 680px; }
 
 /* Limit background to page content (exclude navbar & footer) */
-.page-bg-wrap { position: relative; }
-.page-bg-wrap > .bg-video { position: absolute; top: 0; left: 0; right: 0; height: 65vh; }
+.page-bg-wrap { position: relative; overflow-x: hidden; }
+.page-bg-wrap > .bg-video { position: absolute; top: 0; left: 0; right: 0; height: 65vh; overflow: hidden; }
 .page-bg-wrap > .bg-overlay { position: absolute; top: 0; left: 0; right: 0; height: 65vh; }
 
 /* Background video covering the landing content area */
@@ -503,10 +457,11 @@ input.form-control {
   left: 50%;
   transform: translate(-50%, -50%);
   /* Cover technique for 16:9 video */
-  width: 120vw;
-  height: 67.5vw; /* 120 * 9/16 */
-  min-width: 177.78vh; /* 100 * 16/9 to cover tall screens */
+  width: 100%;
+  height: 100%;
+  min-width: 100%;
   min-height: 100%;
+  object-fit: cover;
   pointer-events: none; /* allow page interaction */
   /* Darken the video for better overlay contrast. Adjust brightness value as needed. */
   filter: brightness(0.28) contrast(0.9);
@@ -582,57 +537,5 @@ input.form-control {
 .starfield-wrap > *:not(.night) { position: relative; z-index: 1; }
 .night { position: absolute; inset: 0; overflow: hidden; z-index: 0; pointer-events: none; }
 
-@keyframes tail {
-  0% { width: 0; }
-  30% { width: 120px; }
-  100% { width: 0; }
-}
-@keyframes shooting {
-  0% { transform: translateX(0) translateY(0); opacity: 0; }
-  10% { opacity: 1; }
-  100% { transform: translateX(600px) translateY(300px); opacity: 0; }
-}
-@keyframes blink {
-  50% { opacity: .6; }
-}
-.shooting_star {
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 2px;
-  width: 120px;
-  background: linear-gradient(90deg, rgba(255,255,255,1), rgba(255,255,255,0));
-  filter: drop-shadow(0 0 6px rgba(255,255,255,.85));
-  border-radius: 999px;
-  transform: rotate(220deg);
-  animation: tail 2.8s ease-in-out infinite, shooting 2.8s ease-in-out infinite;
-  opacity: 0;
-}
-.shooting_star::before, .shooting_star::after {
-  content: "";
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 6px; height: 6px;
-  background: #fff;
-  border-radius: 50%;
-  box-shadow: 0 0 12px 4px rgba(255,255,255,.75);
-  animation: blink 1.4s infinite;
-}
-.shooting_star::after { width: 3px; height: 3px; animation-duration: 1s; }
 
-/* Vary positions and delays */
-.shooting_star:nth-child(1) { top: 8%; left: 4%; animation-delay: .2s; }
-.shooting_star:nth-child(2) { top: 18%; left: 18%; animation-delay: 1.1s; }
-.shooting_star:nth-child(3) { top: 28%; left: 2%; animation-delay: 2.2s; }
-.shooting_star:nth-child(4) { top: 36%; left: 22%; animation-delay: 1.6s; }
-.shooting_star:nth-child(5) { top: 44%; left: 6%; animation-delay: .9s; }
-.shooting_star:nth-child(6) { top: 52%; left: 16%; animation-delay: 2.8s; }
-.shooting_star:nth-child(7) { top: 60%; left: 10%; animation-delay: 1.9s; }
-.shooting_star:nth-child(8) { top: 68%; left: 3%; animation-delay: .5s; }
-.shooting_star:nth-child(9) { top: 74%; left: 14%; animation-delay: 2.3s; }
-.shooting_star:nth-child(10) { top: 82%; left: 7%; animation-delay: 1.3s; }
-.shooting_star:nth-child(11) { top: 12%; left: 28%; animation-delay: 2.6s; }
-.shooting_star:nth-child(12) { top: 56%; left: 28%; animation-delay: .7s; }
 </style>
