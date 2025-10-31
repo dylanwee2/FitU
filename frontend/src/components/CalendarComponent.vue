@@ -476,7 +476,7 @@ const initializeCalendar = async () => {
     height: props.height === 'auto' ? 600 : props.height,
     headerToolbar: props.headerToolbar,
     themeSystem: 'bootstrap5',
-    navLinks: false,
+    navLinks: true,
     editable: props.editable,
     selectable: props.selectable,
     nowIndicator: true,
@@ -1232,6 +1232,22 @@ const changeView = (viewName) => {
 // Lifecycle
 onMounted(() => {
   initializeCalendar()
+  // Keyboard shortcuts: ←/→ navigate, M/W/D switch views, T today, N new
+  const onKey = (e) => {
+    if (!calendarInstance) return
+    // Ignore when typing in inputs or textareas
+    const t = e.target
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return
+    if (e.key === 'ArrowLeft') { calendarInstance.prev(); e.preventDefault() }
+    else if (e.key === 'ArrowRight') { calendarInstance.next(); e.preventDefault() }
+    else if (e.key.toLowerCase() === 't') { calendarInstance.today(); e.preventDefault() }
+    else if (e.key.toLowerCase() === 'm') { calendarInstance.changeView('dayGridMonth'); e.preventDefault() }
+    else if (e.key.toLowerCase() === 'w') { calendarInstance.changeView('timeGridWeek'); e.preventDefault() }
+    else if (e.key.toLowerCase() === 'd') { calendarInstance.changeView('timeGridDay'); e.preventDefault() }
+    else if (e.key.toLowerCase() === 'n') { openEventForm(); e.preventDefault() }
+  }
+  window.addEventListener('keydown', onKey)
+  onUnmounted(() => window.removeEventListener('keydown', onKey))
 })
 
 onUnmounted(() => {

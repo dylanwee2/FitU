@@ -4,6 +4,7 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth'
 import { db } from '@/firebase'
 import { collection, addDoc, getDocs, getDoc, doc, updateDoc, deleteDoc, query, where } from 'firebase/firestore'
 import { workoutVaultService } from '@/services/workoutVaultService.js'
+import { formatDuration } from '@/types/workout.js'
 
 export const useWorkoutCartStore = defineStore('workoutCart', () => {
   // State
@@ -19,6 +20,10 @@ export const useWorkoutCartStore = defineStore('workoutCart', () => {
       const sets = item.sets || 3 // Default to 3 sets if not specified
       return total + (sets * 5) // 5 minutes per set
     }, 0)
+  })
+
+  const cartTotalDurationFormatted = computed(() => {
+    return formatDuration(cartTotalDuration.value)
   })
 
   const cartMuscleGroups = computed(() => {
@@ -400,6 +405,7 @@ export const useWorkoutCartStore = defineStore('workoutCart', () => {
     // Getters
     cartItemCount,
     cartTotalDuration,
+    cartTotalDurationFormatted,
     cartMuscleGroups,
     
     // Actions

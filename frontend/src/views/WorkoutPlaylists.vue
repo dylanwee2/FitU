@@ -381,8 +381,8 @@
               </div>
               <div class="col-4">
                 <div class="stat-item">
-                  <div class="stat-number">{{ Math.round(viewingPlaylist.totalDuration) }}</div>
-                  <div class="stat-label">Minutes</div>
+                  <div class="stat-number">{{ formatWorkoutDuration(viewingPlaylist) }}</div>
+                  <div class="stat-label">Duration</div>
                 </div>
               </div>
               <div class="col-4">
@@ -846,6 +846,29 @@ const formatDuration = (minutes) => {
   const hours = Math.floor(minutes / 60)
   const remainingMinutes = minutes % 60
   return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`
+}
+
+const formatWorkoutDuration = (playlist) => {
+  let totalMinutes = 0;
+  
+  // Calculate duration from exercises using 5 minutes per set rule
+  if (playlist.exercises && playlist.exercises.length > 0) {
+    totalMinutes = playlist.exercises.reduce((total, exercise) => {
+      const sets = exercise.sets || 3; // Default to 3 sets
+      return total + (sets * 5); // 5 minutes per set
+    }, 0);
+  } else if (playlist.totalDuration) {
+    // Use stored totalDuration as fallback
+    totalMinutes = playlist.totalDuration;
+  }
+  
+  // If we still have 0 and there are exercises, use a basic fallback
+  if (totalMinutes === 0 && playlist.exercises && playlist.exercises.length > 0) {
+    // Each exercise gets 3 sets by default = 15 minutes per exercise
+    totalMinutes = playlist.exercises.length * 3 * 5;
+  }
+  
+  return formatDuration(totalMinutes);
 }
 
 const formatWorkoutDays = (days) => {
@@ -1803,6 +1826,7 @@ const updateWorkoutDurations = async (playlists) => {
 .stat-number {
   font-size: 1.5rem;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .stat-label {

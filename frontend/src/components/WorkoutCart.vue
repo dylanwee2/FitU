@@ -50,11 +50,13 @@
               <!-- Exercise Info -->
               <div class="cart-item-info">
                 <h6 class="cart-item-name">{{ capitalizeFirstLetter(item.name) }}</h6>
-                <div class="cart-item-badges">
-                  <span class="badge target-muscle-badge">{{ capitalizeFirstLetter(item.target) }}</span>
-                  <span class="badge body-part-badge">{{ capitalizeFirstLetter(item.bodyPart) }}</span>
-                  <span class="badge equipment-badge">{{ capitalizeFirstLetter(item.equipment) }}</span>
-                </div>
+              </div>
+
+              <!-- Badges: span under image -->
+              <div class="cart-item-badges">
+                <span class="badge target-muscle-badge">{{ capitalizeFirstLetter(item.target) }}</span>
+                <span class="badge body-part-badge">{{ capitalizeFirstLetter(item.bodyPart) }}</span>
+                <span class="badge equipment-badge">{{ capitalizeFirstLetter(item.equipment) }}</span>
               </div>
 
               <!-- Exercise Controls -->
@@ -116,7 +118,7 @@
             </div>
             <div class="stat">
               <span class="stat-label">Est. Duration:</span>
-              <span class="stat-value">{{ Math.round(cartTotalDuration) }} min</span>
+              <span class="stat-value">{{ cartTotalDurationFormatted }}</span>
             </div>
             <div class="stat">
               <span class="stat-label">Muscle Groups:</span>
@@ -241,7 +243,7 @@
             <h6>Preview:</h6>
             <div class="preview-stats">
               <span>{{ cartItemCount }} exercises</span>
-              <span>{{ Math.round(cartTotalDuration) }} min</span>
+              <span>{{ cartTotalDurationFormatted }}</span>
               <span>{{ cartMuscleGroups.join(', ') }}</span>
             </div>
           </div>
@@ -285,6 +287,7 @@ const showEquipmentSection = ref(false)
 const cartItems = computed(() => cartStore.cartItems)
 const cartItemCount = computed(() => cartStore.cartItemCount)
 const cartTotalDuration = computed(() => cartStore.cartTotalDuration)
+const cartTotalDurationFormatted = computed(() => cartStore.cartTotalDurationFormatted)
 const cartMuscleGroups = computed(() => cartStore.cartMuscleGroups)
 const isAuthenticated = computed(() => cartStore.isAuthenticated)
 
@@ -543,8 +546,11 @@ const toggleEquipmentSection = () => {
 }
 
 .cart-item {
-  display: flex;
-  gap: 1rem;
+  display: grid;
+  grid-template-columns: 60px 1fr auto;
+  grid-template-rows: auto auto;
+  column-gap: 1rem;
+  row-gap: 0.5rem;
   padding: 1rem;
   background: var(--surface-subtle);
   border-radius: 8px;
@@ -558,6 +564,8 @@ const toggleEquipmentSection = () => {
   border-radius: 6px;
   overflow: hidden;
   flex-shrink: 0;
+  grid-column: 1;
+  grid-row: 1 / span 2;
 }
 
 .cart-item-image img {
@@ -567,8 +575,9 @@ const toggleEquipmentSection = () => {
 }
 
 .cart-item-info {
-  flex: 1;
   min-width: 0;
+  grid-column: 2;
+  grid-row: 1;
 }
 
 .cart-item-name {
@@ -588,11 +597,17 @@ const toggleEquipmentSection = () => {
   display: flex;
   gap: 0.25rem;
   flex-wrap: wrap;
+  grid-column: 1 / 3; /* span under image and name */
+  grid-row: 2;
 }
 
 .cart-item-badges .badge {
   font-size: 0.7rem;
-  padding: 0.25rem 0.5rem;
+  padding: 0.25rem 0.5rem 0.25rem 0.9rem;
+  width: 120px; /* fixed width for standardised look */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .cart-item-controls {
@@ -600,6 +615,8 @@ const toggleEquipmentSection = () => {
   flex-direction: column;
   gap: 0.5rem;
   min-width: 80px;
+  grid-column: 3;
+  grid-row: 1 / span 2;
 }
 
 .sets-reps-control {
@@ -828,60 +845,48 @@ const toggleEquipmentSection = () => {
   }
 }
 
-/* Color-coded badge styles */
-.target-muscle-badge {
-  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
-  color: white !important;
-  border: none;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
+/* Nuanced charcoal pill theme with color-coded indicator dots */
+.cart-item-badges .badge {
+  position: relative;
+  background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
+  color: #e9e9e9 !important;
+  border: 1px solid rgba(201, 162, 39, 0.28) !important;
   border-radius: 12px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
 
-.target-muscle-badge:hover {
-  background: linear-gradient(135deg, #c0392b 0%, #a93226 100%) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+.cart-item-badges .badge::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
 }
 
-.body-part-badge {
-  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
-  color: white !important;
-  border: none;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  cursor: pointer;
+.cart-item-badges .badge:hover {
+  transform: none;
+  border-color: rgba(201, 162, 39, 0.42) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.28);
 }
 
-.body-part-badge:hover {
-  background: linear-gradient(135deg, #2980b9 0%, #21618c 100%) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+/* Subtle top highlight */
+.cart-item-badges .badge::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 40%);
+  pointer-events: none;
 }
 
-.equipment-badge {
-  background: linear-gradient(135deg, #27ae60 0%, #229954 100%) !important;
-  color: white !important;
-  border: none;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.equipment-badge:hover {
-  background: linear-gradient(135deg, #229954 0%, #1e8449 100%) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
-}
+.target-muscle-badge::before { background: #e74c3c; box-shadow: 0 0 2px rgba(231, 76, 60, 0.28); }
+.body-part-badge::before { background: #3498db; box-shadow: 0 0 2px rgba(52, 152, 219, 0.28); }
+.equipment-badge::before { background: #27ae60; box-shadow: 0 0 2px rgba(39, 174, 96, 0.28); }
 
 /* Equipment Section Container */
 .equipment-section-container {
@@ -985,33 +990,32 @@ const toggleEquipmentSection = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 60px;
-  padding: 0.5rem;
-  background: var(--surface-subtle);
-  border-radius: 8px;
-  border: 1px solid var(--border-subtle);
+  min-width: 72px;
+  padding: 0.75rem 0.5rem;
+  background: linear-gradient(180deg, #1b1b1b 0%, #111 100%);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.06);
   transition: all 0.3s ease;
   cursor: pointer;
 }
 
 .equipment-icon-item:hover {
-  background: var(--muted);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22);
+  border-color: rgba(255,255,255,0.12);
 }
 
 .equipment-icon {
-  width: 32px;
-  height: 32px;
+  width: 48px;
+  height: 48px;
   object-fit: contain;
-  margin-bottom: 0.25rem;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  margin-bottom: 0.35rem;
 }
 
 .equipment-label {
-  font-size: 0.7rem;
-  font-weight: 500;
-  color: var(--text);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #e6e6e6;
   text-align: center;
   line-height: 1.2;
   word-break: break-word;

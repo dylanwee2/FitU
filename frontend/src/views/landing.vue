@@ -161,6 +161,8 @@
 
       </div> <!-- end starfield-wrap -->
 
+      </div> <!-- end starfield-wrap -->
+
     </div>
   </div>
 </template>
@@ -179,6 +181,18 @@ export default {
     const router = useRouter();
     const auth = getAuth();
     const isAuthenticated = ref(false);
+    const videoIds = ref([
+      '/videos/fitu.mp4'
+    ])
+    const currentSlide = ref(0)
+    let intervalHandle = null
+    const videoEls = ref([])
+    const registerVideoRef = (el, idx) => {
+      if (!el) return
+      videoEls.value[idx] = el
+    }
+    const nextSlide = () => { currentSlide.value = (currentSlide.value + 1) % videoIds.value.length }
+    const prevSlide = () => { currentSlide.value = (currentSlide.value - 1 + videoIds.value.length) % videoIds.value.length }
 
     // Auth state watcher
     onMounted(() => {
@@ -186,6 +200,29 @@ export default {
         isAuthenticated.value = !!user;
       });
     });
+    // Pause/play when slide changes
+    onBeforeUnmount(() => { if (intervalHandle) clearInterval(intervalHandle) })
+
+    watch(currentSlide, (idx) => {
+      videoEls.value.forEach((v, i) => {
+        if (!v) return
+        try { i === idx ? v.play() : v.pause() } catch {}
+      })
+    })
+
+    // Pause videos when tab is hidden, resume active on visible
+    const onVisibility = () => {
+      const active = videoEls.value[currentSlide.value]
+      if (document.hidden) {
+        videoEls.value.forEach(v => { try { v && v.pause() } catch {} })
+      } else if (active) {
+        try { active.play() } catch {}
+      }
+    }
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', onVisibility)
+      onBeforeUnmount(() => document.removeEventListener('visibilitychange', onVisibility))
+    }
 
     // Reviews state (unchanged)
     const reviews = ref([
@@ -224,6 +261,11 @@ export default {
 
     return {
       isAuthenticated,
+      videoIds,
+      currentSlide,
+      nextSlide,
+      prevSlide,
+      registerVideoRef,
       reviews,
       newReview,
       submitReview
