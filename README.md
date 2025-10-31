@@ -18,7 +18,7 @@ Install FitU with npm <br>
 ```bash
   cd Backend
   npm install
-  npm run start
+  node server.js
 ```
 2. Open another terminal and run the following command:
 ```bash
@@ -46,15 +46,16 @@ Install FitU with npm <br>
 
 ### Frontend
 
-<img src="Frontend/src/assets/FrontendStack.png" alt="Frontend" width="400"/>
+  <img src="frontend/src/assets/img/FrontEndArchitecture.jpg" alt="Frontend" width="600"/>
+  <br>
 
 ### Backend
 
-<img src="Frontend/src/assets/BackendStack.png" alt="Backend" width="400"/>
+<img src="frontend/src/assets/img/BackEndArchitecture.jpg" alt="Backend" width="600"/>
 
 ## APIs
 
-- **Google Cloud Storage**: Cloud Storage of Images
-- **Open Trivia Database**: Provides database of trivia questions
-- **Twilio**: Supports real-time chat and notifications.
-- **Firebase Auth**: User authentication for creating accounts and logging in
+- **NodeJS**: Used to host our backend features.
+- **Spoonacular**: Provides recipes for our recipe feature.
+- **ExerciseDB**: Provides 1500 exercises for our workout features.
+- **Firebase Auth**: User authentication for creating accounts, logging in, and storing user fitness tracking information.
