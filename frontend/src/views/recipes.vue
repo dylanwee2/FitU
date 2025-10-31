@@ -1,5 +1,60 @@
 <template>
   <div class="container mt-4">
+
+    <!-- Weekly Meal Plan (generated from Spoonacular) -->
+    <h2 class="mb-3">Meal Ideas for the Week</h2>
+    <div class="weekly-meal-plan mb-4">
+    
+      <div v-if="weeklyLoading" class="text-center py-3">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Generating weekly meal plan...</p>
+      </div>
+
+      <div v-else-if="weeklyError" class="alert alert-danger">{{ weeklyError }}</div>
+
+      <div v-else-if="weeklyDays.length">
+        <div class="row g-3">
+          <div v-for="(day, idx) in weeklyDays" :key="idx" class="col-12">
+            <div class="card p-3" style="background-color: var(--surface-subtle);">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <h5 class="mb-0">{{ day.day }}</h5>
+                <small class="text-muted">{{ day.meals.length }} meals</small>
+              </div>
+
+              <div class="row">
+                <!-- Render up to 3 meals per day: breakfast, lunch, dinner -->
+                <div v-for="(meal, midx) in (day.meals.slice(0,3))" :key="meal.id || midx" class="col-4">
+                  <div class="meal-card card h-100 position-relative">
+                    <img :src="getMealImage(meal)" class="card-img-top" :alt="meal.title" />
+                    <div class="card-body p-2 d-flex flex-column justify-content-between" style="min-height:120px">
+                      <div>
+                        <h6 class="card-title mb-1" style="font-size:0.95rem">{{ meal.title }}</h6>
+                        <p class="mb-1 u-muted" style="font-size:0.8rem">Ready in: {{ meal.readyInMinutes || 'N/A' }} min</p>
+                      </div>
+                      <div class="text-end">
+                        <a :href="meal.sourceUrl || ('https://spoonacular.com/recipes/' + (meal.id || ''))" target="_blank" class="u-btn  u-btn--primary text-center">View Recipe</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- If less than 3 meals, show placeholders to keep layout consistent -->
+                <div v-for="n in (3 - Math.min(3, day.meals.length))" :key="'ph-' + n" class="col-4">
+                  <div class="card h-100 placeholder-card" style="background: rgba(255,255,255,0.02); border: 1px dashed var(--border-subtle); height:100%;">
+                    <div class="card-body d-flex align-items-center justify-content-center">
+                      <small class="text-muted">No meal</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <h1>Find Recipes by Ingredients</h1>
 
     <form @submit.prevent="searchRecipes" class="row g-3 align-items-center mt-3">
@@ -133,13 +188,96 @@
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
 export default {
   setup() {
     const ingredients = ref('')
     const number = ref(5)
+    
+    // Weekly meal plan state (Spoonacular)
+    const weeklyDays = ref([])
+    const weeklyLoading = ref(false)
+    const weeklyError = ref('')
+
+    const getMealImage = (meal) => {
+      // Prefer meal.image. If it's already a full URL, use it.
+      // Otherwise build the Spoonacular image host URL using the filename returned in `image`.
+      if (!meal) return '/images/recipe-placeholder.png'
+      if (meal.image) {
+        if (/^https?:\/\//i.test(meal.image)) return meal.image
+        // Build URL: https://img.spoonacular.com/recipes/{image}
+        return `https://img.spoonacular.com/recipes/${meal.image}`
+      }
+
+      // Fallback to legacy pattern by id if no image filename provided
+      const imageType = meal.imageType || 'jpg'
+      if (meal.id) return `https://spoonacular.com/recipeImages/${meal.id}-312x231.${imageType}`
+      return '/images/recipe-placeholder.png'
+    }
+
+    const capitalize = (s) => s ? (s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()) : s
+
+
+    const fetchDayMealPlan = async () => {
+      weeklyLoading.value = true
+      weeklyError.value = ''
+      weeklyDays.value = []
+      try {
+        const apiKey = import.meta.env.VITE_SPOONACULAR_API_KEY
+        if (!apiKey) {
+          weeklyError.value = 'Spoonacular API key not configured (VITE_SPOONACULAR_API_KEY)'
+          weeklyLoading.value = false
+          return
+        }
+
+        const resp = await axios.get('https://api.spoonacular.com/mealplanner/generate', {
+          params: {
+            timeFrame: 'week',
+            apiKey: apiKey
+          }
+        })
+
+        const data = resp.data || {}
+
+        // Spoonacular returns a 'week' object mapping day names to meals
+        if (data.week && typeof data.week === 'object') {
+          const order = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+          const days = []
+          order.forEach(d => {
+            if (data.week[d]) {
+              days.push({
+                day: capitalize(d),
+                meals: data.week[d].meals ? data.week[d].meals : []
+              })
+            }
+          })
+          // include any additional keys not in order
+          Object.keys(data.week).forEach(k => {
+            if (!order.includes(k.toLowerCase())) {
+              days.push({ day: capitalize(k), meals: data.week[k].meals || [] })
+            }
+          })
+          weeklyDays.value = days
+        } else if (Array.isArray(data.meals)) {
+          // Fallback: a single array of meals (treat as one entry)
+          weeklyDays.value = [{ day: 'Week', meals: data.meals }]
+        } else {
+          weeklyDays.value = []
+        }
+
+      } catch (err) {
+        console.error('Error fetching weekly meal plan:', err)
+        weeklyError.value = err?.response?.data?.message || err.message || 'Failed to fetch weekly meal plan.'
+      } finally {
+        weeklyLoading.value = false
+      }
+    }
+
+    onMounted(() => {
+      fetchDayMealPlan()
+    })
     
     // =============================================================================
     // HARDCODED DATA FOR DEVELOPMENT/CSS STYLING
@@ -153,52 +291,9 @@ export default {
     const recipes = ref([])
     const selectedRecipe = ref(null)
 
-    // =============================================================================
-    // Hardcoded sample recipes for development
-    // const recipes = ref([
-    //   {
-    //     id: 631807,
-    //     title: "Toasted Agnolotti (or Ravioli)",
-    //     image: "https://img.spoonacular.com/recipes/631807-556x370.jpg",
-    //     usedIngredientCount: 3,
-    //     missedIngredientCount: 2
-    //   },
-    //   {
-    //     id: 715538,
-    //     title: "Bruschetta with Ricotta, Tomatoes and Fresh Basil",
-    //     image: "https://img.spoonacular.com/recipes/715538-556x370.jpg",
-    //     usedIngredientCount: 4,
-    //     missedIngredientCount: 1
-    //   },
-    //   {
-    //     id: 644387,
-    //     title: "Garlic Butter Chicken Bites with Lemon Asparagus",
-    //     image: "https://img.spoonacular.com/recipes/644387-556x370.jpg",
-    //     usedIngredientCount: 2,
-    //     missedIngredientCount: 3
-    //   },
-    //   {
-    //     id: 782601,
-    //     title: "Red Lentil Soup with Chicken and Turnips",
-    //     image: "https://img.spoonacular.com/recipes/782601-556x370.jpg",
-    //     usedIngredientCount: 5,
-    //     missedIngredientCount: 1
-    //   },
-    //   {
-    //     id: 716426,
-    //     title: "Cauliflower, Brown Rice, and Vegetable Fried Rice",
-    //     image: "https://img.spoonacular.com/recipes/716426-556x370.jpg",
-    //     usedIngredientCount: 3,
-    //     missedIngredientCount: 2
-    //   },
-    //   {
-    //     id: 663559,
-    //     title: "Tex-Mex Pasta Salad",
-    //     image: "https://img.spoonacular.com/recipes/663559-556x370.jpg",
-    //     usedIngredientCount: 4,
-    //     missedIngredientCount: 2
-    //   }
-    // ])
+  // =============================================================================
+  // Sample data removed — using live API calls by default
+  // =============================================================================
     
     const error = ref('')
     
@@ -310,7 +405,7 @@ export default {
       }
 
       try {
-        const API_URL = 'http://localhost:3000/api/recipes'
+        const API_URL = 'http://18.139.200.231:3000/api/recipes'
         const resp = await axios.get(API_URL, {
           params: {
             ingredients: ingredients.value,
@@ -327,10 +422,6 @@ export default {
         error.value = err?.response?.data?.error || err.message || 'Failed to fetch recipes.'
       }
       
-      
-      // For now, just clear any error since we're using hardcoded data
-      error.value = ''
-      console.log('Using hardcoded recipe data for development')
     }
 
     const viewRecipeDetails = async (recipeId) => {
@@ -386,7 +477,12 @@ export default {
       loadingRecipe,
       searchRecipes, 
       viewRecipeDetails,
-      closeModal
+      closeModal,
+      // weekly meal plan
+      weeklyDays,
+      weeklyLoading,
+      weeklyError,
+      getMealImage
     }
   }
 }
@@ -396,6 +492,30 @@ export default {
 .card-img-top { 
   object-fit: cover; 
   height: 180px; 
+}
+
+.weekly-meal-plan .card-img-top {
+  height: 180px;
+  object-fit: cover;
+}
+
+.meal-badge {
+  font-size: 0.7rem;
+  padding: 0.25rem 0.45rem;
+}
+
+.weekly-meal-plan {
+  max-height: 850px;
+  overflow-y: auto;
+  padding-right: 8px; /* avoid scrollbar overlapping content */
+}
+
+.weekly-meal-plan .meal-card .card-body {
+  padding: 0.6rem;
+}
+
+.placeholder-card .card-body { 
+  min-height: 120px;
 }
 
 /* Modal Styles */
