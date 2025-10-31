@@ -2453,6 +2453,56 @@ html {
   border-radius: 0 0 20px 20px;
 }
 
+/* Small Modal for Delete Confirmation */
+.modal-content-small {
+  background: var(--bg);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 95%;
+  animation: slideUp 0.3s ease;
+  border: 2px solid var(--border-subtle);
+  overflow: hidden;
+}
+
+.modal-header-delete {
+  padding: 1.5rem 2rem;
+  border-bottom: 2px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #2a2a2a;
+  color: white;
+  border-radius: 20px 20px 0 0;
+}
+
+.modal-header-delete .modal-title {
+  color: white;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.modal-body-delete {
+  padding: 2rem 2.5rem;
+  color: var(--text);
+  background: var(--bg);
+}
+
+.modal-body-delete p {
+  line-height: 1.6;
+}
+
+.modal-footer-delete {
+  padding: 1.5rem 2rem;
+  border-top: 2px solid var(--border-subtle);
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  background: var(--bg);
+  border-radius: 0 0 20px 20px;
+}
+
 .modal-header {
   padding: 1.5rem;
   border-bottom: none;
@@ -2465,6 +2515,15 @@ html {
 
 .modal-header.bg-danger {
   background: var(--danger) !important;
+  color: white !important;
+}
+
+.modal-header.bg-danger .modal-title {
+  color: white !important;
+}
+
+.modal-header.bg-danger {
+  background: rgb(224, 41, 41) !important;
   color: white !important;
 }
 

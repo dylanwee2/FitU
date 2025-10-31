@@ -10,27 +10,45 @@
       <!-- Search Bar -->
       <div class="search-section mb-4">
         <div class="row justify-content-center">
-          <div class="col-md-8 col-lg-6">
+          <div class="col-md-10 col-lg-8">
             <div class="search-container">
               <input
                 v-model="searchQuery"
                 @input="handleSearch"
                 type="text"
                 class="form-control search-input"
-                placeholder="Search exercises by name (e.g., push-up, squat, bicep)..."
+                placeholder="Search by name, target, body part or equipment..."
                 :disabled="loading"
+                aria-label="Search exercises"
               >
+              <button v-if="searchQuery" class="clear-btn" @click="clearSearch" aria-label="Clear search">✕</button>
+            </div>
+
+            <!-- Quick filters -->
+            <div class="filters mt-3">
+              <div class="chip" @click="searchByTarget('chest')">Chest</div>
+              <div class="chip" @click="searchByTarget('back')">Back</div>
+              <div class="chip" @click="searchByBodyPart('legs')">Legs</div>
+              <div class="chip" @click="searchByEquipment('dumbbell')">Dumbbell</div>
+              <div class="chip" @click="searchByEquipment('barbell')">Barbell</div>
+              <div class="chip" @click="searchByEquipment('bodyweight')">Bodyweight</div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Loading State -->
-      <div v-if="loading" class="loading-section text-center py-5">
-        <div class="spinner-border text-primary mb-3" role="status">
-          <span class="visually-hidden">Loading...</span>
+      <div v-if="loading" class="loading-section py-4">
+        <div class="row g-4">
+          <div v-for="n in 8" :key="n" class="col-sm-6 col-md-4 col-lg-3">
+            <div class="skeleton-card">
+              <div class="skeleton media"></div>
+              <div class="skeleton line"></div>
+              <div class="skeleton line short"></div>
+              <div class="skeleton pill"></div>
+            </div>
+          </div>
         </div>
-        <p class="loading-text">Loading exercises...</p>
       </div>
 
       <!-- Error State -->
@@ -61,7 +79,7 @@
             </div>
             <div class="col-auto" v-if="searchQuery">
               <button @click="clearSearch" class="btn btn-outline-secondary btn-sm">
-                <i class="fas fa-times me-1"></i>Clear Search
+                Clear Search
               </button>
             </div>
           </div>
@@ -419,14 +437,43 @@ onMounted(() => {
   transition: all 0.3s ease;
 }
 
+.search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: .7;
+}
+
+.clear-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: 0;
+  color: #bbb;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.filters { display: flex; flex-wrap: wrap; gap: .5rem; }
+.chip {
+  padding: .4rem .75rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-subtle);
+  color: var(--text);
+  font-size: .9rem;
+  cursor: pointer;
+  transition: transform .15s ease, background .15s ease;
+}
+.chip:hover { transform: translateY(-1px); background: color-mix(in srgb, var(--surface-subtle) 85%, #fff 15%); }
+
 
 /* Loading */
 .loading-section {
-  min-height: 300px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  min-height: 260px;
 }
 
 .loading-text {
@@ -612,46 +659,72 @@ onMounted(() => {
   background-color: #495057 !important;
 }
 
-/* Color-coded badge styles */
-.target-muscle-badge {
-  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
-  color: white !important;
-  border: none;
+/* Nuanced charcoal pill theme for badges with color-coded dots */
+.exercise-badges .badge {
+  position: relative;
+  background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
+  color: #e9e9e9 !important;
+  border: 1px solid rgba(201, 162, 39, 0.28) !important;
+  border-radius: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  padding: 0.25rem 0.6rem 0.25rem 1.2rem; /* extra space between dot and text */
+  width: auto; /* let content decide */
+  max-width: 100%;
+  justify-self: start; /* prevent grid stretch */
+  white-space: nowrap; /* single line */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
 
-.target-muscle-badge:hover {
-  background: linear-gradient(135deg, #c0392b 0%, #a93226 100%) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+@media (max-width: 420px) {
+  .exercise-badges {
+    grid-template-columns: 1fr;
+  }
 }
 
-.body-part-badge {
-  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
-  color: white !important;
-  border: none;
+.exercise-badges .badge:hover {
+  transform: none;
+  border-color: rgba(201, 162, 39, 0.42) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.28);
 }
 
-.body-part-badge:hover {
-  background: linear-gradient(135deg, #2980b9 0%, #21618c 100%) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+.exercise-badges .badge::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 40%);
+  pointer-events: none;
 }
 
-.equipment-badge {
-  background: linear-gradient(135deg, #27ae60 0%, #229954 100%) !important;
-  color: white !important;
-  border: none;
+.exercise-badges .badge::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
 }
 
-.equipment-badge:hover {
-  background: linear-gradient(135deg, #229954 0%, #1e8449 100%) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
-}
+.target-muscle-badge::before { background: #e74c3c; box-shadow: 0 0 2px rgba(231, 76, 60, 0.28); }
+.body-part-badge::before { background: #3498db; box-shadow: 0 0 2px rgba(52, 152, 219, 0.28); }
+.equipment-badge::before { background: #27ae60; box-shadow: 0 0 2px rgba(39, 174, 96, 0.28); }
 
 .exercise-actions {
   padding: 0 1.5rem 1.5rem;
 }
+
+/* Skeletons */
+.skeleton-card { border-radius: 12px; overflow: hidden; background: var(--surface-subtle); border: 1px solid var(--border-subtle); }
+.skeleton.media { height: 180px; background: linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,.1), rgba(255,255,255,.06)); background-size: 200% 100%; animation: shimmer 1.2s infinite; }
+.skeleton.line { height: 16px; margin: 12px; border-radius: 6px; background: linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,.1), rgba(255,255,255,.06)); background-size: 200% 100%; animation: shimmer 1.2s infinite; }
+.skeleton.line.short { width: 60%; }
+.skeleton.pill { height: 28px; margin: 12px; width: 40%; border-radius: 999px; background: linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,.1), rgba(255,255,255,.06)); background-size: 200% 100%; animation: shimmer 1.2s infinite; }
+@keyframes shimmer { 0% { background-position: 0 0; } 100% { background-position: -200% 0; } }
 
 .cart-toggle-btn {
   width: 100%;
