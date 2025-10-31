@@ -75,23 +75,32 @@
                   <button 
                     class="btn btn-sm btn-outline-secondary dropdown-toggle"
                     type="button"
-                    data-bs-toggle="dropdown"
                     title="More options"
+                    @click.stop="toggleActions(playlist)"
                   >
+                    <i class="fas fa-ellipsis-h" aria-hidden="true"></i>
+                    <span class="visually-hidden">More options</span>
                   </button>
-                  <ul class="dropdown-menu u-card">
+                  <ul 
+                    class="dropdown-menu u-card" 
+                    :class="{ show: openMenuForId === playlist.id }" 
+                    style="position: absolute;"
+                    @keydown.esc.stop.prevent="closeActions()"
+                  >
                     <li>
                       <button 
-                        @click="duplicatePlaylist(playlist.id)"
+                        @click.stop="handleDuplicate(playlist.id); closeActions()"
                         class="dropdown-item u-muted"
+                        type="button"
                       >
                         Duplicate
                       </button>
                     </li>
                     <li>
                       <button 
-                        @click="showDeleteConfirmation(playlist)"
+                        @click.stop="showDeleteConfirmation(playlist); closeActions()"
                         class="dropdown-item text-danger"
+                        type="button"
                       >
                         Delete
                       </button>
@@ -418,8 +427,8 @@
     </div>
 
     <!-- Delete Confirmation Modal -->
-    <div v-if="showDeleteModal" class="modal-overlay" @click.self="showDeleteModal = false">
-      <div class="modal-content" style="background-color: var(--bg);">
+    <div v-if="showDeleteModal" class="modal-overlay" @click.self="showDeleteModal = false" style="position: fixed; inset: 0; z-index: 1056;">
+      <div class="modal-content" style="background-color: var(--bg); position: relative; z-index: 1057;">
         <div class="modal-header">
           <h5 class="modal-title">Delete Workout Set</h5>
           <button @click="showDeleteModal = false" class="btn-close-white btn-close">
@@ -481,6 +490,30 @@ const emit = defineEmits(['playlist-selected', 'playlist-edited', 'playlist-publ
 
 const router = useRouter()
 const cartStore = useWorkoutCartStore()
+// Local UI state for per-item actions menu
+const openMenuForId = ref(null)
+const toggleActions = (playlist) => {
+  openMenuForId.value = openMenuForId.value === playlist.id ? null : playlist.id
+}
+const closeActions = () => { openMenuForId.value = null }
+
+// Close actions menu when clicking outside
+onMounted(() => {
+  const onBodyClick = () => closeActions()
+  document.addEventListener('click', onBodyClick)
+  onUnmounted(() => document.removeEventListener('click', onBodyClick))
+})
+
+// Duplicate handler
+const handleDuplicate = async (playlistId) => {
+  try {
+    await cartStore.duplicatePlaylist(playlistId)
+  } catch (error) {
+    console.error('Error duplicating playlist:', error)
+    alert('Error duplicating workout set: ' + (error?.message || 'Unknown error'))
+  }
+}
+
 
 // Local state
 const showEditModal = ref(false)
@@ -831,14 +864,7 @@ const viewPlaylist = (playlist) => {
   emit('playlist-selected', playlist)
 }
 
-const duplicatePlaylist = async (playlistId) => {
-  try {
-    await cartStore.duplicatePlaylist(playlistId)
-  } catch (error) {
-    console.error('Error duplicating playlist:', error)
-    alert('Error duplicating workout set: ' + error.message)
-  }
-}
+// duplicate functionality removed per request
 
 const showDeleteConfirmation = (playlist) => {
   deletingPlaylist.value = { ...playlist }
@@ -1011,7 +1037,7 @@ onUnmounted(() => {
 .playlist-card {
   background: var(--surface-subtle);
   border-radius: 12px;
-  overflow: hidden;
+  overflow: visible;
   transition: all 0.3s ease;
   height: 100%;
   display: flex;
@@ -1050,6 +1076,17 @@ onUnmounted(() => {
   display: flex;
   gap: 0.5rem;
   align-items: flex-start;
+  position: relative;
+}
+
+.dropdown-menu.u-card {
+  z-index: 1060;
+}
+
+.dropdown-menu.u-card.show {
+  display: block;
+  right: 0;
+  left: auto;
 }
 
 .playlist-content {
