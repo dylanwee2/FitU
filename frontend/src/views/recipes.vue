@@ -1,6 +1,8 @@
 <template>
   <div class="container mt-4">
 
+    
+
     <!-- Weekly Meal Plan (generated from Spoonacular) -->
     <h2 class="mb-3">Meal Ideas for the Week</h2>
     <div class="weekly-meal-plan mb-4">
@@ -55,6 +57,9 @@
       </div>
     </div>
 
+
+    <div v-if="error" class="alert alert-danger mt-3">{{ error }}</div>
+
     <h1>Find Recipes by Ingredients</h1>
 
     <form @submit.prevent="searchRecipes" class="row g-3 align-items-center mt-3">
@@ -76,8 +81,6 @@
         <button type="submit" class="btn btn-primary">Search</button>
       </div>
     </form>
-
-    <div v-if="error" class="alert alert-danger mt-3">{{ error }}</div>
 
     <div v-if="recipes.length" class="row mt-4">
       <div v-for="recipe in recipes" :key="recipe.id" class="col-12 col-md-6 col-lg-4 mb-3">

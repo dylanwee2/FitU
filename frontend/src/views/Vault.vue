@@ -566,9 +566,14 @@
           <div 
             v-for="workoutSet in filteredWorkoutSets" 
             :key="workoutSet.id"
-            class="col-sm-6 col-lg-4 col-xl-3"
+            class="col-sm-6 col-lg-4 col-xl-3 vault-item"
           >
             <div class="workout-set-card u-card" @click="viewWorkoutSet(workoutSet)">
+              <!-- Media header (first exercise image if available) -->
+              <div class="card-media" v-if="(workoutSet.exercises && workoutSet.exercises[0]?.gifUrl)" >
+                <img :src="workoutSet.exercises[0].gifUrl" :alt="workoutSet.name || 'Workout image'" loading="lazy" @error="handleImageError">
+                <div class="media-gradient"></div>
+              </div>
               <!-- Card Header -->
               <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="workout-title mb-0">{{ workoutSet.name || workoutSet.title || 'Unnamed Workout' }}</h5>
@@ -1073,6 +1078,21 @@ onUnmounted(() => {
   transform: translateY(-5px);
   box-shadow: 0 8px 25px rgba(0,0,0,0.15);
 }
+
+/* Media header */
+.card-media { position: relative; height: 160px; overflow: hidden; border-radius: 12px 12px 0 0; }
+.card-media img { width: 100%; height: 100%; object-fit: cover; display: block; filter: brightness(.9); transition: transform .35s ease, filter .35s ease; }
+.workout-set-card:hover .card-media img { transform: scale(1.05); filter: brightness(1); }
+.media-gradient { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.0), rgba(0,0,0,0.35)); }
+/* Removed quick action overlay buttons over media */
+
+/* Staggered reveal */
+.vault-item { animation: vault-fade-up .5s ease both; }
+.vault-item:nth-child(1) { animation-delay: .02s; }
+.vault-item:nth-child(2) { animation-delay: .06s; }
+.vault-item:nth-child(3) { animation-delay: .1s; }
+.vault-item:nth-child(4) { animation-delay: .14s; }
+@keyframes vault-fade-up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
 .card-header {
   padding: 1rem;

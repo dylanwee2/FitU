@@ -1,16 +1,20 @@
 <template>
-  <div class="auth-container">
+  <div class="auth-page">
+    <video class="bg-video" autoplay muted loop playsinline preload="auto">
+      <source src="/videos/UserLoginPageAnimation.mp4" type="video/mp4" />
+    </video>
     <div class="auth-card">
       <!-- Header -->
       <div class="auth-header">
-        <h1 class="auth-title">Create Account</h1>
-        <p class="auth-subtitle">Sign up to get started</p>
+        <h1>Create Account</h1>
+        <p class="u-muted">Sign up to get started</p>
       </div>
 
       <!-- Form -->
       <form @submit.prevent="signup" class="auth-form">
         <!-- Name Input -->
         <div class="input-group">
+          Full Name
           <input
             type="text"
             id="name"
@@ -23,11 +27,12 @@
 
         <!-- Email Input -->
         <div class="input-group">
+          Email
           <input
             type="email"
             id="email"
             v-model="emailInput"
-            class="auth-input"
+            class="auth-input "
             placeholder="Email Address"
             required
           />
@@ -35,6 +40,7 @@
 
         <!-- Password Input -->
         <div class="input-group">
+          Password
           <input
             type="password"
             id="password"
@@ -49,14 +55,19 @@
         </div>
 
         <!-- Sign Up Button -->
-        <button type="submit" class="u-btn u-btn--primary" style="height: 50px; display: flex; justify-content: center;">
+        <button type="submit" class="u-special-btn" style="height: 50px; display: flex; justify-content: center;">
           Create Account
         </button>
 
+        <!-- Inline Error Message -->
+        <p v-if="errorMessage" class="text-center" style="color: #dc3545; margin-top: 0.5rem;">
+          {{ errorMessage }}
+        </p>
+
         <!-- Login Link -->
-        <p class="register-link">
+        <p class="u-muted text-center">
           Already have an account? 
-          <router-link to="/login" class="register-text" style="color: black;" >Sign in</router-link>
+          <router-link to="/login" class="register-text" style="color:var(--secondary); text-decoration: underline;">Sign in</router-link>
         </p>
       </form>
     </div>
@@ -193,25 +204,42 @@ export default {
 </script>
 
 <style scoped>
-.auth-container {
-  height: 100vh;
+.auth-page {
+  position: relative;
+  min-height: 100vh;
+  padding-top: 60px;
+  padding-bottom: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: white;
-  padding: 2rem;
-  margin: 0;
-  box-sizing: border-box;
 }
 
+.bg-video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  z-index: 0;
+  pointer-events: none;
+}
+
+
+.auth-container { }
+
 .auth-card {
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 24px;
-  padding: 3rem;
   width: 100%;
   max-width: 420px;
-  box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
+  border-radius: 24px;
+  padding: 2.5rem;
+  background: var(--surface-subtle);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  position: relative;
+  z-index: 1;
 }
 
 .auth-header {

@@ -16,32 +16,7 @@
                 <span class="badge equipment-badge">{{ formatEquipment(exercise.equipment) }}</span>
               </div>
             </div>
-            <div class="exercise-actions">
-              <button 
-                @click="addToCart"
-                class="u-btn u-btn--primary"
-                :disabled="isInCart"
-                :title="isInCart ? 'Already in cart' : 'Add to workout cart'"
-              >
-              
-                {{ isInCart ? 'In Cart' : 'Add to Cart' }}
-              </button>
-            </div>
-          </div>
-        </div>  
-        <div class="row">
-          <div class="col-md-6" style="text-align: center;">
-              <img 
-                v-if="exercise.gifUrl" 
-                :src="exercise.gifUrl" 
-                :alt="exercise.name" 
-                class="img-fluid rounded shadow"
-                style="width: 65%;"
-              >
-          </div>
-          
-          <div class="col-md-6">
-            <div class="exercise-details">
+            <div class="exercise-details u-card mb-3">
               <h5>Exercise Information</h5>
               <ul class="list-unstyled">
                 <li><strong>Primary Target:</strong> {{ formatTarget(exercise.target) }}</li>
@@ -52,16 +27,39 @@
                 </li>
               </ul>
             </div>
+
+            <div v-if="exercise.instructions && exercise.instructions.length" class="instructions-section u-card">
+              <h5>Instructions</h5>
+              <ol class="instructions-list">
+                <li v-for="(instruction, index) in exercise.instructions" :key="index">
+                  {{ instruction }}
+                </li>
+              </ol>
+            </div>
           </div>
-        </div>
-        
-        <div v-if="exercise.instructions && exercise.instructions.length" class="instructions-section mt-4">
-          <h5>Instructions</h5>
-          <ol class="instructions-list">
-            <li v-for="(instruction, index) in exercise.instructions" :key="index">
-              {{ instruction }}
-            </li>
-          </ol>
+
+          <!-- Right: add-to-cart above sticky media -->
+          <div class="col-md-6">
+            <div class="d-none d-md-flex justify-content-end mb-2">
+              <button
+                @click="toggleCartDetail"
+                class="u-btn"
+                :class="isInCart ? 'u-btn--danger' : 'u-btn--primary'"
+                :title="isInCart ? 'Remove from workout cart' : 'Add to workout cart'"
+              >
+                {{ isInCart ? 'Remove from Cart' : 'Add to Cart' }}
+              </button>
+            </div>
+            <div class="media-sticky" ref="mediaRef">
+              <img
+                v-if="exercise.gifUrl"
+                :src="exercise.gifUrl"
+                :alt="exercise.name"
+                class="media-img img-fluid rounded shadow"
+                :style="{ transform: `translateY(${parallaxY}px)` }"
+              >
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -69,7 +67,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useWorkoutCartStore } from '../stores/workoutCart'
 
@@ -172,11 +170,27 @@ onMounted(() => {
     loadExercise()
   }
 })
+// Subtle parallax for media to move with scroll while staying aligned
+const mediaRef = ref(null)
+const parallaxY = ref(0)
+const onScroll = () => {
+  if (!mediaRef.value) return
+  const rect = mediaRef.value.getBoundingClientRect()
+  const viewportAnchor = 100 // pixels from top after sticky
+  const elementAnchor = rect.top
+  const delta = elementAnchor - viewportAnchor
+  parallaxY.value = Math.max(-18, Math.min(18, delta * 0.08))
+}
+onMounted(() => {
+  window.addEventListener('scroll', onScroll, { passive: true })
+  onScroll()
+})
+onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
 </script>
 
 <style scoped>
 .container {
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 2rem auto;
   padding: 1rem;
 }
@@ -293,6 +307,10 @@ onMounted(() => {
   padding: 2rem;
 }
 
+/* Sticky media + subtle parallax */
+.media-sticky { position: sticky; top: 100px; height: auto; display: flex; align-items: flex-start; justify-content: center; }
+.media-img { width: 100%; max-width: 420px; max-height: 60vh; object-fit: contain; display: block; margin-inline: auto; will-change: transform; }
+
 .instructions-section h5 {
   color: var(--muted);
   margin-bottom: 1.5rem;
@@ -317,6 +335,8 @@ onMounted(() => {
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
+/* Remove old floating styles now that button sits above media */
+
 @media (max-width: 768px) {
   .container {
     padding: 0.5rem;
@@ -325,5 +345,7 @@ onMounted(() => {
   .exercise-details {
     margin-top: 1rem;
   }
+  .media-sticky { position: static; height: auto; }
+  .media-img { max-width: 100%; max-height: 60vh; }
 }
 </style>

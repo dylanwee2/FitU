@@ -1,16 +1,20 @@
 <template>
-  <div class="auth-container">
+  <div class="auth-page">
+    <video class="bg-video" autoplay muted loop playsinline preload="auto">
+      <source src="/videos/UserLoginPageAnimation.mp4" type="video/mp4" />
+    </video>
     <div class="auth-card">
       <!-- Header -->
       <div class="auth-header">
-        <h1 class="auth-title">Welcome Back</h1>
-        <p class="auth-subtitle">Sign in to your account</p>
+        <h1 >Welcome Back</h1>
+        <p class="u-muted">Sign in to your account</p>
       </div>
 
       <!-- Form -->
       <form @submit.prevent="login" class="auth-form">
         <!-- Email Input -->
         <div class="input-group">
+          Email
           <input
             type="email"
             id="email"
@@ -23,6 +27,7 @@
 
         <!-- Password Input -->
         <div class="input-group">
+          Password
           <input
             type="password"
             id="password"
@@ -37,14 +42,19 @@
         </div>
 
         <!-- Sign In Button -->
-        <button type="submit" class="u-btn u-btn--primary" style="height: 50px; display: flex; justify-content: center;">
+        <button type="submit" class="u-special-btn" style="height: 50px; display: flex; justify-content: center;">
           Sign In
         </button>
 
+        <!-- Inline Error Message -->
+        <p v-if="errorMessage" class="text-center" style="color: #dc3545; margin-top: 0.5rem;">
+          {{ errorMessage }}
+        </p>
+
         <!-- Register Link -->
-        <p class="register-link">
+        <p class="u-muted text-center">
           Don't have an account? 
-          <router-link to="/signup" class="register-text" style="color: black;">Sign up</router-link>
+          <router-link to="/signup" style="color: var(--secondary); text-decoration: underline;">Sign up</router-link>
         </p>
       </form>
     </div>
@@ -124,23 +134,42 @@ export default {
 </script>
 
 <style scoped>
-.auth-container {
-  height: 100vh;
+.auth-page {
+  position: relative;
+  min-height: 100vh;
+  padding-top: 60px;
+  padding-bottom: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: white;
-  padding: 2rem;
 }
 
+.bg-video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  z-index: 0;
+  pointer-events: none;
+}
+
+
+
+
 .auth-card {
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 24px;
-  padding: 3rem;
   width: 100%;
   max-width: 420px;
-  box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
+  border-radius: 24px;
+  padding: 2.5rem;
+  background: var(--surface-subtle);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  position: relative;
+  z-index: 1;
 }
 
 .auth-header {
