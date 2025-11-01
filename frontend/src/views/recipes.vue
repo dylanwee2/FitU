@@ -211,6 +211,28 @@ export default {
 
     const capitalize = (s) => s ? (s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()) : s
 
+    // Deduplicate meal suggestions to avoid repeated items across days
+    const dedupeMeals = (list) => {
+      const seen = new Set()
+      const unique = []
+      const makeKey = (m) => {
+        if (!m) return 'null'
+        if (m.id) return `id:${m.id}`
+        const t = (m.title || '').trim().toLowerCase()
+        const s = (m.sourceUrl || '').trim().toLowerCase()
+        const i = (m.image || '').trim().toLowerCase()
+        return `t:${t}|s:${s}|i:${i}`
+      }
+      for (const m of Array.isArray(list) ? list : []) {
+        const key = makeKey(m)
+        if (!seen.has(key)) {
+          seen.add(key)
+          unique.push(m)
+        }
+      }
+      return unique
+    }
+
 
     const fetchMealIdeas = async () => {
       mealIdeasLoading.value = true
@@ -381,14 +403,14 @@ export default {
     // Flatten all meals from mealIdeas into a single array for simplified display
     const mealIdeasList = computed(() => {
       // mealIdeas is an array of { day, meals } (or suggestions)
-      return mealIdeas.value.flatMap(d => (d.meals && Array.isArray(d.meals)) ? d.meals : [])
+      const flat = mealIdeas.value.flatMap(d => (d.meals && Array.isArray(d.meals)) ? d.meals : [])
+      return dedupeMeals(flat)
     })
 
     const mealIdeasTotal = computed(() => mealIdeasList.value.length)
 
-    // Up to 4 cards for meal ideas — prefer current `recipes` search results when present
+    // Up to 4 cards for meal ideas — always use curated meal ideas, even after search
     const mealIdeaCards = computed(() => {
-      if (recipes.value && recipes.value.length) return recipes.value.slice(0, 4)
       return mealIdeasList.value.slice(0, 4)
     })
 
@@ -411,8 +433,8 @@ export default {
       }
 
       try {
-        // Hide meal ideas once a valid search is initiated
-        showMealIdeas.value = false
+  // Keep meal ideas visible below search results
+  showMealIdeas.value = true
         //const API_URL = 'http://18.139.200.231:3000/api/recipes'
         const API_URL = 'http://localhost:3000/api/recipes'
         const resp = await axios.get(API_URL, {
