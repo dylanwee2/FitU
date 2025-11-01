@@ -1183,6 +1183,7 @@ onUnmounted(() => {
   font-weight: 600;
   margin-bottom: 0.5rem;
   line-height: 1.3;
+  width: 150px;
 }
 
 .workout-description {
@@ -1203,7 +1204,7 @@ onUnmounted(() => {
 
 .exercise-count {
   font-size: 0.8rem;
-  margin-bottom: 0.25rem;
+  margin-top: 10px;
 }
 
 .workout-stats {
