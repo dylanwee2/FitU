@@ -92,6 +92,10 @@
               placeholder="Event description (optional)"
             ></textarea>
           </div>
+          <!-- Validation error: start must be before end -->
+          <div v-if="timeError" class="text-danger small mt-1">
+            Start time must be before end time.
+          </div>
           
 
         </div>
@@ -101,7 +105,7 @@
                 <button v-if="editingEvent" @click="deleteEvent" class="u-btn u-btn--danger ms-2">
                   Delete
                 </button>
-          <button @click="submitEvent" class="u-btn u-btn--primary" :disabled="!newEvent.title">
+          <button @click="submitEvent" class="u-btn u-btn--primary" :disabled="!newEvent.title || timeError">
             {{ editingEvent ? 'Update' : 'Add' }} Event
           </button>
           
@@ -171,7 +175,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, onUnmounted, watch } from 'vue'
+import { ref, onMounted, nextTick, onUnmounted, watch, computed } from 'vue'
 
 // Tooltip state for ICS input
 const showTooltip = ref(false)
@@ -587,6 +591,17 @@ const handleEventUpdate = async (info) => {
   }
 }
 
+// Validation: start time must be before end time (only when both provided)
+const timeError = computed(() => {
+  const s = newEvent.value?.start
+  const e = newEvent.value?.end
+  if (!s || !e) return false
+  const sd = new Date(s)
+  const ed = new Date(e)
+  if (isNaN(sd) || isNaN(ed)) return false
+  return sd > ed
+})
+
 // File upload handling
 const handleIcsUpload = async (event) => {
   const file = event.target.files[0]
@@ -696,6 +711,7 @@ const closeEventForm = () => {
 
 const submitEvent = async () => {
   if (!newEvent.value.title) return
+  if (timeError.value) return
 
   const eventData = {
     title: newEvent.value.title,
