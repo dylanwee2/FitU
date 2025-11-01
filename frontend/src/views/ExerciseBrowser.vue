@@ -25,6 +25,17 @@
         </div>
       </div>
 
+      <!-- Bodypart filter dropdown shown just below the search input -->
+      <div class="search-filters mt-2" v-if="bodyPartsList.length">
+        <div class="d-flex gap-2 align-items-center">
+          <select class="form-select" v-model="selectedBodyPart" @change="applyBodyFilter(selectedBodyPart)">
+            <option value="">Filter by body part</option>
+            <option v-for="part in bodyPartsList" :key="part" :value="part">{{ part }}</option>
+          </select>
+          <button v-if="selectedBodyPart" @click="clearBodyFilter" class="u-btn u-btn--danger clearBtn">Clear</button>
+        </div>
+      </div>
+
       <!-- Loading State -->
       <div v-if="loading" class="loading-section text-center py-5">
         <div class="spinner-border text-primary mb-3" role="status">
@@ -58,11 +69,6 @@
                 </span>
                 <span v-if="searchQuery" class="search-query">for "{{ searchQuery }}"</span>
               </p>
-            </div>
-            <div class="col-auto" v-if="searchQuery">
-              <button @click="clearSearch" class="btn btn-outline-secondary btn-sm">
-                <i class="fas fa-times me-1"></i>Clear Search
-              </button>
             </div>
           </div>
         </div>
@@ -346,6 +352,46 @@ const searchByEquipment = (equipment) => {
   fetchExercises(cleanEquipment)
 }
 
+// Body-part filters: fetch full list from API and expose to UI
+const bodyPartsList = ref([])
+const selectedBodyPart = ref('')
+const fetchBodyParts = async () => {
+  try {
+    const url = `${API_BASE_URL}/bodyparts`
+    const resp = await fetch(url)
+    if (!resp.ok) return
+    const data = await resp.json()
+    
+    // The API may return { success, data } or just an array. Items can be strings or objects like { name: 'neck' }.
+    const items = data?.data || (Array.isArray(data) ? data : data.bodyParts || [])
+    if (!Array.isArray(items)) return
+    const parts = items
+      .map(p => {
+        if (!p) return ''
+        if (typeof p === 'string') return p
+        if (typeof p === 'object' && p.name) return p.name
+        return ''
+      })
+      .filter(Boolean)
+      .map(s => capitalizeFirstLetter(s.toString().trim()))
+    bodyPartsList.value = parts.sort()
+  } catch (e) {
+    console.warn('fetchBodyParts failed', e)
+  }
+}
+
+const applyBodyFilter = (part) => {
+  selectedBodyPart.value = part
+  searchQuery.value = part
+  fetchExercises(part)
+}
+
+const clearBodyFilter = () => {
+  selectedBodyPart.value = ''
+  searchQuery.value = ''
+  fetchExercises()
+}
+
 // Format functions to clean up array data
 const formatExerciseName = (name) => {
   if (!name) return 'Exercise'
@@ -392,6 +438,8 @@ const capitalizeFirstLetter = (text) => {
 // Lifecycle
 onMounted(() => {
   fetchExercises()
+  // fetch bodyparts for filter chips under the search bar
+  fetchBodyParts()
 })
 
 </script>
@@ -417,6 +465,30 @@ onMounted(() => {
   border: 2px solid #e9ecef;
   font-size: 1rem;
   transition: all 0.3s ease;
+}
+
+/* Search filters styling (chips under search) */
+.search-filters {
+  margin-top: 0.5rem;
+  width: 300px;
+}
+.search-filters .badge {
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.85rem;
+  padding: 0.35rem 0.6rem;
+}
+.search-filters .active-filter {
+  box-shadow: 0 0 0 2px rgba(0,123,255,0.12) inset;
+  transform: translateY(-1px);
+}
+
+.clearBtn{
+  display: flex;
+  height: 40px;
+  width: 150px;
+  justify-content: center;
+  margin-left: 10px;
 }
 
 
