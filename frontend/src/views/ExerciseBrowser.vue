@@ -26,15 +26,33 @@
       </div>
 
       <!-- Bodypart filter dropdown shown just below the search input -->
-      <div class="search-filters mt-2" v-if="bodyPartsList.length">
-        <div class="d-flex gap-2 align-items-center">
-          <select class="form-select" v-model="selectedBodyPart" @change="applyBodyFilter(selectedBodyPart)">
-            <option value="">Filter by body part</option>
-            <option v-for="part in bodyPartsList" :key="part" :value="part">{{ part }}</option>
-          </select>
-          <button v-if="selectedBodyPart" @click="clearBodyFilter" class="u-btn u-btn--danger clearBtn">Clear</button>
-        </div>
-      </div>
+            <div class="search-filters mt-2" v-if="bodyPartsList.length">
+              <div class="d-flex gap-2 align-items-center">
+                <!-- Custom fixed-position dropdown to avoid layout shifting when native select opens -->
+                <div class="bodypart-dropdown" ref="bodyDropdownRef">
+                  <button
+                    class="form-select bodypart-toggle"
+                    type="button"
+                    @click.prevent="toggleBodyDropdown"
+                    :aria-expanded="isBodyDropdownOpen"
+                  >
+                    {{ selectedBodyPart || 'Filter by body part' }}
+                  </button>
+
+                  <div
+                    v-if="isBodyDropdownOpen"
+                    class="bodypart-menu"
+                    :style="bodyDropdownStyle"
+                    role="listbox"
+                  >
+                    <div class="bodypart-option" role="option" @click="selectBodyPart('')">All</div>
+                    <div v-for="part in bodyPartsList" :key="part" class="bodypart-option" role="option" @click="selectBodyPart(part)">{{ part }}</div>
+                  </div>
+                </div>
+
+                <button v-if="selectedBodyPart" @click="clearBodyFilter" class="u-btn u-btn--danger clearBtn">Clear</button>
+              </div>
+            </div>
 
       <!-- Loading State -->
       <div v-if="loading" class="loading-section text-center py-5">
@@ -170,7 +188,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, watch, computed, nextTick, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useWorkoutCartStore } from '../stores/workoutCart'
 
@@ -355,6 +373,53 @@ const searchByEquipment = (equipment) => {
 // Body-part filters: fetch full list from API and expose to UI
 const bodyPartsList = ref([])
 const selectedBodyPart = ref('')
+const isBodyDropdownOpen = ref(false)
+const bodyDropdownStyle = ref({})
+const bodyDropdownRef = ref(null)
+
+const closeBodyDropdown = () => {
+  isBodyDropdownOpen.value = false
+}
+
+const toggleBodyDropdown = async () => {
+  isBodyDropdownOpen.value = !isBodyDropdownOpen.value
+  if (isBodyDropdownOpen.value) {
+    await nextTick()
+    // compute fixed-position coords so the dropdown doesn't affect layout
+    const el = bodyDropdownRef.value && bodyDropdownRef.value.getBoundingClientRect && bodyDropdownRef.value.getBoundingClientRect()
+    if (el) {
+      bodyDropdownStyle.value = {
+        position: 'fixed',
+        top: `${el.bottom}px`,
+        left: `${el.left}px`,
+        width: `${el.width}px`,
+        zIndex: 9999,
+      }
+    }
+    // small delay to ensure positioning applied before any focus changes
+    setTimeout(() => {
+      // noop
+    }, 0)
+  }
+}
+
+const selectBodyPart = (part) => {
+  selectedBodyPart.value = part || ''
+  applyBodyFilter(selectedBodyPart.value)
+  closeBodyDropdown()
+}
+
+// Close on outside click or Escape
+const onDocClick = (e) => {
+  if (!bodyDropdownRef.value) return
+  if (!bodyDropdownRef.value.contains(e.target)) {
+    closeBodyDropdown()
+  }
+}
+
+const onKeyDown = (e) => {
+  if (e.key === 'Escape') closeBodyDropdown()
+}
 const fetchBodyParts = async () => {
   try {
     const url = `${API_BASE_URL}/bodyparts`
@@ -440,6 +505,13 @@ onMounted(() => {
   fetchExercises()
   // fetch bodyparts for filter chips under the search bar
   fetchBodyParts()
+  document.addEventListener('click', onDocClick)
+  document.addEventListener('keydown', onKeyDown)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', onDocClick)
+  document.removeEventListener('keydown', onKeyDown)
 })
 
 </script>
@@ -543,6 +615,40 @@ onMounted(() => {
   overflow: hidden;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+}
+
+/* Custom bodypart dropdown overlay (fixed-position) */
+.bodypart-dropdown {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+.bodypart-toggle {
+  width: 100%;
+  text-align: left;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: black;
+  color: white;
+}
+.bodypart-menu {
+  position: fixed; /* key: fixed so it won't affect parent layout */
+  max-height: 50vh;
+  overflow: auto;
+  background: var(--card-bg, black);
+  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  border-radius: 8px;
+  padding: 0.25rem 0;
+}
+.bodypart-option {
+  padding: 0.6rem 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.bodypart-option:hover {
+  background: rgba(0,0,0,0.04);
   cursor: pointer;
   height: 100%;
   display: flex;
