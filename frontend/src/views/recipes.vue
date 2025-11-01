@@ -8,8 +8,8 @@
 
     <h1>Find Recipes by Ingredients</h1>
 
-    <form @submit.prevent="searchRecipes" class="row g-3 align-items-center mt-3">
-      <div class="col-12 col-md-9">
+    <form @submit.prevent="searchRecipes" class="search-form mt-3">
+      <div class="search-input-wrap">
         <input
           v-model="ingredients"
           type="text"
@@ -19,23 +19,24 @@
         />
       </div>
 
-      <div class="col-auto">
-        <input v-model.number="number" type="number" min="1" class="form-control" style="width:100px" />
+      <div class="number-input-wrap">
+        <input v-model.number="number" type="number" min="1" class="form-control"/>
       </div>
 
-      <div class="col-auto">
+      <div class="search-button-wrap mt-3">
         <button type="submit" class="u-special-btn">Search</button>
       </div>
     </form>
 
     <div v-if="recipes.length" class="row mt-4">
-      <div v-for="recipe in recipes" :key="recipe.id" class="col-12 col-md-6 col-lg-4 mb-3">
+      <div v-for="recipe in recipes" :key="recipe.id" class="col-6 col-lg-4 mb-3">
         <div class="card h-100" style="background-color: var(--surface-subtle);">
           <img :src="recipe.image" class="card-img-top" :alt="recipe.title" />
           <div class="card-body d-flex flex-column">
             <h5 class="card-title">{{ recipe.title }}</h5>
+            <p class="mb-1 u-muted" style="font-size:0.8rem">Ready in: {{ recipe.readyInMinutes ?? 'N/A' }} min</p>
             <div class="text-center mt-auto">
-              <button @click="viewRecipeDetails(recipe.id)" class="u-btn u-btn--primary viewRecipe">View Recipe</button>
+              <button @click="viewRecipeDetails(recipe.id)" class="u-special-btn viewRecipe">View Recipe</button>
             </div>
           </div>
         </div>
@@ -124,7 +125,7 @@
 
               <!-- Source -->
               <div v-if="selectedRecipe.sourceUrl" class="mt-3 text-center">
-                <a :href="selectedRecipe.sourceUrl" target="_blank" class="u-btn u-btn--primary originalButton">
+                <a :href="selectedRecipe.sourceUrl" target="_blank" class="u-special-btn originalButton">
                   View Original Recipe
                 </a>
               </div>
@@ -133,8 +134,9 @@
         </div>
       </div>
     </div>
-    <h2 class="mb-3">Meal Ideas</h2>
-    <div class="meal-ideas mb-4 pt-4">
+  <template v-if="showMealIdeas">
+  <h2 class="mb-3">Meal Ideas</h2>
+  <div class="meal-ideas mb-4 pt-4">
 
       <div v-if="mealIdeasLoading" class="text-center py-3">
         <div class="spinner-border text-primary" role="status">
@@ -147,21 +149,21 @@
 
       <!-- Render up to 4 meal idea cards. Prefer `recipes` (search results) when available, otherwise fall back to fetched meal ideas -->
       <div class="row g-3">
-        <div v-for="(meal, i) in mealIdeaCards" :key="meal.id || i" class="col-6 col-md-3">
+          <div v-for="(meal, i) in mealIdeaCards" :key="meal.id || i" class="col-6 col-lg-3">
           <div class="card h-100">
             <img :src="getMealImage(meal)" class="card-img-top" :alt="meal.title || 'Meal'" />
             <div class="card-body d-flex flex-column">
               <h6 class="card-title mb-1" style="font-size:0.95rem">{{ meal.title }}</h6>
               <p class="mb-1 u-muted" style="font-size:0.8rem">Ready in: {{ meal.readyInMinutes || 'N/A' }} min</p>
               <div class="mt-auto text-end">
-                <button class="u-btn u-btn--primary" @click="viewRecipeDetails(meal.id)" v-if="meal.id">View</button>
-                <a v-else :href="meal.sourceUrl || '#'" class="u-btn u-btn--primary">View</a>
+                <button class="u-special-btn" @click="viewRecipeDetails(meal.id)" v-if="meal.id">View Recipe</button>
+                <a v-else :href="meal.sourceUrl || '#'" class="u-special-btn">View Recipe</a>
               </div>
             </div>
           </div>
         </div>
 
-        <div v-for="n in (4 - mealIdeaCards.length)" :key="'ph-' + n" class="col-6 col-md-3">
+          <div v-for="n in (4 - mealIdeaCards.length)" :key="'ph-' + n" class="col-6 col-lg-3">
           <div class="card h-100 placeholder-card d-flex align-items-center justify-content-center">
             <div class="card-body text-center">
               <small class="text-muted">No meal</small>
@@ -170,7 +172,8 @@
         </div>
       </div>
 
-    </div>
+  </div>
+  </template>
 
   </div>
 </template>
@@ -182,7 +185,8 @@ import axios from 'axios'
 export default {
   setup() {
     const ingredients = ref('')
-    const number = ref(5)
+  const number = ref(5)
+  const showMealIdeas = ref(true)
     
   // Meal ideas state (Spoonacular)
   const mealIdeas = ref([])
@@ -407,7 +411,10 @@ export default {
       }
 
       try {
-        const API_URL = 'http://18.139.200.231:3000/api/recipes'
+        // Hide meal ideas once a valid search is initiated
+        showMealIdeas.value = false
+        //const API_URL = 'http://18.139.200.231:3000/api/recipes'
+        const API_URL = 'http://localhost:3000/api/recipes'
         const resp = await axios.get(API_URL, {
           params: {
             ingredients: ingredients.value,
@@ -419,6 +426,25 @@ export default {
         console.log('Response data:', resp.data)
         console.log('Number of recipes:', resp.data?.length)
         recipes.value = resp.data
+
+        // Enrich search results with readyInMinutes via Spoonacular bulk info (if API key is configured)
+        try {
+          const apiKey = import.meta.env.VITE_SPOONACULAR_API_KEY
+          const ids = (recipes.value || []).map(r => r.id).filter(Boolean)
+          if (apiKey && ids.length) {
+            const bulk = await axios.get('https://api.spoonacular.com/recipes/informationBulk', {
+              params: { ids: ids.join(','), apiKey, includeNutrition: false }
+            })
+            const byId = new Map((bulk.data || []).map(item => [item.id, item]))
+            recipes.value = recipes.value.map(r => {
+              const info = byId.get(r.id)
+              return info ? { ...r, readyInMinutes: info.readyInMinutes } : r
+            })
+          }
+        } catch (e) {
+          // Non-fatal: keep showing results without time if the enrichment fails
+          console.warn('Could not enrich recipes with readyInMinutes:', e?.message || e)
+        }
       } catch (err) {
         console.error('Error fetching recipes:', err)
         error.value = err?.response?.data?.error || err.message || 'Failed to fetch recipes.'
@@ -488,7 +514,8 @@ export default {
       mealIdeasList,
       mealIdeasTotal
       ,
-      mealIdeaCards
+      mealIdeaCards,
+      showMealIdeas
     }
   }
 }
@@ -676,5 +703,55 @@ export default {
   display: block;
   width: 100%;
   text-align: center;
+}
+
+/* Ensure u-special-btn behaves the same and centers text */
+.card .card-body .u-special-btn {
+  display: block;
+  width: 100%;
+  text-align: center;
+}
+
+/* Search form layout: keep controls on one row; shrink inputs if needed */
+.search-form {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 12px;
+}
+.search-input-wrap {
+  flex: 1 1 auto;
+  min-width: 0; /* allow input to shrink on small screens */
+}
+.search-input-wrap .form-control {
+  width: 100%;
+}
+.number-input-wrap {
+  flex: 0 0 60px; /* fixed width per request */
+  max-width: 60px;
+}
+.number-input-wrap .form-control {
+  width: 100%;
+}
+.search-button-wrap {
+  flex: 0 0 auto; /* button stays visible, no shrinking beyond content */
+}
+
+/* Dark-theme the number input spinner and ensure compact width */
+.search-form input[type="number"] {
+  color-scheme: dark; /* use dark UI controls (affects spinner) where supported */
+}
+.search-form input[type="number"]::-webkit-inner-spin-button,
+.search-form input[type="number"]::-webkit-outer-spin-button {
+  filter: brightness(0.7); /* darken spinner arrows in WebKit */
+}
+
+/* On small screens, avoid inner scrollbars for the cards section; let the page scroll instead */
+@media (max-width: 768px) {
+  .meal-ideas {
+    max-height: none;
+    overflow-y: visible;
+    padding-right: 0; /* remove extra padding that accounted for scrollbar */
+  }
 }
 </style>
