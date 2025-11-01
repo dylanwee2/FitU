@@ -139,7 +139,7 @@
                       :key="exercise.id"
                       class="exercise-tag"
                     >
-                      {{ exercise.name }}
+                      {{ formatExerciseName(exercise.name) }}
                     </span>
                     <span 
                       v-if="playlist.exercises.length > 3" 

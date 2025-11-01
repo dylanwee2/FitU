@@ -4,66 +4,12 @@
     
 
     <!-- Weekly Meal Plan (generated from Spoonacular) -->
-    <h2 class="mb-3">Meal Ideas for the Week</h2>
-    <div class="weekly-meal-plan mb-4">
-    
-      <div v-if="weeklyLoading" class="text-center py-3">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-        <p class="mt-2">Generating weekly meal plan...</p>
-      </div>
-
-      <div v-else-if="weeklyError" class="alert alert-danger">{{ weeklyError }}</div>
-
-      <div v-else-if="weeklyDays.length">
-        <div class="row g-3">
-          <div v-for="(day, idx) in weeklyDays" :key="idx" class="col-12">
-            <div class="card p-3" style="background-color: var(--surface-subtle);">
-              <div class="d-flex align-items-center justify-content-between mb-2">
-                <h5 class="mb-0">{{ day.day }}</h5>
-                <small class="text-muted">{{ day.meals.length }} meals</small>
-              </div>
-
-              <div class="row">
-                <!-- Render up to 3 meals per day: breakfast, lunch, dinner -->
-                <div v-for="(meal, midx) in (day.meals.slice(0,3))" :key="meal.id || midx" class="col-4">
-                  <div class="meal-card card h-100 position-relative">
-                    <img :src="getMealImage(meal)" class="card-img-top" :alt="meal.title" />
-                    <div class="card-body p-2 d-flex flex-column justify-content-between" style="min-height:120px">
-                      <div>
-                        <h6 class="card-title mb-1" style="font-size:0.95rem">{{ meal.title }}</h6>
-                        <p class="mb-1 u-muted" style="font-size:0.8rem">Ready in: {{ meal.readyInMinutes || 'N/A' }} min</p>
-                      </div>
-                      <div class="text-end">
-                        <a :href="meal.sourceUrl || ('https://spoonacular.com/recipes/' + (meal.id || ''))" target="_blank" class="u-btn  u-btn--primary text-center">View Recipe</a>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- If less than 3 meals, show placeholders to keep layout consistent -->
-                <div v-for="n in (3 - Math.min(3, day.meals.length))" :key="'ph-' + n" class="col-4">
-                  <div class="card h-100 placeholder-card" style="background: rgba(255,255,255,0.02); border: 1px dashed var(--border-subtle); height:100%;">
-                    <div class="card-body d-flex align-items-center justify-content-center">
-                      <small class="text-muted">No meal</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-
-    <div v-if="error" class="alert alert-danger mt-3">{{ error }}</div>
+     <div v-if="error" class="alert alert-danger mt-3">{{ error }}</div>
 
     <h1>Find Recipes by Ingredients</h1>
 
-    <form @submit.prevent="searchRecipes" class="row g-3 align-items-center mt-3">
-      <div class="col-12 col-md-9">
+    <form @submit.prevent="searchRecipes" class="search-form mt-3">
+      <div class="search-input-wrap">
         <input
           v-model="ingredients"
           type="text"
@@ -73,23 +19,24 @@
         />
       </div>
 
-      <div class="col-auto">
-        <input v-model.number="number" type="number" min="1" class="form-control" style="width:100px" />
+      <div class="number-input-wrap">
+        <input v-model.number="number" type="number" min="1" class="form-control"/>
       </div>
 
-      <div class="col-auto">
-        <button type="submit" class="btn btn-primary">Search</button>
+      <div class="search-button-wrap mt-3">
+        <button type="submit" class="u-special-btn">Search</button>
       </div>
     </form>
 
     <div v-if="recipes.length" class="row mt-4">
-      <div v-for="recipe in recipes" :key="recipe.id" class="col-12 col-md-6 col-lg-4 mb-3">
+      <div v-for="recipe in recipes" :key="recipe.id" class="col-6 col-lg-4 mb-3">
         <div class="card h-100" style="background-color: var(--surface-subtle);">
           <img :src="recipe.image" class="card-img-top" :alt="recipe.title" />
           <div class="card-body d-flex flex-column">
             <h5 class="card-title">{{ recipe.title }}</h5>
+            <p class="mb-1 u-muted" style="font-size:0.8rem">Ready in: {{ recipe.readyInMinutes ?? 'N/A' }} min</p>
             <div class="text-center mt-auto">
-              <button @click="viewRecipeDetails(recipe.id)" class="u-btn u-btn--primary viewRecipe">View Recipe</button>
+              <button @click="viewRecipeDetails(recipe.id)" class="u-special-btn viewRecipe">View Recipe</button>
             </div>
           </div>
         </div>
@@ -178,7 +125,7 @@
 
               <!-- Source -->
               <div v-if="selectedRecipe.sourceUrl" class="mt-3 text-center">
-                <a :href="selectedRecipe.sourceUrl" target="_blank" class="u-btn u-btn--primary originalButton">
+                <a :href="selectedRecipe.sourceUrl" target="_blank" class="u-special-btn originalButton">
                   View Original Recipe
                 </a>
               </div>
@@ -187,22 +134,64 @@
         </div>
       </div>
     </div>
+  <template v-if="showMealIdeas">
+  <h2 class="mb-3">Meal Ideas</h2>
+  <div class="meal-ideas mb-4 pt-4">
+
+      <div v-if="mealIdeasLoading" class="text-center py-3">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Generating meal ideas...</p>
+      </div>
+
+      <div v-else-if="mealIdeasError" class="alert alert-danger">{{ mealIdeasError }}</div>
+
+      <!-- Render up to 4 meal idea cards. Prefer `recipes` (search results) when available, otherwise fall back to fetched meal ideas -->
+      <div class="row g-3">
+          <div v-for="(meal, i) in mealIdeaCards" :key="meal.id || i" class="col-6 col-lg-3">
+          <div class="card h-100">
+            <img :src="getMealImage(meal)" class="card-img-top" :alt="meal.title || 'Meal'" />
+            <div class="card-body d-flex flex-column">
+              <h6 class="card-title mb-1" style="font-size:0.95rem">{{ meal.title }}</h6>
+              <p class="mb-1 u-muted" style="font-size:0.8rem">Ready in: {{ meal.readyInMinutes || 'N/A' }} min</p>
+              <div class="mt-auto text-end">
+                <button class="u-special-btn" @click="viewRecipeDetails(meal.id)" v-if="meal.id">View Recipe</button>
+                <a v-else :href="meal.sourceUrl || '#'" class="u-special-btn">View Recipe</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+          <div v-for="n in (4 - mealIdeaCards.length)" :key="'ph-' + n" class="col-6 col-lg-3">
+          <div class="card h-100 placeholder-card d-flex align-items-center justify-content-center">
+            <div class="card-body text-center">
+              <small class="text-muted">No meal</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+  </div>
+  </template>
+
   </div>
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 
 export default {
   setup() {
     const ingredients = ref('')
-    const number = ref(5)
+  const number = ref(5)
+  const showMealIdeas = ref(true)
     
-    // Weekly meal plan state (Spoonacular)
-    const weeklyDays = ref([])
-    const weeklyLoading = ref(false)
-    const weeklyError = ref('')
+  // Meal ideas state (Spoonacular)
+  const mealIdeas = ref([])
+  const mealIdeasLoading = ref(false)
+  const mealIdeasError = ref('')
 
     const getMealImage = (meal) => {
       // Prefer meal.image. If it's already a full URL, use it.
@@ -222,16 +211,38 @@ export default {
 
     const capitalize = (s) => s ? (s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()) : s
 
+    // Deduplicate meal suggestions to avoid repeated items across days
+    const dedupeMeals = (list) => {
+      const seen = new Set()
+      const unique = []
+      const makeKey = (m) => {
+        if (!m) return 'null'
+        if (m.id) return `id:${m.id}`
+        const t = (m.title || '').trim().toLowerCase()
+        const s = (m.sourceUrl || '').trim().toLowerCase()
+        const i = (m.image || '').trim().toLowerCase()
+        return `t:${t}|s:${s}|i:${i}`
+      }
+      for (const m of Array.isArray(list) ? list : []) {
+        const key = makeKey(m)
+        if (!seen.has(key)) {
+          seen.add(key)
+          unique.push(m)
+        }
+      }
+      return unique
+    }
 
-    const fetchDayMealPlan = async () => {
-      weeklyLoading.value = true
-      weeklyError.value = ''
-      weeklyDays.value = []
+
+    const fetchMealIdeas = async () => {
+      mealIdeasLoading.value = true
+      mealIdeasError.value = ''
+      mealIdeas.value = []
       try {
         const apiKey = import.meta.env.VITE_SPOONACULAR_API_KEY
         if (!apiKey) {
-          weeklyError.value = 'Spoonacular API key not configured (VITE_SPOONACULAR_API_KEY)'
-          weeklyLoading.value = false
+          mealIdeasError.value = 'Spoonacular API key not configured (VITE_SPOONACULAR_API_KEY)'
+          mealIdeasLoading.value = false
           return
         }
 
@@ -245,7 +256,7 @@ export default {
         const data = resp.data || {}
 
         // Spoonacular returns a 'week' object mapping day names to meals
-        if (data.week && typeof data.week === 'object') {
+  if (data.week && typeof data.week === 'object') {
           const order = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
           const days = []
           order.forEach(d => {
@@ -262,24 +273,24 @@ export default {
               days.push({ day: capitalize(k), meals: data.week[k].meals || [] })
             }
           })
-          weeklyDays.value = days
+          mealIdeas.value = days
         } else if (Array.isArray(data.meals)) {
           // Fallback: a single array of meals (treat as one entry)
-          weeklyDays.value = [{ day: 'Week', meals: data.meals }]
+          mealIdeas.value = [{ day: 'Suggestions', meals: data.meals }]
         } else {
-          weeklyDays.value = []
+          mealIdeas.value = []
         }
 
       } catch (err) {
-        console.error('Error fetching weekly meal plan:', err)
-        weeklyError.value = err?.response?.data?.message || err.message || 'Failed to fetch weekly meal plan.'
+        console.error('Error fetching meal ideas:', err)
+        mealIdeasError.value = err?.response?.data?.message || err.message || 'Failed to fetch meal ideas.'
       } finally {
-        weeklyLoading.value = false
+        mealIdeasLoading.value = false
       }
     }
 
     onMounted(() => {
-      fetchDayMealPlan()
+      fetchMealIdeas()
     })
     
     // =============================================================================
@@ -389,6 +400,20 @@ export default {
     
     const loadingRecipe = ref(false)
 
+    // Flatten all meals from mealIdeas into a single array for simplified display
+    const mealIdeasList = computed(() => {
+      // mealIdeas is an array of { day, meals } (or suggestions)
+      const flat = mealIdeas.value.flatMap(d => (d.meals && Array.isArray(d.meals)) ? d.meals : [])
+      return dedupeMeals(flat)
+    })
+
+    const mealIdeasTotal = computed(() => mealIdeasList.value.length)
+
+    // Up to 4 cards for meal ideas — always use curated meal ideas, even after search
+    const mealIdeaCards = computed(() => {
+      return mealIdeasList.value.slice(0, 4)
+    })
+
     const searchRecipes = async () => {
       // =============================================================================
       // NOTE: Recipe data is currently HARDCODED above for CSS styling/development
@@ -408,7 +433,10 @@ export default {
       }
 
       try {
+  // Keep meal ideas visible below search results
+  showMealIdeas.value = true
         const API_URL = 'http://18.139.200.231:3000/api/recipes'
+        //const API_URL = 'http://localhost:3000/api/recipes'
         const resp = await axios.get(API_URL, {
           params: {
             ingredients: ingredients.value,
@@ -420,6 +448,25 @@ export default {
         console.log('Response data:', resp.data)
         console.log('Number of recipes:', resp.data?.length)
         recipes.value = resp.data
+
+        // Enrich search results with readyInMinutes via Spoonacular bulk info (if API key is configured)
+        try {
+          const apiKey = import.meta.env.VITE_SPOONACULAR_API_KEY
+          const ids = (recipes.value || []).map(r => r.id).filter(Boolean)
+          if (apiKey && ids.length) {
+            const bulk = await axios.get('https://api.spoonacular.com/recipes/informationBulk', {
+              params: { ids: ids.join(','), apiKey, includeNutrition: false }
+            })
+            const byId = new Map((bulk.data || []).map(item => [item.id, item]))
+            recipes.value = recipes.value.map(r => {
+              const info = byId.get(r.id)
+              return info ? { ...r, readyInMinutes: info.readyInMinutes } : r
+            })
+          }
+        } catch (e) {
+          // Non-fatal: keep showing results without time if the enrichment fails
+          console.warn('Could not enrich recipes with readyInMinutes:', e?.message || e)
+        }
       } catch (err) {
         console.error('Error fetching recipes:', err)
         error.value = err?.response?.data?.error || err.message || 'Failed to fetch recipes.'
@@ -481,11 +528,16 @@ export default {
       searchRecipes, 
       viewRecipeDetails,
       closeModal,
-      // weekly meal plan
-      weeklyDays,
-      weeklyLoading,
-      weeklyError,
-      getMealImage
+      // meal ideas
+      mealIdeas,
+      mealIdeasLoading,
+      mealIdeasError,
+      getMealImage,
+      mealIdeasList,
+      mealIdeasTotal
+      ,
+      mealIdeaCards,
+      showMealIdeas
     }
   }
 }
@@ -497,7 +549,7 @@ export default {
   height: 180px; 
 }
 
-.weekly-meal-plan .card-img-top {
+.meal-ideas .card-img-top {
   height: 180px;
   object-fit: cover;
 }
@@ -507,18 +559,87 @@ export default {
   padding: 0.25rem 0.45rem;
 }
 
-.weekly-meal-plan {
+.meal-ideas {
   max-height: 850px;
   overflow-y: auto;
   padding-right: 8px; /* avoid scrollbar overlapping content */
 }
 
-.weekly-meal-plan .meal-card .card-body {
+.meal-ideas .meal-card .card-body {
   padding: 0.6rem;
 }
 
 .placeholder-card .card-body { 
   min-height: 120px;
+}
+
+/* Prevent horizontal scroll originating from the Meal Ideas block */
+.meal-ideas {
+  overflow-x: hidden; /* disallow horizontal scroll */
+}
+
+/* Ensure row/columns and cards don't force overflow */
+.meal-ideas .row {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.meal-ideas .card,
+.meal-ideas .meal-card,
+.meal-ideas .placeholder-card {
+  min-width: 0; /* allow columns to shrink correctly in flex layout */
+}
+
+.meal-ideas img.card-img-top {
+  max-width: 100%;
+  display: block;
+  height: 180px;
+  object-fit: cover;
+}
+
+.meal-ideas .card-body {
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+/* Ensure cards use the subtle surface background for consistency */
+.card.h-100,
+.meal-ideas .card,
+.meal-card {
+  background-color: var(--surface-subtle) !important;
+}
+
+/* Placeholder styling (uses subtle background and dashed border) */
+.placeholder-card {
+  background-color: var(--surface-subtle);
+  border: 1px dashed var(--border-subtle);
+}
+
+/* Card pop-up on hover/focus for meal ideas and search result cards */
+.card.h-100,
+.meal-ideas .card,
+.meal-ideas .meal-card,
+.meal-ideas .placeholder-card {
+  transition: transform 180ms ease, box-shadow 180ms ease;
+  will-change: transform;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card.h-100:hover,
+  .card.h-100:focus-within,
+  .meal-ideas .card:hover,
+  .meal-ideas .card:focus-within {
+    transform: translateY(-8px) scale(1.01);
+    box-shadow: 0 14px 30px rgba(0,0,0,0.15);
+    z-index: 2;
+  }
+}
+
+/* Provide accessible focus outline when keyboard navigating */
+.card.h-100:focus-within,
+.meal-ideas .card:focus-within {
+  outline: 3px solid rgba(100, 149, 237, 0.15);
+  outline-offset: 4px;
 }
 
 /* Modal Styles */
@@ -597,5 +718,62 @@ export default {
 .viewRecipe{
   justify-self: center;
   width: 100%;
+}
+
+/* Make card action buttons stretch full width of the card body */
+.card .card-body .u-btn {
+  display: block;
+  width: 100%;
+  text-align: center;
+}
+
+/* Ensure u-special-btn behaves the same and centers text */
+.card .card-body .u-special-btn {
+  display: block;
+  width: 100%;
+  text-align: center;
+}
+
+/* Search form layout: keep controls on one row; shrink inputs if needed */
+.search-form {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 12px;
+}
+.search-input-wrap {
+  flex: 1 1 auto;
+  min-width: 0; /* allow input to shrink on small screens */
+}
+.search-input-wrap .form-control {
+  width: 100%;
+}
+.number-input-wrap {
+  flex: 0 0 60px; /* fixed width per request */
+  max-width: 60px;
+}
+.number-input-wrap .form-control {
+  width: 100%;
+}
+.search-button-wrap {
+  flex: 0 0 auto; /* button stays visible, no shrinking beyond content */
+}
+
+/* Dark-theme the number input spinner and ensure compact width */
+.search-form input[type="number"] {
+  color-scheme: dark; /* use dark UI controls (affects spinner) where supported */
+}
+.search-form input[type="number"]::-webkit-inner-spin-button,
+.search-form input[type="number"]::-webkit-outer-spin-button {
+  filter: brightness(0.7); /* darken spinner arrows in WebKit */
+}
+
+/* On small screens, avoid inner scrollbars for the cards section; let the page scroll instead */
+@media (max-width: 768px) {
+  .meal-ideas {
+    max-height: none;
+    overflow-y: visible;
+    padding-right: 0; /* remove extra padding that accounted for scrollbar */
+  }
 }
 </style>

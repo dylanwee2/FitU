@@ -7,19 +7,50 @@
         <p class="u-muted">Discover thousands of exercises to reach your fitness goals</p>
       </div>
 
-      <!-- Search Bar -->
+      <!-- Search Bar + Filter inline -->
       <div class="search-section mb-4">
         <div class="row justify-content-center">
           <div class="col-md-8 col-lg-6">
-            <div class="search-container">
-              <input
-                v-model="searchQuery"
-                @input="handleSearch"
-                type="text"
-                class="form-control search-input"
-                placeholder="Search exercises by name (e.g., push-up, squat, bicep)..."
-                :disabled="loading"
-              >
+            <div class="search-inline d-flex align-items-center gap-2">
+              <div class="search-container flex-grow-1">
+                <input
+                  v-model="searchQuery"
+                  @input="handleSearch"
+                  type="text"
+                  class="form-control search-input"
+                  placeholder="Search exercises by name (e.g: Push Up, Squat)"
+                  :disabled="loading"
+                >
+              </div>
+
+              <!-- Bodypart filter dropdown placed beside the search input -->
+              <div class="search-filters mt-0" v-if="bodyPartsList.length">
+                <div class="d-flex gap-2 align-items-center">
+                  <!-- Custom fixed-position dropdown to avoid layout shifting when native select opens -->
+                  <div class="bodypart-dropdown" ref="bodyDropdownRef">
+                    <button
+                      class="form-select bodypart-toggle"
+                      type="button"
+                      @click.prevent="toggleBodyDropdown"
+                      :aria-expanded="isBodyDropdownOpen"
+                    >
+                      {{ selectedBodyPart || 'All' }}
+                    </button>
+
+                    <div
+                      v-if="isBodyDropdownOpen"
+                      class="bodypart-menu"
+                      :style="bodyDropdownStyle"
+                      role="listbox"
+                    >
+                      <div class="bodypart-option" role="option" @click="selectBodyPart('')">All</div>
+                      <div v-for="part in bodyPartsList" :key="part" class="bodypart-option" role="option" @click="selectBodyPart(part)">{{ part }}</div>
+                    </div>
+                  </div>
+
+                  
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -58,11 +89,6 @@
                 </span>
                 <span v-if="searchQuery" class="search-query">for "{{ searchQuery }}"</span>
               </p>
-            </div>
-            <div class="col-auto" v-if="searchQuery">
-              <button @click="clearSearch" class="btn btn-outline-secondary btn-sm">
-                <i class="fas fa-times me-1"></i>Clear Search
-              </button>
             </div>
           </div>
         </div>
@@ -164,7 +190,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, watch, computed, nextTick, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useWorkoutCartStore } from '../stores/workoutCart'
 
@@ -346,6 +372,79 @@ const searchByEquipment = (equipment) => {
   fetchExercises(cleanEquipment)
 }
 
+// Body-part filters: fetch full list from API and expose to UI
+const bodyPartsList = ref([])
+const selectedBodyPart = ref('')
+const isBodyDropdownOpen = ref(false)
+const bodyDropdownStyle = ref({})
+const bodyDropdownRef = ref(null)
+
+const closeBodyDropdown = () => {
+  isBodyDropdownOpen.value = false
+}
+
+const toggleBodyDropdown = () => {
+  // Simply toggle; positioning is handled via CSS (absolute under the toggle)
+  isBodyDropdownOpen.value = !isBodyDropdownOpen.value
+  if (!isBodyDropdownOpen.value) {
+    bodyDropdownStyle.value = {}
+  }
+}
+
+const selectBodyPart = (part) => {
+  selectedBodyPart.value = part || ''
+  applyBodyFilter(selectedBodyPart.value)
+  closeBodyDropdown()
+}
+
+// Close on outside click or Escape
+const onDocClick = (e) => {
+  if (!bodyDropdownRef.value) return
+  if (!bodyDropdownRef.value.contains(e.target)) {
+    closeBodyDropdown()
+  }
+}
+
+const onKeyDown = (e) => {
+  if (e.key === 'Escape') closeBodyDropdown()
+}
+const fetchBodyParts = async () => {
+  try {
+    const url = `${API_BASE_URL}/bodyparts`
+    const resp = await fetch(url)
+    if (!resp.ok) return
+    const data = await resp.json()
+    
+    // The API may return { success, data } or just an array. Items can be strings or objects like { name: 'neck' }.
+    const items = data?.data || (Array.isArray(data) ? data : data.bodyParts || [])
+    if (!Array.isArray(items)) return
+    const parts = items
+      .map(p => {
+        if (!p) return ''
+        if (typeof p === 'string') return p
+        if (typeof p === 'object' && p.name) return p.name
+        return ''
+      })
+      .filter(Boolean)
+      .map(s => capitalizeFirstLetter(s.toString().trim()))
+    bodyPartsList.value = parts.sort()
+  } catch (e) {
+    console.warn('fetchBodyParts failed', e)
+  }
+}
+
+const applyBodyFilter = (part) => {
+  selectedBodyPart.value = part
+  searchQuery.value = part
+  fetchExercises(part)
+}
+
+const clearBodyFilter = () => {
+  selectedBodyPart.value = ''
+  searchQuery.value = ''
+  fetchExercises()
+}
+
 // Format functions to clean up array data
 const formatExerciseName = (name) => {
   if (!name) return 'Exercise'
@@ -392,6 +491,15 @@ const capitalizeFirstLetter = (text) => {
 // Lifecycle
 onMounted(() => {
   fetchExercises()
+  // fetch bodyparts for filter chips under the search bar
+  fetchBodyParts()
+  document.addEventListener('click', onDocClick)
+  document.addEventListener('keydown', onKeyDown)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', onDocClick)
+  document.removeEventListener('keydown', onKeyDown)
 })
 
 </script>
@@ -417,6 +525,40 @@ onMounted(() => {
   border: 2px solid #e9ecef;
   font-size: 1rem;
   transition: all 0.3s ease;
+}
+
+/* Search filters inline beside search */
+.search-inline { 
+  display: flex; 
+  align-items: center; 
+  gap: 12px; 
+}
+.search-inline .search-container { 
+  flex: 1 1 auto; 
+  min-width: 0; 
+}
+.search-filters {
+  margin-top: 0; /* inline with search */
+  width: 100px; /* make filter control narrower */
+  font-size: 12px;
+}
+.search-filters .badge {
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.85rem;
+  padding: 0.35rem 0.6rem;
+}
+.search-filters .active-filter {
+  box-shadow: 0 0 0 2px rgba(0,123,255,0.12) inset;
+  transform: translateY(-1px);
+}
+
+.clearBtn{
+  display: flex;
+  height: 40px;
+  width: 150px;
+  justify-content: center;
+  margin-left: 10px;
 }
 
 
@@ -471,10 +613,55 @@ onMounted(() => {
   overflow: hidden;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+}
+
+/* Custom bodypart dropdown overlay (fixed-position) */
+.bodypart-dropdown {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+.bodypart-toggle {
+  width: 100%;
+  text-align: left;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--surface-subtle);
+  color: #ffffff;
+  border: 1px solid var(--border-subtle);
+}
+.bodypart-menu {
+  position: absolute; /* anchor to dropdown container, not viewport */
+  top: calc(100% + 4px);
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  max-height: 50vh;
+  overflow: auto;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  border-radius: 8px;
+  padding: 0.25rem 0;
+  color: #ffffff;
+  /* Dark themed scrollbar (Chrome-like) */
+  scrollbar-color: #555 var(--surface-subtle); /* Firefox */
+  scrollbar-width: thin; /* Firefox */
+}
+.bodypart-menu::-webkit-scrollbar { width: 10px; height: 10px; }
+.bodypart-menu::-webkit-scrollbar-track { background: var(--surface-subtle); border-radius: 8px; }
+.bodypart-menu::-webkit-scrollbar-thumb { background: #555; border-radius: 8px; border: 2px solid var(--surface-subtle); }
+.bodypart-menu::-webkit-scrollbar-thumb:hover { background: #666; }
+.bodypart-option {
+  padding: 0.6rem 0.9rem;
   cursor: pointer;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+  white-space: nowrap;
+  background-color: var(--surface-subtle);
+  color: #ffffff;
+}
+.bodypart-option:hover {
+  background-color: rgba(255,255,255,0.06); /* slightly lighter on hover */
 }
 
 .exercise-card:hover {
@@ -519,6 +706,8 @@ onMounted(() => {
   line-height: 1.4;
   letter-spacing: -0.025em;
   text-transform: capitalize;
+  min-height: 100px;
+  text-align: center;
 }
 
 .exercise-target {
@@ -615,6 +804,8 @@ onMounted(() => {
 /* Nuanced charcoal pill theme for badges with color-coded dots */
 .exercise-badges .badge {
   position: relative;
+  display: block;
+  min-width: 100%;
   background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
   color: #e9e9e9 !important;
   border: 1px solid rgba(201, 162, 39, 0.28) !important;
@@ -757,5 +948,9 @@ onMounted(() => {
   .search-input {
     padding: 0.75rem 0.75rem 0.75rem 2.5rem;
   }
+
+  /* On small screens, allow filter to wrap below input */
+  .search-inline { flex-wrap: wrap; }
+  .search-filters { width: 100%; }
 }
 </style>
