@@ -485,7 +485,7 @@ const getAICoachAdvice = async () => {
 
   const prompt = lines.join('\n')
 
-    const resp = await axios.post('http://18.139.200.231:3000/api/gemini/generate', { prompt })
+    const resp = await axios.post('http://localhost:3000/api/gemini/generate', { prompt })
     aiAdvice.value = resp?.data?.result || 'No advice returned.'
   } catch (err) {
     console.error('Error fetching AI advice:', err)
