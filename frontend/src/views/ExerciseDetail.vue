@@ -6,17 +6,47 @@
       <div v-if="loading">Loading...</div>
       <div v-else-if="error">Error: {{ error }}</div>
       <div v-else>
+        <!-- Exercise Header -->
         <div class="exercise-header mb-4">
-          <div class="d-flex justify-content-between align-items-start">
+          <h1>{{ exercise.name }}</h1>
+          <div class="exercise-badges mb-4 d-flex justify-content-between align-items-center">
             <div>
-              <h1>{{ exercise.name }}</h1>
-              <div class="exercise-badges mb-3">
-                <span class="badge target-muscle-badge me-1">{{ formatTarget(exercise.target) }}</span>
-                <span class="badge body-part-badge me-1">{{ formatBodyPart(exercise.bodyPart) }}</span>
-                <span class="badge equipment-badge">{{ formatEquipment(exercise.equipment) }}</span>
-              </div>
+              <span class="badge target-muscle-badge me-1 clickable-badge">{{ formatTarget(exercise.target) }}</span>
+              <span class="badge body-part-badge me-1 clickable-badge">{{ formatBodyPart(exercise.bodyPart) }}</span>
+              <span class="badge equipment-badge clickable-badge">{{ formatEquipment(exercise.equipment) }}</span>
             </div>
-            <div class="exercise-details u-card mb-3">
+            <div>
+              <button
+                @click="toggleCartDetail"
+                class="u-btn"
+                :class="isInCart ? 'u-btn--danger' : 'u-btn--primary'"
+                :title="isInCart ? 'Remove from workout cart' : 'Add to workout cart'"
+              >
+                {{ isInCart ? 'Remove from Cart' : 'Add to Cart' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Section: Image Left, Info Right -->
+        <div class="row mb-4">
+          <!-- Left: Exercise Image -->
+          <div class="col-lg-6 col-md-12 mb-3 mb-lg-0">
+            <div class="exercise-image-container">
+              <img
+                v-if="exercise.gifUrl"
+                :src="exercise.gifUrl"
+                :alt="exercise.name"
+                class="exercise-main-img img-fluid rounded shadow"
+                :style="{ transform: `translateY(${parallaxY}px)` }"
+              >
+            </div>
+          </div>
+
+          <!-- Right: Exercise Information -->
+          <div class="col-lg-6 col-md-12">
+            <!-- Exercise Information Card -->
+            <div class="exercise-details u-card">
               <h5>Exercise Information</h5>
               <ul class="list-unstyled">
                 <li><strong>Primary Target:</strong> {{ formatTarget(exercise.target) }}</li>
@@ -27,7 +57,12 @@
                 </li>
               </ul>
             </div>
+          </div>
+        </div>
 
+        <!-- Bottom Section: Instructions/Description -->
+        <div class="row">
+          <div class="col-12">
             <div v-if="exercise.instructions && exercise.instructions.length" class="instructions-section u-card">
               <h5>Instructions</h5>
               <ol class="instructions-list">
@@ -35,29 +70,6 @@
                   {{ instruction }}
                 </li>
               </ol>
-            </div>
-          </div>
-
-          <!-- Right: add-to-cart above sticky media -->
-          <div class="col-md-6">
-            <div class="d-none d-md-flex justify-content-end mb-2">
-              <button
-                @click="toggleCartDetail"
-                class="u-btn"
-                :class="isInCart ? 'u-btn--danger' : 'u-btn--primary'"
-                :title="isInCart ? 'Remove from workout cart' : 'Add to workout cart'"
-              >
-                {{ isInCart ? 'Remove from Cart' : 'Add to Cart' }}
-              </button>
-            </div>
-            <div class="media-sticky" ref="mediaRef">
-              <img
-                v-if="exercise.gifUrl"
-                :src="exercise.gifUrl"
-                :alt="exercise.name"
-                class="media-img img-fluid rounded shadow"
-                :style="{ transform: `translateY(${parallaxY}px)` }"
-              >
             </div>
           </div>
         </div>
@@ -131,6 +143,20 @@ const addToCart = () => {
   }
 }
 
+const toggleCartDetail = () => {
+  if (isInCart.value) {
+    // Remove from cart
+    cartStore.removeFromCart(exercise.value.id)
+    console.log('Removed from cart:', exercise.value.name)
+  } else {
+    // Add to cart
+    const success = cartStore.addToCart(exercise.value)
+    if (success) {
+      console.log('Added to cart:', exercise.value.name)
+    }
+  }
+}
+
 // Format functions to clean up and capitalize text
 const formatTarget = (target) => {
   if (!target) return 'Full Body'
@@ -201,22 +227,66 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
   margin-bottom: 1rem;
 }
 
+.exercise-badges {
+  margin-bottom: 1rem;
+}
+
+.clickable-badge {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.clickable-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.clickable-badge:active {
+  transform: translateY(0);
+}
+
+.clickable-badge.bg-primary:hover {
+  background-color: #0056b3 !important;
+}
+
+.clickable-badge.bg-secondary:hover {
+  background-color: #495057 !important;
+}
+
+/* Nuanced charcoal pill theme for badges with color-coded dots */
 .exercise-badges .badge {
   position: relative;
-  font-size: 0.85rem;
-  padding: 0.25rem 0.6rem 0.25rem 1.2rem;
   background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
   color: #e9e9e9 !important;
   border: 1px solid rgba(201, 162, 39, 0.28) !important;
   border-radius: 12px;
   font-weight: 600;
   letter-spacing: 0.01em;
-  width: auto;
+  padding: 0.25rem 0.6rem 0.25rem 1.2rem; /* extra space between dot and text */
+  width: auto; /* let content decide */
   max-width: 100%;
-  white-space: nowrap;
+  justify-self: start; /* prevent grid stretch */
+  white-space: nowrap; /* single line */
   overflow: hidden;
   text-overflow: ellipsis;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.25);
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+  display: inline-block;
+}
+
+@media (max-width: 420px) {
+  .exercise-badges {
+    grid-template-columns: 1fr;
+  }
+}
+
+.exercise-badges .badge:hover {
+  transform: none;
+  border-color: rgba(201, 162, 39, 0.42) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.28);
 }
 
 .exercise-badges .badge::after {
@@ -228,41 +298,30 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
   pointer-events: none;
 }
 
-/* Color-coded badge styles */
-.target-muscle-badge {
-  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
-  color: white !important;
-  border: none;
+.exercise-badges .badge::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
 }
 
-.target-muscle-badge:hover {
-  background: linear-gradient(135deg, #c0392b 0%, #a93226 100%) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+.target-muscle-badge::before { 
+  background: #e74c3c; 
+  box-shadow: 0 0 2px rgba(231, 76, 60, 0.28); 
 }
 
-.body-part-badge {
-  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
-  color: white !important;
-  border: none;
+.body-part-badge::before { 
+  background: #3498db; 
+  box-shadow: 0 0 2px rgba(52, 152, 219, 0.28); 
 }
 
-.body-part-badge:hover {
-  background: linear-gradient(135deg, #2980b9 0%, #21618c 100%) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
-}
-
-.equipment-badge {
-  background: linear-gradient(135deg, #27ae60 0%, #229954 100%) !important;
-  color: white !important;
-  border: none;
-}
-
-.equipment-badge:hover {
-  background: linear-gradient(135deg, #229954 0%, #1e8449 100%) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+.equipment-badge::before { 
+  background: #27ae60; 
+  box-shadow: 0 0 2px rgba(39, 174, 96, 0.28); 
 }
 
 .exercise-image-section {
@@ -307,9 +366,45 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
   padding: 2rem;
 }
 
+/* Image Container Styling */
+.exercise-image-container {
+  position: relative;
+  height: 100%;
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.exercise-main-img {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: 400px;
+  object-fit: contain;
+  will-change: transform;
+  transition: transform 0.1s ease-out;
+}
+
 /* Sticky media + subtle parallax */
-.media-sticky { position: sticky; top: 100px; height: auto; display: flex; align-items: flex-start; justify-content: center; }
-.media-img { width: 100%; max-width: 420px; max-height: 60vh; object-fit: contain; display: block; margin-inline: auto; will-change: transform; }
+.media-sticky { 
+  position: sticky; 
+  top: 100px; 
+  height: auto; 
+  display: flex; 
+  align-items: flex-start; 
+  justify-content: center; 
+}
+
+.media-img { 
+  width: 100%; 
+  max-width: 420px; 
+  max-height: 60vh; 
+  object-fit: contain; 
+  display: block; 
+  margin-inline: auto; 
+  will-change: transform; 
+}
 
 .instructions-section h5 {
   color: var(--muted);
@@ -335,17 +430,92 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
-/* Remove old floating styles now that button sits above media */
+/* Responsive Design */
+@media (max-width: 992px) {
+  .exercise-image-container {
+    min-height: 250px;
+    margin-bottom: 1rem;
+  }
+  
+  .exercise-main-img {
+    max-height: 300px;
+  }
+  
+  .exercise-details {
+    margin-bottom: 1.5rem;
+  }
+}
 
 @media (max-width: 768px) {
   .container {
     padding: 0.5rem;
+    margin: 1rem auto;
   }
   
-  .exercise-details {
-    margin-top: 1rem;
+  .exercise-header h1 {
+    font-size: 1.75rem;
   }
-  .media-sticky { position: static; height: auto; }
-  .media-img { max-width: 100%; max-height: 60vh; }
+  
+  .exercise-badges {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    align-items: stretch;
+  }
+  
+  .exercise-badges > div:first-child {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+  
+  .exercise-badges > div:last-child {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .exercise-badges .badge {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.5rem 0.2rem 1rem;
+  }
+  
+  .exercise-image-container {
+    min-height: 200px;
+    margin-bottom: 1.5rem;
+  }
+  
+  .exercise-main-img {
+    max-height: 250px;
+  }
+  
+  .exercise-details,
+  .instructions-section {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .exercise-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .exercise-details h5,
+  .instructions-section h5 {
+    font-size: 1.1rem;
+  }
+  
+  .exercise-details li {
+    font-size: 0.9rem;
+  }
+  
+  .exercise-image-container {
+    min-height: 180px;
+  }
+  
+  .exercise-main-img {
+    max-height: 200px;
+  }
 }
 </style>
