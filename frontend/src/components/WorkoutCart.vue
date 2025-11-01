@@ -252,36 +252,50 @@
         </div>
         
         <div class="modal-body">
-          <div class="form-group">
-            <label for="playlistName" class="u-muted">Workout Name</label>
-            <input 
-              v-model="newPlaylistName"
-              type="text" 
-              id="playlistName"
-              class="form-control"
-              placeholder="e.g., Push Day Workout"
-              maxlength="50"
-            >
-          </div>
-          
-          <div class="form-group">
-            <label for="playlistDescription" class="u-muted">Description (Optional)</label>
-            <textarea 
-              v-model="newPlaylistDescription"
-              id="playlistDescription"
-              class="form-control"
-              rows="3"
-              placeholder="Describe your workout routine..."
-              maxlength="200"
-            ></textarea>
-          </div>
+          <div>
+            <div class="form-group">
+              <label for="playlistName" class="u-muted">Workout Name</label>
+              <input 
+                v-model="newPlaylistName"
+                type="text" 
+                id="playlistName"
+                class="form-control"
+                placeholder="e.g., Push Day Workout"
+                maxlength="50"
+              >
+            </div>
+            
+            <div class="form-group">
+              <label for="playlistDescription" class="u-muted">Description (Optional)</label>
+              <textarea 
+                v-model="newPlaylistDescription"
+                id="playlistDescription"
+                class="form-control"
+                rows="3"
+                placeholder="Describe your workout routine..."
+                maxlength="200"
+              ></textarea>
+            </div>
 
-          <div class="playlist-preview">
-            <h6>Preview:</h6>
-            <div class="preview-stats">
-              <span>{{ cartItemCount }} exercises</span>
-              <span>{{ Math.round(cartTotalDuration) }} min</span>
-              <span>{{ cartMuscleGroups.join(', ') }}</span>
+            <div class="playlist-preview">
+              <h6>Preview:</h6>
+              <div class="preview-stats">
+                <span>{{ cartItemCount }} exercises</span>
+                <span>{{ Math.round(cartTotalDuration) }} min</span>
+                <span>{{ cartMuscleGroups.join(', ') }}</span>
+              </div>
+            </div>
+
+            <!-- AI advice moved below the preview as requested -->
+            <div class="ai-advice-section mt-3">
+              <h6>AI Coach Advice</h6>
+              <div v-if="aiLoading" class="ai-loading-wrap" aria-hidden="true">
+                <div class="loader" aria-hidden="true"></div>
+              </div>
+              <div v-if="aiError" class="text-danger">{{ aiError }}</div>
+              <div v-if="aiAdvice" class="ai-advice-box p-2 mt-2" style="background: rgba(0,0,0,0.04); border-radius:6px;">
+                <div v-html="aiAdvice"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -292,6 +306,13 @@
             class="u-btn u-btn--secondary"
           >
             Cancel
+          </button>
+          <button
+            @click="getAICoachAdvice"
+            class="u-btn u-btn--outline me-2"
+            :disabled="aiLoading || !newPlaylistName.trim() || cartItemCount === 0"
+          >
+            {{ aiLoading ? 'Generating...' : 'Get AI Coach Advice' }}
           </button>
           <button 
             @click="savePlaylist"
@@ -310,6 +331,7 @@
 import { ref, computed } from 'vue'
 import { useWorkoutCartStore } from '../stores/workoutCart'
 import router from '@/router'
+import axios from 'axios'
 
 const cartStore = useWorkoutCartStore()
 
@@ -320,6 +342,9 @@ const showClearCartConfirm = ref(false)
 const newPlaylistName = ref('')
 const newPlaylistDescription = ref('')
 const showEquipmentSection = ref(false)
+const aiAdvice = ref('')
+const aiLoading = ref(false)
+const aiError = ref('')
 
 // Computed properties from store
 const cartItems = computed(() => cartStore.cartItems)
@@ -397,6 +422,76 @@ const savePlaylist = async () => {
     } else {
       alert('Error saving workout set: ' + error.message)
     }
+  }
+}
+
+const getAICoachAdvice = async () => {
+  // Reset
+  aiAdvice.value = ''
+  aiError.value = ''
+
+  if (!newPlaylistName.value.trim()) {
+    aiError.value = 'Please provide a workout name before requesting AI advice.'
+    return
+  }
+
+  if (cartItems.value.length === 0) {
+    aiError.value = 'Your cart is empty. Add exercises to get advice.'
+    return
+  }
+
+  aiLoading.value = true
+
+  try {
+    // Build a prompt summarizing the workout
+    const lines = []
+    lines.push(`Workout Name: ${newPlaylistName.value.trim()}`)
+    if (newPlaylistDescription.value && newPlaylistDescription.value.trim()) {
+      lines.push(`Description: ${newPlaylistDescription.value.trim()}`)
+    }
+    lines.push(`Estimated Duration: ${Math.round(cartTotalDuration.value)} minutes`)
+    lines.push('Exercises:')
+    cartItems.value.forEach((ex, idx) => {
+      const parts = []
+      parts.push(`${idx + 1}. ${ex.name}`)
+      if (ex.sets) parts.push(`sets: ${ex.sets}`)
+      if (ex.reps) parts.push(`reps: ${ex.reps}`)
+      if (ex.weight !== undefined && ex.weight !== null) parts.push(`weight: ${ex.weight} lbs`)
+      if (ex.target) parts.push(`target: ${ex.target}`)
+      lines.push(parts.join(' | '))
+    })
+
+  // Instruct the AI to assess sufficiency per muscle group and return only an HTML unordered list.
+  // Ask it to first rate whether there is "Too little" / "Adequate" / "Too much" volume for each muscle group
+  // targeted in the workout, and to focus on whether the current exercises are enough (do NOT give form advice).
+  lines.push('\nAnalyze the user’s workout based on its name to understand the type of workout they are trying to create (e.g., full-body, push-pull, legs, upper body).')
+  lines.push('For each exercise in the workout, create a bullet (<li>) with the exercise name in Title Case (e.g., "Inverted Row Bent Knees").')
+  lines.push('Under each exercise, create a nested unordered list (<ul>) with 1-2 bullets. Each bullet should be a short, straight-to-the-point comment rating the targeted muscle groups as "Too little", "Adequate", or "Too much" and a 1-2 sentence justification focused only on volume/coverage (NOT form).')
+  lines.push('At the end of the list, include one bullet <li> for "Suggested exercises to add/remove" and under it a nested <ul> with 1-2 bullets suggesting any exercises to add or remove based on the overall volume and balance of the workout.')
+  lines.push('Return ONLY an HTML unordered list (<ul>) in this exact format. Do NOT provide form tips or unrelated commentary.')
+  lines.push('Example format:');
+  lines.push('<ul>');
+  lines.push('<li>Inverted Row Bent Knees</li>');
+  lines.push('<ul>');
+  lines.push('<li>Adequate volume for back muscles</li>');
+  lines.push('<li>Too little for biceps, consider adding a curl variation</li>');
+  lines.push('</ul>');
+  lines.push('<li>Suggested exercises to add/remove</li>');
+  lines.push('<ul>');
+  lines.push('<li>Add dumbbell curls for biceps</li>');
+  lines.push('<li>Remove assisted pull-ups if overtraining back</li>');
+  lines.push('</ul>');
+  lines.push('</ul>');
+
+  const prompt = lines.join('\n')
+
+    const resp = await axios.post('http://18.139.200.231:3000/api/gemini/generate', { prompt })
+    aiAdvice.value = resp?.data?.result || 'No advice returned.'
+  } catch (err) {
+    console.error('Error fetching AI advice:', err)
+    aiError.value = err?.response?.data?.error || err.message || 'Failed to get AI advice.'
+  } finally {
+    aiLoading.value = false
   }
 }
 
@@ -945,7 +1040,8 @@ const toggleEquipmentSection = () => {
   background: var(--bg);
   border-radius: 8px;
   width: 100%;
-  max-width: 500px;
+  /* wider modal to comfortably host an expanded layout */
+  max-width: 1200px;
   max-height: 90vh;
   overflow-y: auto;
 }
@@ -1004,6 +1100,69 @@ const toggleEquipmentSection = () => {
   justify-content: flex-end;
 }
 
+/* Two-column modal body layout */
+.modal-columns {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+.modal-left {
+  flex: 2 1 0;
+}
+.modal-right {
+  flex: 1 1 0;
+  min-width: 220px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-left: 0.75rem;
+  border-left: 1px solid var(--border-subtle);
+}
+.ai-advice-box ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+.ai-advice-box li {
+  margin-bottom: 0.45rem;
+}
+
+/* Loader placeholder provided by user (monospace gradient text) */
+.ai-loading-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 90px; /* makes the loader appear in the middle vertically */
+  padding: 0.5rem 0;
+  background: rgba(255,255,255,0.02);
+  border-radius: 6px;
+}
+
+/* HTML: <div class="loader"></div> */
+.loader {
+  width: fit-content;
+  font-weight: bold;
+  font-family: monospace;
+  font-size: 30px;
+  background: linear-gradient(135deg,#0000 calc(50% - 0.5em),#000 0 calc(50% + 0.5em),#0000 0) right/300% 100%;
+  animation: l22 2s infinite;
+}
+.loader::before {
+  content: "Loading...";
+  color: #0000;
+  padding: 0 5px;
+  background: inherit;
+  background-image: linear-gradient(135deg,#000 calc(50% - 0.5em),#fff 0 calc(50% + 0.5em),#000 0);
+  -webkit-background-clip:text;
+          background-clip:text;
+}
+
+@keyframes l22{
+  100%{background-position: left}
+}
+
+@keyframes l24{
+  100%{background-position: left}
+}
+
 /* Clear Cart Confirmation Modal Styles */
 .clear-cart-icon {
   text-align: center;
@@ -1040,6 +1199,11 @@ const toggleEquipmentSection = () => {
 @media (max-width: 768px) {
   .cart-content {
     width: 100%;
+  }
+
+  /* On small screens switch modal columns to stacked */
+  .modal-columns {
+    flex-direction: column;
   }
   
   .cart-item {
