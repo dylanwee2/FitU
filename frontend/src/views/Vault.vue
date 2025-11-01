@@ -146,7 +146,7 @@
               <!-- Comments Section -->
               <div class="comments-section mt-4">
                 <h6 class="mb-3">Reviews & Comments</h6>
-                <div v-if="workoutReviews.length === 0" class="text-muted text-center py-3">
+                <div v-if="workoutReviews.length === 0" class="text-center py-3">
                   No reviews yet. Be the first to rate this workout!
                 </div>
                 <div v-else class="reviews-list">
@@ -1341,6 +1341,7 @@ onUnmounted(() => {
 .comments-section {
   border-top: 1px solid var(--border-subtle);
   padding-top: 1rem;
+  color: white;
 }
 
 .review-item {
