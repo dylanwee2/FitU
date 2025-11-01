@@ -20,7 +20,7 @@
               </div>
             </template>
             <template v-else>
-              <button class="u-btn u-btn--danger" @click="clearCalendar">Clear calendar</button>
+              <button class="u-btn u-btn--danger mt-2 mt-md-0" @click="clearCalendar">Clear calendar</button>
             </template>
           </div>
         </div>
@@ -1381,29 +1381,56 @@ defineExpose({
   padding: 10px;
 }
 
-/* Custom scrollbar styling for better UX */
-.calendar-container::-webkit-scrollbar {
-  width: 8px;
+/* Dark themed scrollbars (Chrome-like) for scrollable widgets within calendar */
+.calendar-component .calendar-container,
+.calendar-component .event-form-modal,
+.calendar-component .fc-scroller {
+  scrollbar-color: #555 var(--surface-subtle); /* Firefox */
+  scrollbar-width: thin; /* Firefox */
 }
 
-.calendar-container::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
+.calendar-component .calendar-container::-webkit-scrollbar,
+.calendar-component .event-form-modal::-webkit-scrollbar,
+.calendar-component .fc-scroller::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
 }
-
-.calendar-container::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
+.calendar-component .calendar-container::-webkit-scrollbar-track,
+.calendar-component .event-form-modal::-webkit-scrollbar-track,
+.calendar-component .fc-scroller::-webkit-scrollbar-track {
+  background: var(--surface-subtle);
+  border-radius: 8px;
 }
-
-.calendar-container::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+.calendar-component .calendar-container::-webkit-scrollbar-thumb,
+.calendar-component .event-form-modal::-webkit-scrollbar-thumb,
+.calendar-component .fc-scroller::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 8px;
+  border: 2px solid var(--surface-subtle);
+}
+.calendar-component .calendar-container::-webkit-scrollbar-thumb:hover,
+.calendar-component .event-form-modal::-webkit-scrollbar-thumb:hover,
+.calendar-component .fc-scroller::-webkit-scrollbar-thumb:hover {
+  background: #666;
 }
 
 .fc-col-header-cell-cushion:hover, .fc-daygrid-day-number:hover {
   cursor: pointer;
   
 
+}
+
+/* FullCalendar list view: make date headings use subtle surface background */
+.calendar-component .fc .fc-list-day-cushion {
+  background-color: var(--surface-subtle) !important;
+}
+.calendar-component .fc .fc-list-day:hover .fc-list-day-cushion {
+  background-color: var(--surface-subtle) !important;
+}
+
+/* FullCalendar list view: event row hover uses subtle surface background */
+.calendar-component .fc .fc-list-event:hover td {
+  background-color: black !important;
 }
 
 /* Modal Styles */
@@ -1612,5 +1639,48 @@ defineExpose({
     display: flex;
     align-items: center;
   }
+}
+
+/* =====================
+   FullCalendar toolbar (dark theme, element-level styling)
+   ===================== */
+/* Leave toolbar background transparent (explicitly avoid painting the whole header) */
+.calendar-component .fc .fc-toolbar {
+  background: transparent !important;
+}
+
+/* Buttons: prev/next/today and view toggles */
+.calendar-component .fc .fc-button {
+  background-color: var(--surface-subtle) !important;
+  border-color: var(--border-subtle) !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+.calendar-component .fc .fc-button .fc-icon {
+  color: currentColor !important;
+}
+.calendar-component .fc .fc-button:hover,
+.calendar-component .fc .fc-button:focus {
+  filter: brightness(1.08);
+}
+.calendar-component .fc .fc-button:focus-visible {
+  outline: 2px solid rgba(100, 149, 237, 0.35) !important; /* soft cornflower focus */
+  outline-offset: 2px !important;
+}
+.calendar-component .fc .fc-button.fc-button-active,
+.calendar-component .fc .fc-button:where(.fc-button-primary).fc-button-active {
+  background-color: #111111 !important;
+  color: #ffffff !important;
+}
+
+.calendar-component .fc .fc-button:disabled,
+.calendar-component .fc .fc-button[disabled] {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+}
+
+/* Title text (already set to white above, keep consistent) */
+.calendar-component .fc .fc-toolbar-title {
+  color: #ffffff !important;
 }
 </style>
