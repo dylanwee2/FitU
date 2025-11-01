@@ -18,7 +18,7 @@
                   @input="handleSearch"
                   type="text"
                   class="form-control search-input"
-                  placeholder="Search exercises by name (e.g., push-up, squat, bicep)..."
+                  placeholder="Search exercises by name (e.g: Push Up, Squat)"
                   :disabled="loading"
                 >
               </div>
@@ -706,6 +706,8 @@ onBeforeUnmount(() => {
   line-height: 1.4;
   letter-spacing: -0.025em;
   text-transform: capitalize;
+  min-height: 100px;
+  text-align: center;
 }
 
 .exercise-target {
@@ -802,6 +804,8 @@ onBeforeUnmount(() => {
 /* Nuanced charcoal pill theme for badges with color-coded dots */
 .exercise-badges .badge {
   position: relative;
+  display: block;
+  min-width: 100%;
   background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
   color: #e9e9e9 !important;
   border: 1px solid rgba(201, 162, 39, 0.28) !important;
