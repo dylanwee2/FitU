@@ -1258,6 +1258,7 @@ const toggleEquipmentSection = () => {
   font-weight: 600;
   letter-spacing: 0.01em;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.25);
+  padding-top: 9px;
 }
 
 .cart-item-badges .badge::before {
