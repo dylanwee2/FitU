@@ -470,7 +470,7 @@ onMounted(() => {
 /* Search filters styling (chips under search) */
 .search-filters {
   margin-top: 0.5rem;
-  width: 300px;
+  width: 290px;
 }
 .search-filters .badge {
   cursor: pointer;
