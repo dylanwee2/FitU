@@ -612,42 +612,60 @@ onMounted(() => {
   background-color: #495057 !important;
 }
 
-/* Color-coded badge styles */
-.target-muscle-badge {
-  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
-  color: white !important;
-  border: none;
+/* Nuanced charcoal pill theme for badges with color-coded dots */
+.exercise-badges .badge {
+  position: relative;
+  background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
+  color: #e9e9e9 !important;
+  border: 1px solid rgba(201, 162, 39, 0.28) !important;
+  border-radius: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  padding: 0.25rem 0.6rem 0.25rem 1.2rem; /* extra space between dot and text */
+  width: auto; /* let content decide */
+  max-width: 100%;
+  justify-self: start; /* prevent grid stretch */
+  white-space: nowrap; /* single line */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
 
-.target-muscle-badge:hover {
-  background: linear-gradient(135deg, #c0392b 0%, #a93226 100%) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+@media (max-width: 420px) {
+  .exercise-badges {
+    grid-template-columns: 1fr;
+  }
 }
 
-.body-part-badge {
-  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
-  color: white !important;
-  border: none;
+.exercise-badges .badge:hover {
+  transform: none;
+  border-color: rgba(201, 162, 39, 0.42) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.28);
 }
 
-.body-part-badge:hover {
-  background: linear-gradient(135deg, #2980b9 0%, #21618c 100%) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+.exercise-badges .badge::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 40%);
+  pointer-events: none;
 }
 
-.equipment-badge {
-  background: linear-gradient(135deg, #27ae60 0%, #229954 100%) !important;
-  color: white !important;
-  border: none;
+.exercise-badges .badge::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
 }
 
-.equipment-badge:hover {
-  background: linear-gradient(135deg, #229954 0%, #1e8449 100%) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
-}
+.target-muscle-badge::before { background: #e74c3c; box-shadow: 0 0 2px rgba(231, 76, 60, 0.28); }
+.body-part-badge::before { background: #3498db; box-shadow: 0 0 2px rgba(52, 152, 219, 0.28); }
+.equipment-badge::before { background: #27ae60; box-shadow: 0 0 2px rgba(39, 174, 96, 0.28); }
 
 .exercise-actions {
   padding: 0 1.5rem 1.5rem;

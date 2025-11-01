@@ -1,5 +1,11 @@
 <template>
   <div class="container mt-4">
+
+    
+
+    <!-- Weekly Meal Plan (generated from Spoonacular) -->
+     <div v-if="error" class="alert alert-danger mt-3">{{ error }}</div>
+
     <h1>Find Recipes by Ingredients</h1>
 
     <form @submit.prevent="searchRecipes" class="row g-3 align-items-center mt-3">
@@ -18,11 +24,9 @@
       </div>
 
       <div class="col-auto">
-        <button type="submit" class="btn btn-primary">Search</button>
+        <button type="submit" class="u-special-btn">Search</button>
       </div>
     </form>
-
-    <div v-if="error" class="alert alert-danger mt-3">{{ error }}</div>
 
     <div v-if="recipes.length" class="row mt-4">
       <div v-for="recipe in recipes" :key="recipe.id" class="col-12 col-md-6 col-lg-4 mb-3">
@@ -129,17 +133,139 @@
         </div>
       </div>
     </div>
+    <h2 class="mb-3">Meal Ideas</h2>
+    <div class="meal-ideas mb-4 pt-4">
+
+      <div v-if="mealIdeasLoading" class="text-center py-3">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Generating meal ideas...</p>
+      </div>
+
+      <div v-else-if="mealIdeasError" class="alert alert-danger">{{ mealIdeasError }}</div>
+
+      <!-- Render up to 4 meal idea cards. Prefer `recipes` (search results) when available, otherwise fall back to fetched meal ideas -->
+      <div class="row g-3">
+        <div v-for="(meal, i) in mealIdeaCards" :key="meal.id || i" class="col-6 col-md-3">
+          <div class="card h-100">
+            <img :src="getMealImage(meal)" class="card-img-top" :alt="meal.title || 'Meal'" />
+            <div class="card-body d-flex flex-column">
+              <h6 class="card-title mb-1" style="font-size:0.95rem">{{ meal.title }}</h6>
+              <p class="mb-1 u-muted" style="font-size:0.8rem">Ready in: {{ meal.readyInMinutes || 'N/A' }} min</p>
+              <div class="mt-auto text-end">
+                <button class="u-btn u-btn--primary" @click="viewRecipeDetails(meal.id)" v-if="meal.id">View</button>
+                <a v-else :href="meal.sourceUrl || '#'" class="u-btn u-btn--primary">View</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div v-for="n in (4 - mealIdeaCards.length)" :key="'ph-' + n" class="col-6 col-md-3">
+          <div class="card h-100 placeholder-card d-flex align-items-center justify-content-center">
+            <div class="card-body text-center">
+              <small class="text-muted">No meal</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
   </div>
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 
 export default {
   setup() {
     const ingredients = ref('')
     const number = ref(5)
+    
+  // Meal ideas state (Spoonacular)
+  const mealIdeas = ref([])
+  const mealIdeasLoading = ref(false)
+  const mealIdeasError = ref('')
+
+    const getMealImage = (meal) => {
+      // Prefer meal.image. If it's already a full URL, use it.
+      // Otherwise build the Spoonacular image host URL using the filename returned in `image`.
+      if (!meal) return '/images/recipe-placeholder.png'
+      if (meal.image) {
+        if (/^https?:\/\//i.test(meal.image)) return meal.image
+        // Build URL: https://img.spoonacular.com/recipes/{image}
+        return `https://img.spoonacular.com/recipes/${meal.image}`
+      }
+
+      // Fallback to legacy pattern by id if no image filename provided
+      const imageType = meal.imageType || 'jpg'
+      if (meal.id) return `https://spoonacular.com/recipeImages/${meal.id}-312x231.${imageType}`
+      return '/images/recipe-placeholder.png'
+    }
+
+    const capitalize = (s) => s ? (s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()) : s
+
+
+    const fetchMealIdeas = async () => {
+      mealIdeasLoading.value = true
+      mealIdeasError.value = ''
+      mealIdeas.value = []
+      try {
+        const apiKey = import.meta.env.VITE_SPOONACULAR_API_KEY
+        if (!apiKey) {
+          mealIdeasError.value = 'Spoonacular API key not configured (VITE_SPOONACULAR_API_KEY)'
+          mealIdeasLoading.value = false
+          return
+        }
+
+        const resp = await axios.get('https://api.spoonacular.com/mealplanner/generate', {
+          params: {
+            timeFrame: 'week',
+            apiKey: apiKey
+          }
+        })
+
+        const data = resp.data || {}
+
+        // Spoonacular returns a 'week' object mapping day names to meals
+  if (data.week && typeof data.week === 'object') {
+          const order = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+          const days = []
+          order.forEach(d => {
+            if (data.week[d]) {
+              days.push({
+                day: capitalize(d),
+                meals: data.week[d].meals ? data.week[d].meals : []
+              })
+            }
+          })
+          // include any additional keys not in order
+          Object.keys(data.week).forEach(k => {
+            if (!order.includes(k.toLowerCase())) {
+              days.push({ day: capitalize(k), meals: data.week[k].meals || [] })
+            }
+          })
+          mealIdeas.value = days
+        } else if (Array.isArray(data.meals)) {
+          // Fallback: a single array of meals (treat as one entry)
+          mealIdeas.value = [{ day: 'Suggestions', meals: data.meals }]
+        } else {
+          mealIdeas.value = []
+        }
+
+      } catch (err) {
+        console.error('Error fetching meal ideas:', err)
+        mealIdeasError.value = err?.response?.data?.message || err.message || 'Failed to fetch meal ideas.'
+      } finally {
+        mealIdeasLoading.value = false
+      }
+    }
+
+    onMounted(() => {
+      fetchMealIdeas()
+    })
     
     // =============================================================================
     // HARDCODED DATA FOR DEVELOPMENT/CSS STYLING
@@ -153,52 +279,9 @@ export default {
     const recipes = ref([])
     const selectedRecipe = ref(null)
 
-    // =============================================================================
-    // Hardcoded sample recipes for development
-    // const recipes = ref([
-    //   {
-    //     id: 631807,
-    //     title: "Toasted Agnolotti (or Ravioli)",
-    //     image: "https://img.spoonacular.com/recipes/631807-556x370.jpg",
-    //     usedIngredientCount: 3,
-    //     missedIngredientCount: 2
-    //   },
-    //   {
-    //     id: 715538,
-    //     title: "Bruschetta with Ricotta, Tomatoes and Fresh Basil",
-    //     image: "https://img.spoonacular.com/recipes/715538-556x370.jpg",
-    //     usedIngredientCount: 4,
-    //     missedIngredientCount: 1
-    //   },
-    //   {
-    //     id: 644387,
-    //     title: "Garlic Butter Chicken Bites with Lemon Asparagus",
-    //     image: "https://img.spoonacular.com/recipes/644387-556x370.jpg",
-    //     usedIngredientCount: 2,
-    //     missedIngredientCount: 3
-    //   },
-    //   {
-    //     id: 782601,
-    //     title: "Red Lentil Soup with Chicken and Turnips",
-    //     image: "https://img.spoonacular.com/recipes/782601-556x370.jpg",
-    //     usedIngredientCount: 5,
-    //     missedIngredientCount: 1
-    //   },
-    //   {
-    //     id: 716426,
-    //     title: "Cauliflower, Brown Rice, and Vegetable Fried Rice",
-    //     image: "https://img.spoonacular.com/recipes/716426-556x370.jpg",
-    //     usedIngredientCount: 3,
-    //     missedIngredientCount: 2
-    //   },
-    //   {
-    //     id: 663559,
-    //     title: "Tex-Mex Pasta Salad",
-    //     image: "https://img.spoonacular.com/recipes/663559-556x370.jpg",
-    //     usedIngredientCount: 4,
-    //     missedIngredientCount: 2
-    //   }
-    // ])
+  // =============================================================================
+  // Sample data removed — using live API calls by default
+  // =============================================================================
     
     const error = ref('')
     
@@ -291,6 +374,20 @@ export default {
     
     const loadingRecipe = ref(false)
 
+    // Flatten all meals from mealIdeas into a single array for simplified display
+    const mealIdeasList = computed(() => {
+      // mealIdeas is an array of { day, meals } (or suggestions)
+      return mealIdeas.value.flatMap(d => (d.meals && Array.isArray(d.meals)) ? d.meals : [])
+    })
+
+    const mealIdeasTotal = computed(() => mealIdeasList.value.length)
+
+    // Up to 4 cards for meal ideas — prefer current `recipes` search results when present
+    const mealIdeaCards = computed(() => {
+      if (recipes.value && recipes.value.length) return recipes.value.slice(0, 4)
+      return mealIdeasList.value.slice(0, 4)
+    })
+
     const searchRecipes = async () => {
       // =============================================================================
       // NOTE: Recipe data is currently HARDCODED above for CSS styling/development
@@ -310,7 +407,7 @@ export default {
       }
 
       try {
-        const API_URL = 'http://localhost:3000/api/recipes'
+        const API_URL = 'http://18.139.200.231:3000/api/recipes'
         const resp = await axios.get(API_URL, {
           params: {
             ingredients: ingredients.value,
@@ -327,10 +424,6 @@ export default {
         error.value = err?.response?.data?.error || err.message || 'Failed to fetch recipes.'
       }
       
-      
-      // For now, just clear any error since we're using hardcoded data
-      error.value = ''
-      console.log('Using hardcoded recipe data for development')
     }
 
     const viewRecipeDetails = async (recipeId) => {
@@ -386,7 +479,16 @@ export default {
       loadingRecipe,
       searchRecipes, 
       viewRecipeDetails,
-      closeModal
+      closeModal,
+      // meal ideas
+      mealIdeas,
+      mealIdeasLoading,
+      mealIdeasError,
+      getMealImage,
+      mealIdeasList,
+      mealIdeasTotal
+      ,
+      mealIdeaCards
     }
   }
 }
@@ -396,6 +498,99 @@ export default {
 .card-img-top { 
   object-fit: cover; 
   height: 180px; 
+}
+
+.meal-ideas .card-img-top {
+  height: 180px;
+  object-fit: cover;
+}
+
+.meal-badge {
+  font-size: 0.7rem;
+  padding: 0.25rem 0.45rem;
+}
+
+.meal-ideas {
+  max-height: 850px;
+  overflow-y: auto;
+  padding-right: 8px; /* avoid scrollbar overlapping content */
+}
+
+.meal-ideas .meal-card .card-body {
+  padding: 0.6rem;
+}
+
+.placeholder-card .card-body { 
+  min-height: 120px;
+}
+
+/* Prevent horizontal scroll originating from the Meal Ideas block */
+.meal-ideas {
+  overflow-x: hidden; /* disallow horizontal scroll */
+}
+
+/* Ensure row/columns and cards don't force overflow */
+.meal-ideas .row {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.meal-ideas .card,
+.meal-ideas .meal-card,
+.meal-ideas .placeholder-card {
+  min-width: 0; /* allow columns to shrink correctly in flex layout */
+}
+
+.meal-ideas img.card-img-top {
+  max-width: 100%;
+  display: block;
+  height: 180px;
+  object-fit: cover;
+}
+
+.meal-ideas .card-body {
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+/* Ensure cards use the subtle surface background for consistency */
+.card.h-100,
+.meal-ideas .card,
+.meal-card {
+  background-color: var(--surface-subtle) !important;
+}
+
+/* Placeholder styling (uses subtle background and dashed border) */
+.placeholder-card {
+  background-color: var(--surface-subtle);
+  border: 1px dashed var(--border-subtle);
+}
+
+/* Card pop-up on hover/focus for meal ideas and search result cards */
+.card.h-100,
+.meal-ideas .card,
+.meal-ideas .meal-card,
+.meal-ideas .placeholder-card {
+  transition: transform 180ms ease, box-shadow 180ms ease;
+  will-change: transform;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card.h-100:hover,
+  .card.h-100:focus-within,
+  .meal-ideas .card:hover,
+  .meal-ideas .card:focus-within {
+    transform: translateY(-8px) scale(1.01);
+    box-shadow: 0 14px 30px rgba(0,0,0,0.15);
+    z-index: 2;
+  }
+}
+
+/* Provide accessible focus outline when keyboard navigating */
+.card.h-100:focus-within,
+.meal-ideas .card:focus-within {
+  outline: 3px solid rgba(100, 149, 237, 0.15);
+  outline-offset: 4px;
 }
 
 /* Modal Styles */
@@ -474,5 +669,12 @@ export default {
 .viewRecipe{
   justify-self: center;
   width: 100%;
+}
+
+/* Make card action buttons stretch full width of the card body */
+.card .card-body .u-btn {
+  display: block;
+  width: 100%;
+  text-align: center;
 }
 </style>

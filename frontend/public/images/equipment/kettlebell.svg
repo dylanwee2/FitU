@@ -1,6 +1,21 @@
 <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="32" height="32" rx="4" fill="#f8f9fa"/>
-  <path d="M16 4 L20 8 L20 12 Q20 16 16 18 Q12 16 12 12 L12 8 Z" fill="#6c757d"/>
-  <rect x="15" y="18" width="2" height="6" rx="1" fill="#495057"/>
-  <circle cx="16" cy="26" r="2" fill="#6c757d"/>
+  <defs>
+    <radialGradient id="kbGrad" cx="50%" cy="40%" r="80%">
+      <stop offset="0%" style="stop-color:#f093fb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f5576c;stop-opacity:1" />
+    </radialGradient>
+  </defs>
+  <rect width="32" height="32" rx="4" fill="#0f172a"/>
+  <!-- Kettlebell bell body (rounded bottom, flat top) -->
+  <path d="M10 22 Q16 28 22 22 L22 12 Q22 8 18 8 L14 8 Q10 8 10 12 Z" fill="url(#kbGrad)"/>
+  <path d="M10 22 Q16 28 22 22 L22 12 Q22 8 18 8 L14 8 Q10 8 10 12 Z" stroke="#334155" stroke-width="0.5"/>
+  <!-- Handle arch -->
+  <path d="M12 10 Q16 6 20 10" stroke="#64748b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Handle sides -->
+  <line x1="12" y1="10" x2="12" y2="12" stroke="#64748b" stroke-width="2" stroke-linecap="round"/>
+  <line x1="20" y1="10" x2="20" y2="12" stroke="#64748b" stroke-width="2" stroke-linecap="round"/>
+  <!-- Handle grip/texture -->
+  <line x1="14" y1="9" x2="18" y2="9" stroke="#1e293b" stroke-width="1" opacity="0.5"/>
+  <!-- Bell highlights -->
+  <ellipse cx="16" cy="18" rx="4" ry="3" fill="none" stroke="#334155" stroke-width="0.5" opacity="0.3"/>
 </svg>

@@ -56,19 +56,19 @@
               
               <!-- Actions dropdown -->
               <div class="dropdown">
-                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
-                  <i class="fas fa-ellipsis-v"></i>
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-label="Workout actions">
+                  
                 </button>
                 <ul class="dropdown-menu">
                   <li><button class="dropdown-item" @click="editWorkoutSet(set)">
-                    <i class="fas fa-edit me-2"></i>Edit
+                    Edit
                   </button></li>
                   <li><button class="dropdown-item" @click="duplicateWorkoutSet(set)">
-                    <i class="fas fa-copy me-2"></i>Duplicate
+                    Duplicate
                   </button></li>
                   <li><hr class="dropdown-divider"></li>
                   <li><button class="dropdown-item text-danger" @click="deleteWorkoutSet(set)">
-                    <i class="fas fa-trash me-2"></i>Delete
+                    Delete
                   </button></li>
                 </ul>
               </div>
@@ -80,8 +80,8 @@
               <p class="card-text text-muted">{{ truncateText(set.description, 80) }}</p>
               
               <div class="small text-muted mb-3">
-                <div><i class="fas fa-dumbbell me-1"></i>{{ set.exercises.length }} exercises</div>
-                <div><i class="fas fa-clock me-1"></i>{{ set.totalDuration || 0 }}min</div>
+                <div>{{ set.exercises.length }} exercises</div>
+                <div>{{ formatWorkoutDuration(set) }}</div>
               </div>
             </div>
 
@@ -91,14 +91,14 @@
                 <button v-if="canPublish(set, currentUser?.uid || '')" @click="publishWorkoutSet(set)" 
                         class="btn btn-success btn-sm me-2" :disabled="publishingIds.has(set.id)">
                   <span v-if="publishingIds.has(set.id)">
-                    <i class="fas fa-spinner fa-spin me-1"></i>Publishing...
+                    Publishing...
                   </span>
                   <span v-else>
-                    <i class="fas fa-upload me-1"></i>Publish
+                    Publish
                   </span>
                 </button>
                 <button @click="viewWorkoutSet(set)" class="btn btn-outline-primary btn-sm">
-                  <i class="fas fa-eye me-1"></i>View
+                  View
                 </button>
               </div>
               <small class="text-muted align-self-center">{{ formatDate(set.updatedAt) }}</small>
@@ -152,7 +152,7 @@ import { useRouter } from 'vue-router'
 import { auth } from '@/firebase'
 import { workoutSetsService } from '@/services/workoutSetsService.js'
 import { vaultService } from '@/services/vaultService.js'
-import { canPublish } from '@/types/workout.js'
+import { canPublish, formatDuration, calculateWorkoutDuration } from '@/types/workout.js'
 
 const router = useRouter()
 
@@ -170,6 +170,28 @@ let unsubscribe = null
 
 // Computed properties
 const currentUser = computed(() => auth.currentUser)
+
+// Utility functions
+const formatWorkoutDuration = (set) => {
+  let totalMinutes = 0;
+  
+  // Always calculate from exercises to ensure 5min/set consistency
+  if (set.exercises && set.exercises.length > 0) {
+    // Force recalculation using 5min per set rule
+    totalMinutes = set.exercises.reduce((total, exercise) => {
+      const sets = exercise.sets || 3; // Default to 3 sets
+      return total + (sets * 5); // 5 minutes per set
+    }, 0);
+  }
+  
+  // If we still have 0 and there are exercises, use a basic fallback
+  if (totalMinutes === 0 && set.exercises && set.exercises.length > 0) {
+    // Each exercise gets 3 sets by default = 15 minutes per exercise
+    totalMinutes = set.exercises.length * 3 * 5;
+  }
+  
+  return formatDuration(totalMinutes);
+}
 
 // Methods
 const loadWorkoutSets = async () => {

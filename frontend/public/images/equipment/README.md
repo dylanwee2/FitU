@@ -6,41 +6,42 @@ This directory contains equipment icons used in the WorkoutCart component to dis
 
 The following equipment types are supported with their corresponding icon files:
 
-- `bodyweight.png` - Body weight exercises
-- `dumbbell.png` - Dumbbell exercises
-- `barbell.png` - Barbell exercises
-- `kettlebell.png` - Kettlebell exercises
-- `resistance-band.png` - Resistance band exercises
-- `cable.png` - Cable machine exercises
-- `machine.png` - General gym machines
-- `bench.png` - Bench exercises
-- `pullup-bar.png` - Pull-up bar exercises
-- `medicine-ball.png` - Medicine ball exercises
-- `trx.png` - TRX suspension trainer
-- `yoga-mat.png` - Yoga mat exercises
-- `stability-ball.png` - Stability ball exercises
-- `foam-roller.png` - Foam roller exercises
-- `weight-plate.png` - Weight plate exercises
-- `ez-bar.png` - EZ bar exercises
-- `trap-bar.png` - Trap bar exercises
-- `suspension-trainer.png` - Suspension trainer
-- `box.png` - Box/plyometric exercises
-- `step.png` - Step exercises
-- `default.png` - Default fallback icon
+- `bodyweight.svg` - Body weight exercises
+- `dumbbell.svg` - Dumbbell exercises
+- `barbell.svg` - Barbell exercises
+- `kettlebell.svg` - Kettlebell exercises
+- `resistance-band.svg` - Resistance band exercises
+- `cable.svg` - Cable machine exercises
+- `machine.svg` - General gym machines
+- `bench.svg` - Bench exercises
+- `pullup-bar.svg` - Pull-up bar exercises
+- `medicine-ball.svg` - Medicine ball exercises
+- `trx.svg` - TRX suspension trainer
+- `yoga-mat.svg` - Yoga mat exercises
+- `stability-ball.svg` - Stability ball exercises
+- `foam-roller.svg` - Foam roller exercises
+- `weight-plate.svg` - Weight plate exercises
+- `ez-bar.svg` - EZ bar exercises
+- `trap-bar.svg` - Trap bar exercises
+- `suspension-trainer.svg` - Suspension trainer
+- `box.svg` - Box/plyometric exercises
+- `step.svg` - Step exercises
+- `default.svg` - Default fallback icon
 
 ## Icon Specifications
 
 - **Size**: 32x32 pixels (displayed at 32x32px)
-- **Format**: PNG with transparent background
-- **Style**: Simple, clean icons with good contrast
-- **Color**: Preferably monochrome or simple colors
+- **Format**: SVG with transparent background
+- **Style**: Premium modern icons with dark theme and gradient accents
+- **Theme**: Dark background (#0f172a) with vibrant gradient colors for visual appeal
 
 ## Adding New Equipment Icons
 
 1. Add the new equipment type to the `getEquipmentIcon` function in `WorkoutCart.vue`
-2. Add the corresponding PNG file to this directory
-3. Follow the naming convention: `equipment-name.png` (lowercase, hyphens for spaces)
+2. Add the corresponding SVG file to this directory
+3. Follow the naming convention: `equipment-name.svg` (lowercase, hyphens for spaces)
+4. Use the dark theme (#0f172a background) with gradient accents for consistency
 
 ## Fallback
 
-If an equipment icon is not found, the system will display `default.png` as a fallback.
+If an equipment icon is not found, the system will display `default.svg` as a fallback.

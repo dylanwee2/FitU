@@ -50,11 +50,13 @@
               <!-- Exercise Info -->
               <div class="cart-item-info">
                 <h6 class="cart-item-name">{{ capitalizeFirstLetter(item.name) }}</h6>
-                <div class="cart-item-badges">
-                  <span class="badge target-muscle-badge">{{ capitalizeFirstLetter(item.target) }}</span>
-                  <span class="badge body-part-badge">{{ capitalizeFirstLetter(item.bodyPart) }}</span>
-                  <span class="badge equipment-badge">{{ capitalizeFirstLetter(item.equipment) }}</span>
-                </div>
+              </div>
+
+              <!-- Badges: span under image -->
+              <div class="cart-item-badges">
+                <span class="badge target-muscle-badge">{{ capitalizeFirstLetter(item.target) }}</span>
+                <span class="badge body-part-badge">{{ capitalizeFirstLetter(item.bodyPart) }}</span>
+                <span class="badge equipment-badge">{{ capitalizeFirstLetter(item.equipment) }}</span>
               </div>
 
               <!-- Exercise Controls -->
@@ -203,6 +205,43 @@
       </div>
     </div>
 
+    <!-- Clear Cart Confirmation Modal -->
+    <div v-if="showClearCartConfirm" class="modal-overlay" @click.self="cancelClearCart">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Clear Workout Cart?</h5>
+          <button @click="cancelClearCart" class="btn-close-white btn-close"></button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="clear-cart-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <p class="clear-cart-message">
+            Are you sure you want to clear your workout cart? This will remove all <strong>{{ cartItemCount }}</strong> exercise{{ cartItemCount !== 1 ? 's' : '' }} from your cart.
+          </p>
+          <p class="clear-cart-warning u-muted">
+            This action cannot be undone.
+          </p>
+        </div>
+        
+        <div class="modal-footer">
+          <button 
+            @click="cancelClearCart"
+            class="u-btn u-btn--secondary"
+          >
+            Cancel
+          </button>
+          <button 
+            @click="confirmClearCart"
+            class="u-btn u-btn--danger"
+          >
+            Clear Cart
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Save Workout Modal -->
     <div v-if="showSavePlaylistModal" class="modal-overlay" @click.self="showSavePlaylistModal = false">
       <div class="modal-content">
@@ -277,6 +316,7 @@ const cartStore = useWorkoutCartStore()
 // Local state
 const isOpen = ref(false)
 const showSavePlaylistModal = ref(false)
+const showClearCartConfirm = ref(false)
 const newPlaylistName = ref('')
 const newPlaylistDescription = ref('')
 const showEquipmentSection = ref(false)
@@ -324,9 +364,17 @@ const updateCartItem = (exerciseId, updates) => {
 }
 
 const clearCart = () => {
-  if (confirm('Are you sure you want to clear your workout cart?')) {
-    cartStore.clearCart()
-  }
+  showClearCartConfirm.value = true
+}
+
+const confirmClearCart = () => {
+  cartStore.clearCart()
+  showClearCartConfirm.value = false
+  isOpen.value = false
+}
+
+const cancelClearCart = () => {
+  showClearCartConfirm.value = false
 }
 
 const savePlaylist = async () => {
@@ -373,31 +421,193 @@ const capitalizeFirstLetter = (text) => {
 
 // Equipment icon mapping
 const getEquipmentIcon = (equipment) => {
+  if (!equipment) return '/images/equipment/default.svg'
+  
+  // Normalize equipment name: lowercase, trim, and handle variations
+  let normalized = equipment.toLowerCase().trim()
+  
+  // Handle variations and synonyms - check compound names first
+  // "ez barbell", "ez bar", "ez-bar", "ez barbell" -> "ez-bar"
+  if ((normalized.includes('ez') && (normalized.includes('bar') || normalized.includes('barbell'))) || normalized === 'ez-bar') {
+    normalized = 'ez-bar'
+  }
+  // "trap bar" or "trap-bar" -> "trap-bar"
+  else if (normalized.includes('trap') && normalized.includes('bar')) {
+    normalized = 'trap-bar'
+  }
+  // "resistance band" or "resistance-band" -> "resistance-band"
+  else if (normalized.includes('resistance') && normalized.includes('band')) {
+    normalized = 'resistance-band'
+  }
+  // "exercise band" -> "exercise-band"
+  else if (normalized.includes('exercise') && normalized.includes('band')) {
+    normalized = 'exercise-band'
+  }
+  // "mini band" -> "mini-band"
+  else if ((normalized.includes('mini') && normalized.includes('band')) || normalized === 'mini-band') {
+    normalized = 'mini-band'
+  }
+  // "pull-up bar", "pull up bar", or "pullup-bar" -> "pullup-bar"
+  else if ((normalized.includes('pull') && normalized.includes('up') && normalized.includes('bar')) || 
+           (normalized.includes('pullup') && normalized.includes('bar'))) {
+    normalized = 'pullup-bar'
+  }
+  // "medicine ball" or "medicine-ball" -> "medicine-ball"
+  else if (normalized.includes('medicine') && normalized.includes('ball')) {
+    normalized = 'medicine-ball'
+  }
+  // "yoga mat" or "yoga-mat" -> "yoga-mat"
+  else if (normalized.includes('yoga') && normalized.includes('mat')) {
+    normalized = 'yoga-mat'
+  }
+  // "stability ball" or "stability-ball" -> "stability-ball"
+  else if (normalized.includes('stability') && normalized.includes('ball')) {
+    normalized = 'stability-ball'
+  }
+  // "foam roller" or "foam-roller" -> "foam-roller"
+  else if (normalized.includes('foam') && normalized.includes('roller')) {
+    normalized = 'foam-roller'
+  }
+  // "weight plate" or "weight-plate" -> "weight-plate"
+  else if (normalized.includes('weight') && normalized.includes('plate')) {
+    normalized = 'weight-plate'
+  }
+  // "weighted vest" -> "weighted-vest"
+  else if (normalized.includes('weighted') && normalized.includes('vest')) {
+    normalized = 'weighted-vest'
+  }
+  // "weighted ball" -> "weighted-ball" (different from medicine ball)
+  else if (normalized.includes('weighted') && normalized.includes('ball')) {
+    normalized = 'weighted-ball'
+  }
+  // "weighted dumbbell" -> "weighted-dumbbell"
+  else if (normalized.includes('weighted') && normalized.includes('dumbbell')) {
+    normalized = 'weighted-dumbbell'
+  }
+  // "weighted bar" or "weighted barbell" -> "weighted-bar"
+  else if (normalized.includes('weighted') && (normalized.includes('bar') || normalized.includes('barbell'))) {
+    normalized = 'weighted-bar'
+  }
+  // "suspension trainer" or "suspension-trainer" -> "suspension-trainer"
+  else if (normalized.includes('suspension') && normalized.includes('trainer')) {
+    normalized = 'suspension-trainer'
+  }
+  // "body weight", "bodyweight", or "body-weight" -> "bodyweight"
+  else if ((normalized.includes('body') && normalized.includes('weight')) || normalized === 'bodyweight') {
+    normalized = 'bodyweight'
+  }
+  // Machine-specific mappings
+  // "smith machine" or "smith" -> "smith-machine"
+  else if (normalized.includes('smith')) {
+    normalized = 'smith-machine'
+  }
+  // "leg press" or "leg press machine" -> "leg-press-machine"
+  else if (normalized.includes('leg') && normalized.includes('press')) {
+    normalized = 'leg-press-machine'
+  }
+  // "treadmill" -> "treadmill"
+  else if (normalized.includes('treadmill')) {
+    normalized = 'treadmill'
+  }
+  // "stationary bike" or "bike" -> "stationary-bike"
+  else if (normalized.includes('stationary') && normalized.includes('bike')) {
+    normalized = 'stationary-bike'
+  }
+  else if (normalized === 'bike') {
+    normalized = 'stationary-bike'
+  }
+  // "lat pulldown" or "lat pulldown machine" -> "lat-pulldown"
+  else if (normalized.includes('lat') && normalized.includes('pulldown')) {
+    normalized = 'lat-pulldown'
+  }
+  // "chest press" or "chest press machine" -> "chest-press"
+  else if (normalized.includes('chest') && normalized.includes('press')) {
+    normalized = 'chest-press'
+  }
+  // "seated row" or "seated row machine" -> "seated-row"
+  else if (normalized.includes('seated') && normalized.includes('row')) {
+    normalized = 'seated-row'
+  }
+  // "cable cross" or "cable crossover" -> "cable-cross"
+  else if (normalized.includes('cable') && (normalized.includes('cross') || normalized.includes('crossover'))) {
+    normalized = 'cable-cross'
+  }
+  // "hack squat" or "hack squat machine" -> "hack-squat"
+  else if (normalized.includes('hack') && normalized.includes('squat')) {
+    normalized = 'hack-squat'
+  }
+  // "leg curl" or "leg curl machine" -> "leg-curl"
+  else if (normalized.includes('leg') && normalized.includes('curl')) {
+    normalized = 'leg-curl'
+  }
+  // "leg extension" or "leg extension machine" -> "leg-extension"
+  else if (normalized.includes('leg') && normalized.includes('extension')) {
+    normalized = 'leg-extension'
+  }
+  // "preacher curl" or "preacher curl machine" -> "preacher-curl"
+  else if (normalized.includes('preacher') && normalized.includes('curl')) {
+    normalized = 'preacher-curl'
+  }
+  // "shoulder press" or "shoulder press machine" -> "shoulder-press"
+  else if (normalized.includes('shoulder') && normalized.includes('press')) {
+    normalized = 'shoulder-press'
+  }
+  // "leverage machine" or "leverage" -> "leverage-machine"
+  else if (normalized.includes('leverage')) {
+    normalized = 'leverage-machine'
+  }
+  // Replace remaining spaces with hyphens for consistency
+  else {
+    normalized = normalized.replace(/\s+/g, '-').replace(/-+/g, '-')
+  }
+  
+  // Map normalized names to icon files
   const equipmentIcons = {
-    'body weight': '/images/equipment/bodyweight.svg',
+    'bodyweight': '/images/equipment/bodyweight.svg',
+    'body-weight': '/images/equipment/bodyweight.svg',
     'dumbbell': '/images/equipment/dumbbell.svg',
     'barbell': '/images/equipment/barbell.svg',
     'kettlebell': '/images/equipment/kettlebell.svg',
-    'resistance band': '/images/equipment/default.svg',
-    'cable': '/images/equipment/default.svg',
-    'machine': '/images/equipment/default.svg',
-    'bench': '/images/equipment/default.svg',
-    'pull-up bar': '/images/equipment/default.svg',
-    'medicine ball': '/images/equipment/default.svg',
-    'trx': '/images/equipment/default.svg',
-    'yoga mat': '/images/equipment/default.svg',
-    'stability ball': '/images/equipment/default.svg',
-    'foam roller': '/images/equipment/default.svg',
-    'weight plate': '/images/equipment/default.svg',
-    'ez bar': '/images/equipment/default.svg',
-    'trap bar': '/images/equipment/default.svg',
-    'suspension trainer': '/images/equipment/default.svg',
-    'box': '/images/equipment/default.svg',
-    'step': '/images/equipment/default.svg'
+    'resistance-band': '/images/equipment/resistance-band.svg',
+    'exercise-band': '/images/equipment/exercise-band.svg',
+    'mini-band': '/images/equipment/mini-band.svg',
+    'cable': '/images/equipment/cable.svg',
+    'machine': '/images/equipment/machine.svg',
+    'bench': '/images/equipment/bench.svg',
+    'pullup-bar': '/images/equipment/pullup-bar.svg',
+    'medicine-ball': '/images/equipment/medicine-ball.svg',
+    'trx': '/images/equipment/trx.svg',
+    'yoga-mat': '/images/equipment/yoga-mat.svg',
+    'stability-ball': '/images/equipment/stability-ball.svg',
+    'foam-roller': '/images/equipment/foam-roller.svg',
+    'weight-plate': '/images/equipment/weight-plate.svg',
+    'weighted-vest': '/images/equipment/weighted-vest.svg',
+    'weighted-ball': '/images/equipment/weighted-ball.svg',
+    'weighted-dumbbell': '/images/equipment/weighted-dumbbell.svg',
+    'weighted-bar': '/images/equipment/weighted-bar.svg',
+    'ez-bar': '/images/equipment/ez-bar.svg',
+    'trap-bar': '/images/equipment/trap-bar.svg',
+    'suspension-trainer': '/images/equipment/suspension-trainer.svg',
+    'box': '/images/equipment/box.svg',
+    'step': '/images/equipment/step.svg',
+    // Machine icons
+    'smith-machine': '/images/equipment/smith-machine.svg',
+    'leg-press-machine': '/images/equipment/leg-press-machine.svg',
+    'treadmill': '/images/equipment/treadmill.svg',
+    'stationary-bike': '/images/equipment/stationary-bike.svg',
+    'lat-pulldown': '/images/equipment/lat-pulldown.svg',
+    'chest-press': '/images/equipment/chest-press.svg',
+    'seated-row': '/images/equipment/seated-row.svg',
+    'cable-cross': '/images/equipment/cable-cross.svg',
+    'hack-squat': '/images/equipment/hack-squat.svg',
+    'leg-curl': '/images/equipment/leg-curl.svg',
+    'leg-extension': '/images/equipment/leg-extension.svg',
+    'preacher-curl': '/images/equipment/preacher-curl.svg',
+    'shoulder-press': '/images/equipment/shoulder-press.svg',
+    'leverage-machine': '/images/equipment/leverage-machine.svg'
   }
   
-  const normalizedEquipment = equipment.toLowerCase().trim()
-  return equipmentIcons[normalizedEquipment] || '/images/equipment/default.svg'
+  return equipmentIcons[normalized] || '/images/equipment/default.svg'
 }
 
 const handleEquipmentIconError = (event) => {
@@ -543,8 +753,11 @@ const toggleEquipmentSection = () => {
 }
 
 .cart-item {
-  display: flex;
-  gap: 1rem;
+  display: grid;
+  grid-template-columns: 60px 1fr auto;
+  grid-template-rows: auto auto;
+  column-gap: 1rem;
+  row-gap: 0.5rem;
   padding: 1rem;
   background: var(--surface-subtle);
   border-radius: 8px;
@@ -558,6 +771,8 @@ const toggleEquipmentSection = () => {
   border-radius: 6px;
   overflow: hidden;
   flex-shrink: 0;
+  grid-column: 1;
+  grid-row: 1 / span 2;
 }
 
 .cart-item-image img {
@@ -567,8 +782,9 @@ const toggleEquipmentSection = () => {
 }
 
 .cart-item-info {
-  flex: 1;
   min-width: 0;
+  grid-column: 2;
+  grid-row: 1;
 }
 
 .cart-item-name {
@@ -588,11 +804,17 @@ const toggleEquipmentSection = () => {
   display: flex;
   gap: 0.25rem;
   flex-wrap: wrap;
+  grid-column: 1 / 3; /* span under image and name */
+  grid-row: 2;
 }
 
 .cart-item-badges .badge {
   font-size: 0.7rem;
-  padding: 0.25rem 0.5rem;
+  padding: 0.25rem 0.5rem 0.25rem 0.9rem;
+  width: 120px; /* fixed width for standardised look */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .cart-item-controls {
@@ -600,6 +822,8 @@ const toggleEquipmentSection = () => {
   flex-direction: column;
   gap: 0.5rem;
   min-width: 80px;
+  grid-column: 3;
+  grid-row: 1 / span 2;
 }
 
 .sets-reps-control {
@@ -780,6 +1004,38 @@ const toggleEquipmentSection = () => {
   justify-content: flex-end;
 }
 
+/* Clear Cart Confirmation Modal Styles */
+.clear-cart-icon {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.clear-cart-icon i {
+  font-size: 3rem;
+  color: #dc3545;
+  opacity: 0.9;
+}
+
+.clear-cart-message {
+  text-align: center;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+  color: var(--text);
+}
+
+.clear-cart-message strong {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.clear-cart-warning {
+  text-align: center;
+  font-size: 0.875rem;
+  font-style: italic;
+  margin-bottom: 0;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .cart-content {
@@ -828,60 +1084,48 @@ const toggleEquipmentSection = () => {
   }
 }
 
-/* Color-coded badge styles */
-.target-muscle-badge {
-  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
-  color: white !important;
-  border: none;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
+/* Nuanced charcoal pill theme with color-coded indicator dots */
+.cart-item-badges .badge {
+  position: relative;
+  background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
+  color: #e9e9e9 !important;
+  border: 1px solid rgba(201, 162, 39, 0.28) !important;
   border-radius: 12px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
 
-.target-muscle-badge:hover {
-  background: linear-gradient(135deg, #c0392b 0%, #a93226 100%) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+.cart-item-badges .badge::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
 }
 
-.body-part-badge {
-  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
-  color: white !important;
-  border: none;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  cursor: pointer;
+.cart-item-badges .badge:hover {
+  transform: none;
+  border-color: rgba(201, 162, 39, 0.42) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.28);
 }
 
-.body-part-badge:hover {
-  background: linear-gradient(135deg, #2980b9 0%, #21618c 100%) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+/* Subtle top highlight */
+.cart-item-badges .badge::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 40%);
+  pointer-events: none;
 }
 
-.equipment-badge {
-  background: linear-gradient(135deg, #27ae60 0%, #229954 100%) !important;
-  color: white !important;
-  border: none;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.equipment-badge:hover {
-  background: linear-gradient(135deg, #229954 0%, #1e8449 100%) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
-}
+.target-muscle-badge::before { background: #e74c3c; box-shadow: 0 0 2px rgba(231, 76, 60, 0.28); }
+.body-part-badge::before { background: #3498db; box-shadow: 0 0 2px rgba(52, 152, 219, 0.28); }
+.equipment-badge::before { background: #27ae60; box-shadow: 0 0 2px rgba(39, 174, 96, 0.28); }
 
 /* Equipment Section Container */
 .equipment-section-container {
@@ -985,33 +1229,32 @@ const toggleEquipmentSection = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 60px;
-  padding: 0.5rem;
-  background: var(--surface-subtle);
-  border-radius: 8px;
-  border: 1px solid var(--border-subtle);
+  min-width: 72px;
+  padding: 0.75rem 0.5rem;
+  background: linear-gradient(180deg, #1b1b1b 0%, #111 100%);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.06);
   transition: all 0.3s ease;
   cursor: pointer;
 }
 
 .equipment-icon-item:hover {
-  background: var(--muted);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22);
+  border-color: rgba(255,255,255,0.12);
 }
 
 .equipment-icon {
-  width: 32px;
-  height: 32px;
+  width: 48px;
+  height: 48px;
   object-fit: contain;
-  margin-bottom: 0.25rem;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  margin-bottom: 0.35rem;
 }
 
 .equipment-label {
-  font-size: 0.7rem;
-  font-weight: 500;
-  color: var(--text);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #e6e6e6;
   text-align: center;
   line-height: 1.2;
   word-break: break-word;

@@ -52,6 +52,8 @@ export default {
   background-color: rgb(14, 14, 14);
   color: white;
   padding: 10px 40px;
+  position: relative;
+  z-index: 2;
 }
 
 .navbar .logo {

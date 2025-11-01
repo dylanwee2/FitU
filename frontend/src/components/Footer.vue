@@ -1,5 +1,5 @@
 <template>
-  <footer style="background-color: rgb(14, 14, 14);">
+  <footer style="background-color: rgb(14, 14, 14); position: relative; z-index: 2;">
     <div class="container">
       <div class="row footer-logo-row mb-0">
         <router-link to="/home" class="footer-logo-link">
