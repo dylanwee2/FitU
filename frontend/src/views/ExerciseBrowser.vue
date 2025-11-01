@@ -7,52 +7,54 @@
         <p class="u-muted">Discover thousands of exercises to reach your fitness goals</p>
       </div>
 
-      <!-- Search Bar -->
+      <!-- Search Bar + Filter inline -->
       <div class="search-section mb-4">
         <div class="row justify-content-center">
           <div class="col-md-8 col-lg-6">
-            <div class="search-container">
-              <input
-                v-model="searchQuery"
-                @input="handleSearch"
-                type="text"
-                class="form-control search-input"
-                placeholder="Search exercises by name (e.g., push-up, squat, bicep)..."
-                :disabled="loading"
-              >
+            <div class="search-inline d-flex align-items-center gap-2">
+              <div class="search-container flex-grow-1">
+                <input
+                  v-model="searchQuery"
+                  @input="handleSearch"
+                  type="text"
+                  class="form-control search-input"
+                  placeholder="Search exercises by name (e.g., push-up, squat, bicep)..."
+                  :disabled="loading"
+                >
+              </div>
+
+              <!-- Bodypart filter dropdown placed beside the search input -->
+              <div class="search-filters mt-0" v-if="bodyPartsList.length">
+                <div class="d-flex gap-2 align-items-center">
+                  <!-- Custom fixed-position dropdown to avoid layout shifting when native select opens -->
+                  <div class="bodypart-dropdown" ref="bodyDropdownRef">
+                    <button
+                      class="form-select bodypart-toggle"
+                      type="button"
+                      @click.prevent="toggleBodyDropdown"
+                      :aria-expanded="isBodyDropdownOpen"
+                    >
+                      {{ selectedBodyPart || 'All' }}
+                    </button>
+
+                    <div
+                      v-if="isBodyDropdownOpen"
+                      class="bodypart-menu"
+                      :style="bodyDropdownStyle"
+                      role="listbox"
+                    >
+                      <div class="bodypart-option" role="option" @click="selectBodyPart('')">All</div>
+                      <div v-for="part in bodyPartsList" :key="part" class="bodypart-option" role="option" @click="selectBodyPart(part)">{{ part }}</div>
+                    </div>
+                  </div>
+
+                  
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-
-      <!-- Bodypart filter dropdown shown just below the search input -->
-            <div class="search-filters mt-2" v-if="bodyPartsList.length">
-              <div class="d-flex gap-2 align-items-center">
-                <!-- Custom fixed-position dropdown to avoid layout shifting when native select opens -->
-                <div class="bodypart-dropdown" ref="bodyDropdownRef">
-                  <button
-                    class="form-select bodypart-toggle"
-                    type="button"
-                    @click.prevent="toggleBodyDropdown"
-                    :aria-expanded="isBodyDropdownOpen"
-                  >
-                    {{ selectedBodyPart || 'Filter by body part' }}
-                  </button>
-
-                  <div
-                    v-if="isBodyDropdownOpen"
-                    class="bodypart-menu"
-                    :style="bodyDropdownStyle"
-                    role="listbox"
-                  >
-                    <div class="bodypart-option" role="option" @click="selectBodyPart('')">All</div>
-                    <div v-for="part in bodyPartsList" :key="part" class="bodypart-option" role="option" @click="selectBodyPart(part)">{{ part }}</div>
-                  </div>
-                </div>
-
-                <button v-if="selectedBodyPart" @click="clearBodyFilter" class="u-btn u-btn--danger clearBtn">Clear</button>
-              </div>
-            </div>
 
       <!-- Loading State -->
       <div v-if="loading" class="loading-section text-center py-5">
@@ -381,25 +383,11 @@ const closeBodyDropdown = () => {
   isBodyDropdownOpen.value = false
 }
 
-const toggleBodyDropdown = async () => {
+const toggleBodyDropdown = () => {
+  // Simply toggle; positioning is handled via CSS (absolute under the toggle)
   isBodyDropdownOpen.value = !isBodyDropdownOpen.value
-  if (isBodyDropdownOpen.value) {
-    await nextTick()
-    // compute fixed-position coords so the dropdown doesn't affect layout
-    const el = bodyDropdownRef.value && bodyDropdownRef.value.getBoundingClientRect && bodyDropdownRef.value.getBoundingClientRect()
-    if (el) {
-      bodyDropdownStyle.value = {
-        position: 'fixed',
-        top: `${el.bottom}px`,
-        left: `${el.left}px`,
-        width: `${el.width}px`,
-        zIndex: 9999,
-      }
-    }
-    // small delay to ensure positioning applied before any focus changes
-    setTimeout(() => {
-      // noop
-    }, 0)
+  if (!isBodyDropdownOpen.value) {
+    bodyDropdownStyle.value = {}
   }
 }
 
@@ -539,10 +527,20 @@ onBeforeUnmount(() => {
   transition: all 0.3s ease;
 }
 
-/* Search filters styling (chips under search) */
+/* Search filters inline beside search */
+.search-inline { 
+  display: flex; 
+  align-items: center; 
+  gap: 12px; 
+}
+.search-inline .search-container { 
+  flex: 1 1 auto; 
+  min-width: 0; 
+}
 .search-filters {
-  margin-top: 0.5rem;
-  width: 290px;
+  margin-top: 0; /* inline with search */
+  width: 100px; /* make filter control narrower */
+  font-size: 12px;
 }
 .search-filters .badge {
   cursor: pointer;
@@ -629,30 +627,41 @@ onBeforeUnmount(() => {
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
-  background-color: black;
-  color: white;
+  background-color: var(--surface-subtle);
+  color: #ffffff;
+  border: 1px solid var(--border-subtle);
 }
 .bodypart-menu {
-  position: fixed; /* key: fixed so it won't affect parent layout */
+  position: absolute; /* anchor to dropdown container, not viewport */
+  top: calc(100% + 4px);
+  left: 0;
+  width: 100%;
+  z-index: 1000;
   max-height: 50vh;
   overflow: auto;
-  background: var(--card-bg, black);
-  border: 1px solid rgba(0,0,0,0.08);
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-subtle);
   box-shadow: 0 8px 24px rgba(0,0,0,0.12);
   border-radius: 8px;
   padding: 0.25rem 0;
+  color: #ffffff;
+  /* Dark themed scrollbar (Chrome-like) */
+  scrollbar-color: #555 var(--surface-subtle); /* Firefox */
+  scrollbar-width: thin; /* Firefox */
 }
+.bodypart-menu::-webkit-scrollbar { width: 10px; height: 10px; }
+.bodypart-menu::-webkit-scrollbar-track { background: var(--surface-subtle); border-radius: 8px; }
+.bodypart-menu::-webkit-scrollbar-thumb { background: #555; border-radius: 8px; border: 2px solid var(--surface-subtle); }
+.bodypart-menu::-webkit-scrollbar-thumb:hover { background: #666; }
 .bodypart-option {
   padding: 0.6rem 0.9rem;
   cursor: pointer;
   white-space: nowrap;
+  background-color: var(--surface-subtle);
+  color: #ffffff;
 }
 .bodypart-option:hover {
-  background: rgba(0,0,0,0.04);
-  cursor: pointer;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+  background-color: rgba(255,255,255,0.06); /* slightly lighter on hover */
 }
 
 .exercise-card:hover {
@@ -935,5 +944,9 @@ onBeforeUnmount(() => {
   .search-input {
     padding: 0.75rem 0.75rem 0.75rem 2.5rem;
   }
+
+  /* On small screens, allow filter to wrap below input */
+  .search-inline { flex-wrap: wrap; }
+  .search-filters { width: 100%; }
 }
 </style>

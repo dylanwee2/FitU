@@ -10,7 +10,6 @@ import Recipes from '../views/recipes.vue'
 import ExerciseDetail from '../views/ExerciseDetail.vue'
 import ExerciseBrowser from '../views/ExerciseBrowser.vue'
 import CommentsAdmin from '../views/CommentsAdmin.vue'
-import Calendar from '../views/calendar.vue'
 import VirtualGym from '../views/VirtualGym.vue'
 import WorkoutPlaylists from '../views/WorkoutPlaylists.vue'
 import Vault from '../views/Vault.vue'
@@ -25,7 +24,6 @@ const routes = [
   { path: '/exerciselibrary', name: 'ExerciseBrowser', component: ExerciseBrowser },
   { path: '/exercise/:id', name: 'ExerciseDetail', component: ExerciseDetail },
   { path: '/admin/comments', name: 'CommentsAdmin', component: CommentsAdmin },
-  { path: '/calendar', name: 'Calendar', component: Calendar },
   { path: '/virtual-gym', name: 'VirtualGym', component: VirtualGym },
   { path: '/workout-sets', name: 'WorkoutPlaylists', component: WorkoutPlaylists },
   { path: '/vault', name: 'Vault', component: Vault },  
