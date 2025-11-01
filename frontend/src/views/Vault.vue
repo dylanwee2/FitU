@@ -1139,7 +1139,6 @@ onUnmounted(() => {
 .card-header {
   padding: 1rem;
   border-bottom: 1px solid var(--border-subtle);
-  /* Remove conflicting flex properties - let Bootstrap handle them */
 }
 
 .rating-display {
@@ -1170,6 +1169,9 @@ onUnmounted(() => {
   font-size: 0.8rem;
   margin-left: 0.25rem;
   color: white !important; /* Make rating text white and visible */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .card-body {
@@ -1209,8 +1211,20 @@ onUnmounted(() => {
 
 .workout-stats {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column; /* stack rating and duration vertically */
+  align-items: flex-start;
+  gap: 0.35rem;
   font-size: 0.8rem;
+}
+
+.workout-stats .stat span {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text, #fff);
+}
+
+.exercise-count {
+  white-space: nowrap;
 }
 
 .card-footer {
