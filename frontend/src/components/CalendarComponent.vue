@@ -481,6 +481,22 @@ const initializeCalendar = async () => {
     selectable: props.selectable,
     nowIndicator: true,
     events: props.events,
+    // Ensure times display full meridiem (am/pm) instead of just a/p
+    eventTimeFormat: {
+      hour: 'numeric',
+      minute: '2-digit',
+      meridiem: 'lowercase', // 'am' / 'pm'
+      hour12: true,
+      omitZeroMinute: true   // show 12am instead of 12:00am
+    },
+    // Also fix slot labels for time grid views
+    slotLabelFormat: {
+      hour: 'numeric',
+      minute: '2-digit',
+      meridiem: 'lowercase',
+      hour12: true,
+      omitZeroMinute: true
+    },
     eventColor: getComputedStyle(document.documentElement).getPropertyValue('--muted').trim(),
 
     //eventColor: getComputedStyle(document.documentElement).getPropertyValue('--primary').trim(),
