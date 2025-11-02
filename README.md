@@ -7,6 +7,17 @@ Welcome to the GitHub repository for FitU! Whether you're looking to start your 
 Did you know that 61% of Singaporean students feel burnt out from their packed and hectic schedules? Most students feel that they do not have the bandwidth to balance studies, health, and fitness. However, 
 FitU is here to solve that. Packed with thoughtful features and an intuitive user interface, FitU's design ensures that you have the best user experience as you record, search and analyse your way to a more healthy life.
 
+## Key Features
+
+- **Calendar Sync** – Import ICS files to sync your schedule with Google or Apple Calendar.  
+- **Workout Browser** – Search exercises by muscle group or equipment, complete with video demos.  
+- **Workout Sets** – Build, modify, and save your custom workout routines.  
+- **AI Coach Assistant** – Get smart workout recommendations tailored to your goals and fitness level.  
+- **Workout Vault** – Explore and share community-created workouts.  
+- **Recipe Browser** – Discover healthy recipes based on ingredients or meal type.  
+- **Virtual Gym** – Explore a 3D gym to learn about different equipment and exercises.  
+- **Macros & Fitness Tracking** – Track calories, progress, and workout streaks with charts and graphs.  
+
 ## Deployed Link
 http://fitu-vue-frontend.s3-website-ap-southeast-1.amazonaws.com/
 
@@ -39,18 +50,6 @@ Install FitU with npm <br>
 | **Justin** | Back End Developer, Video Editor | Implemented the **Workout Cart feature** and produced/edited FitU demo videos. |
 | **Yangxue** | Back End Developer, Content Creator | Created the **Profile Details** and **Macros & Fitness Tracking** features, and designed presentation slides. 
 | **Flash** | Backend Developer | Developed the **Workout Browser**, **Workout Vault**, and **Comment feature**. |
-
-    
-## Key Features
-
-- **Calendar Sync** – Import ICS files to sync your schedule with Google or Apple Calendar.  
-- **Workout Browser** – Search exercises by muscle group or equipment, complete with video demos.  
-- **Workout Sets** – Build, modify, and save your custom workout routines.  
-- **AI Coach Assistant** – Get smart workout recommendations tailored to your goals and fitness level.  
-- **Workout Vault** – Explore and share community-created workouts.  
-- **Recipe Browser** – Discover healthy recipes based on ingredients or meal type.  
-- **Virtual Gym** – Explore a 3D gym to learn about different equipment and exercises.  
-- **Macros & Fitness Tracking** – Track calories, progress, and workout streaks with charts and graphs.  
 
 
 ## High Level System Design
