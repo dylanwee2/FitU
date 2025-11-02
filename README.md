@@ -8,7 +8,7 @@ Did you know that 61% of Singaporean students feel burnt out from their packed a
 FitU is here to solve that. Packed with thoughtful features and an intuitive user interface, FitU's design ensures that you have the best user experience as you record, search and analyse your way to a more healthy life.
 
 ## Deployed Link
-insert the link here
+http://fitu-vue-frontend.s3-website-ap-southeast-1.amazonaws.com/
 
 ## Installation
 
@@ -16,42 +16,41 @@ Install FitU with npm <br>
 
 1. Open a terminal and run the following command:
 ```bash
-  cd Backend
+  cd backend/
   npm install
   node server.js
 ```
 2. Open another terminal and run the following command:
 ```bash
-  cd Frontend
+  cd frontend/
   npm install
   npm run dev
 ```
 3. Start the website on a browser using local host
-
+http://localhost:5173
 
     
 ## Key Features
 
-- **Calendar**: Allows users to immport ICS files so sync their calendar up with other platforms like Google Calendar and Apple Calendar. Users can also add new events, which will then be displayed on the calendar in the home page.
-- **Workout Browser**: Enables users search for specific workkouts using keywords such as muscle groups and equipment used. Clicking into the workout shows you detailed instructions to perform the exercise, along with the targeted muscle groups and an animated instructional video.
-- **Workout Sets**: Upon finding suitable exercises, add them to the Workout Cart to save a set of exercises which you can refer to next time. Modify the sets, weights, and reps to get detailed information about your workout, including the muscle groups targeted, estimated duration, and number of exercises.
-- **Workout Vault**: Not sure what exercises to do? Look to the Workout Vault, a community driven database for all tried and true workouts. Comment on, save, and edit workouts from others, and upload your own workouts to help others on their fitness journey.
-- **Recipe Browser**: Search for recipes for nutritious meals by searching for the ingredient or dish name.
-- **Virtual Gym**: Explore various gym equipment and their functionalities in a 3D space. Choose to focus on the equipment, or look around the gym for other pieces of equipment. Perfect for new gym-goers or those looking to try new exercises. 
-- **Macros and fitness Tracking**: Enables users to track the calories from their meals, along with workout streaks and saved workouts in the form of graphs and tables. All of these can be viewed and edited in the profile page and the home page.
+- **Calendar Sync** – Import ICS files to sync your schedule with Google or Apple Calendar.  
+- **Workout Browser** – Search exercises by muscle group or equipment, complete with video demos.  
+- **Workout Sets** – Build, modify, and save your custom workout routines.  
+- **AI Coach Assistant** – Get smart workout recommendations tailored to your goals and fitness level.  
+- **Workout Vault** – Explore and share community-created workouts.  
+- **Recipe Browser** – Discover healthy recipes based on ingredients or meal type.  
+- **Virtual Gym** – Explore a 3D gym to learn about different equipment and exercises.  
+- **Macros & Fitness Tracking** – Track calories, progress, and workout streaks with charts and graphs.  
+
 
 ## Solution Architecture
 
-![Solution Architecture](Frontend/src/assets/SolutionArchitecture.png)
+  <img src="frontend/src/assets/img/FitU_C2_Diagram" alt="Frontend" width="600"/>
+  <br>
 
 ### Frontend
 
-  <img src="frontend/src/assets/img/FrontEndArchitecture.jpg" alt="Frontend" width="600"/>
+  <img src="frontend/src/assets/img/FitU_System_Arch" alt="Frontend" width="600"/>
   <br>
-
-### Backend
-
-<img src="frontend/src/assets/img/BackEndArchitecture.jpg" alt="Backend" width="600"/>
 
 ## APIs
 
@@ -59,3 +58,4 @@ Install FitU with npm <br>
 - **Spoonacular**: Provides recipes for our recipe feature.
 - **ExerciseDB**: Provides 1500 exercises for our workout features.
 - **Firebase Auth**: User authentication for creating accounts, logging in, and storing user fitness tracking information.
+- **Gemini API**: User authentication for creating accounts, logging in, and storing user fitness tracking information.
