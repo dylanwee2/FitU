@@ -27,7 +27,18 @@ Install FitU with npm <br>
   npm run dev
 ```
 3. Start the website on a browser using local host
-http://localhost:5173
+- http://localhost:5173
+
+## Roles and Responsibilities
+
+| **Name** | **Role** | **Main Contributions** |
+|-----------|-----------|------------------------|
+| **Dylan** | Project Manager, Full Stack Developer | Managed project timeline, assigned tickets, and hosted stand-up meetings. Developed and integrated **Firebase Auth**, **Spoonacular API**, and **Gemini API (AI Coach)** features. Debugged and refined main website features when necessary. |
+| **Junwei** | Frontend Developer | Led frontend design and developed the **Calendar feature**, ensuring smooth syncing with external calendar platforms. |
+| **Akash** | Frontend Developer | Co-led frontend design and built the **Virtual Gym**, implementing 3D navigation and interactive equipment exploration. |
+| **Justin** | Back End Developer, Video Editor | Implemented the **Workout Cart feature** and produced/edited FitU demo videos. |
+| **Yangxue** | Back End Developer, Content Creator | Created the **Profile Details** and **Macros & Fitness Tracking** features, and designed presentation slides. 
+| **Flash** | Backend Developer | Developed the **Workout Browser**, **Workout Vault**, and **Comment feature**. |
 
     
 ## Key Features
@@ -42,15 +53,13 @@ http://localhost:5173
 - **Macros & Fitness Tracking** – Track calories, progress, and workout streaks with charts and graphs.  
 
 
+## High Level System Design
+
+  <img src="frontend/src/assets/img/FitU_C4_Diagram.jpg" alt="Frontend" width="600"/>
+
 ## Solution Architecture
 
-  <img src="frontend/src/assets/img/FitU_C2_Diagram" alt="Frontend" width="600"/>
-  <br>
-
-### Frontend
-
-  <img src="frontend/src/assets/img/FitU_System_Arch" alt="Frontend" width="600"/>
-  <br>
+  <img src="frontend/src/assets/img/FitU_System_Arch.jpg" alt="Frontend" width="600"/>
 
 ## APIs
 
