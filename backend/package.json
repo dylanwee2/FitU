@@ -9,12 +9,14 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
+    "firebase-admin": "^13.5.0",
     "google-auth-library": "^10.4.0",
     "node-fetch": "^3.3.2"
   },
   "scripts": {
     "start": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "populate-accounts": "node scripts/populateAccounts.js"
   },
   "keywords": [],
   "author": "",

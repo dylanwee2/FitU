@@ -880,6 +880,7 @@ const toggleEquipmentSection = () => {
   min-width: 0;
   grid-column: 2;
   grid-row: 1;
+  overflow: hidden;
 }
 
 .cart-item-name {
@@ -887,6 +888,9 @@ const toggleEquipmentSection = () => {
   font-weight: 600;
   margin: 0 0 0.25rem 0;
   line-height: 1.2;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .cart-item-target {
@@ -1195,8 +1199,8 @@ const toggleEquipmentSection = () => {
   margin-bottom: 0;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
+/* Responsive - Tablet and below (770px and below) */
+@media (max-width: 770px) {
   .cart-content {
     width: 100%;
   }
@@ -1206,18 +1210,69 @@ const toggleEquipmentSection = () => {
     flex-direction: column;
   }
   
+  /* Switch from grid to flexbox to prevent overlap */
   .cart-item {
+    display: flex !important;
     flex-direction: column;
     gap: 0.75rem;
+    grid-template-columns: none !important;
+    grid-template-rows: none !important;
+  }
+  
+  /* Reset grid positioning when using flexbox */
+  .cart-item-image {
+    grid-column: auto !important;
+    grid-row: auto !important;
+    width: 60px;
+    height: 60px;
+    align-self: flex-start;
+    flex-shrink: 0;
+  }
+  
+  .cart-item-info {
+    width: 100%;
+    min-width: 0;
+    grid-column: auto !important;
+    grid-row: auto !important;
+    overflow: visible;
+    flex: 1;
+  }
+  
+  .cart-item-name {
+    font-size: 0.85rem;
+    line-height: 1.3;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    overflow: visible;
+    margin-bottom: 0.25rem;
+    width: 100%;
+  }
+  
+  .cart-item-target {
+    font-size: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .cart-item-badges {
+    grid-column: auto !important;
+    grid-row: auto !important;
+    width: 100%;
+    flex-wrap: wrap;
   }
   
   .cart-item-controls {
+    grid-column: auto !important;
+    grid-row: auto !important;
     flex-direction: row;
     justify-content: space-between;
+    width: 100%;
+    min-width: 0;
+    align-self: stretch;
   }
   
   .sets-reps-control {
     flex: 1;
+    min-width: 0;
   }
   
   .summary-stats {
@@ -1245,6 +1300,135 @@ const toggleEquipmentSection = () => {
   .equipment-icons-section.equipment-expanded {
     max-height: 150px;
     padding: 0.75rem;
+  }
+}
+
+/* Extra small devices (phones in portrait, less than 576px) */
+@media (max-width: 575px) {
+  .cart-content {
+    width: 100%;
+    max-width: 100vw;
+  }
+  
+  .cart-item {
+    padding: 0.75rem;
+    gap: 0.5rem;
+  }
+  
+  .cart-item-image {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .cart-item-info {
+    width: 100%;
+    min-width: 0;
+    overflow: visible;
+  }
+  
+  .cart-item-name {
+    font-size: 0.8rem;
+    line-height: 1.4;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    overflow: visible;
+    margin-bottom: 0.25rem;
+  }
+  
+  .cart-item-target {
+    font-size: 0.7rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .cart-item-badges {
+    width: 100%;
+  }
+  
+  .cart-item-badges .badge {
+    width: auto;
+    min-width: 0;
+    flex: 1 1 auto;
+    max-width: calc(50% - 0.125rem);
+    font-size: 0.65rem;
+    padding: 0.2rem 0.4rem 0.2rem 0.75rem;
+  }
+  
+  .cart-item-controls {
+    width: 100%;
+    gap: 0.375rem;
+  }
+  
+  .sets-reps-control {
+    min-width: 0;
+    flex: 1;
+  }
+  
+  .sets-reps-control .form-control {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.3rem;
+  }
+  
+  .control-label {
+    font-size: 0.65rem;
+  }
+  
+  .cart-header {
+    padding: 1rem;
+  }
+  
+  .cart-title {
+    font-size: 1rem;
+  }
+  
+  .cart-items {
+    padding: 0.75rem;
+  }
+  
+  .cart-summary {
+    padding: 0.75rem;
+  }
+  
+  .summary-stats {
+    gap: 0.375rem;
+  }
+  
+  .stat-label {
+    font-size: 0.7rem;
+  }
+  
+  .stat-value {
+    font-size: 0.95rem;
+  }
+  
+  /* Modal adjustments for extra small */
+  .modal-content {
+    max-width: 100vw;
+    margin: 0;
+    border-radius: 0;
+  }
+  
+  .modal-header,
+  .modal-body,
+  .modal-footer {
+    padding: 1rem;
+  }
+  
+  .modal-footer {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .modal-footer .u-btn {
+    width: 100%;
+    margin: 0;
+  }
+  
+  .cart-toggle-btn {
+    bottom: 1rem;
+    right: 1rem;
+    width: 52px;
+    height: 52px;
+    font-size: 1rem;
   }
 }
 
