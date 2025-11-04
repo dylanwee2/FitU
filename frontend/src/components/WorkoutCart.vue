@@ -126,11 +126,11 @@
             </div>
           </div>
 
-          <div class="muscle-groups">
+          <div class="cart-item-badges">
             <span 
               v-for="muscle in cartMuscleGroups" 
               :key="muscle"
-              class="muscle-badge target-muscle-badge"
+              class="badge target-muscle-badge"
             >
               {{ capitalizeFirstLetter(muscle) }}
             </span>
@@ -332,6 +332,9 @@ import { ref, computed } from 'vue'
 import { useWorkoutCartStore } from '../stores/workoutCart'
 import router from '@/router'
 import axios from 'axios'
+import { db } from '@/firebase'
+import { doc, getDoc } from 'firebase/firestore'
+import { caloriesService } from '@/services/caloriesService.js'
 
 const cartStore = useWorkoutCartStore()
 
@@ -374,6 +377,7 @@ const cartEquipment = computed(() => {
 // Methods
 const toggleCart = () => {
   isOpen.value = !isOpen.value
+  logCurrentUserData()
 }
 
 const closeCart = () => {
@@ -461,13 +465,49 @@ const getAICoachAdvice = async () => {
       lines.push(parts.join(' | '))
     })
 
+    // Try to include the user's goals/profile data in the prompt so the AI can suggest meals
+    try {
+      const user = cartStore.currentUser
+      if (user && user.uid) {
+        const userDocRef = doc(db, 'users', user.uid)
+        const userDoc = await getDoc(userDocRef)
+        if (userDoc && userDoc.exists()) {
+          const u = userDoc.data()
+          const profileData = {
+            fullName: u.fullName || user.displayName || '',
+            email: u.email || user.email || '',
+            gender: u.gender || '',
+            age: u.age || null,
+            height: u.height || null,
+            weight: u.weight || null
+          }
+          const goalsData = {
+            goalType: u.goalType || '',
+            dailyGoal: u.dailyGoal || 2000,
+            dietaryPreference: u.dietaryPreference || '',
+            allergies: u.allergies || '',
+            workoutFrequency: u.workoutFrequency || 3,
+            workoutStreakGoal: u.workoutStreakGoal || 3
+          }
+
+          lines.push('\nUser profile and goals:')
+          // Add a compact JSON block the model can read
+          lines.push(JSON.stringify({ profileData, goalsData }, null, 2))
+        }
+      }
+    } catch (userErr) {
+      console.warn('Failed to include user goals in AI prompt:', userErr)
+    }
+
   // Instruct the AI to assess sufficiency per muscle group and return only an HTML unordered list.
   // Ask it to first rate whether there is "Too little" / "Adequate" / "Too much" volume for each muscle group
   // targeted in the workout, and to focus on whether the current exercises are enough (do NOT give form advice).
+  // Additionally, use the user's goals/profile (included above) to suggest 1-3 meal options tailored to their dietary preference and daily calorie goal.
   lines.push('\nAnalyze the user’s workout based on its name to understand the type of workout they are trying to create (e.g., full-body, push-pull, legs, upper body).')
   lines.push('For each exercise in the workout, create a bullet (<li>) with the exercise name in Title Case (e.g., "Inverted Row Bent Knees").')
   lines.push('Under each exercise, create a nested unordered list (<ul>) with 1-2 bullets. Each bullet should be a short, straight-to-the-point comment rating the targeted muscle groups as "Too little", "Adequate", or "Too much" and a 1-2 sentence justification focused only on volume/coverage (NOT form).')
   lines.push('At the end of the list, include one bullet <li> for "Suggested exercises to add/remove" and under it a nested <ul> with 1-2 bullets suggesting any exercises to add or remove based on the overall volume and balance of the workout.')
+  lines.push('Also include one bullet <li> for "Suggested meals" and under it a nested unordered list (<ul>) with 1-3 bullets. Each meal bullet should be concise and follow the format: "Meal Name - <a href="/recipes?q=Tofu%20%26%20Quinoa%20Bowl">Search for recipe</a>". Use the user goals/dietary preference provided earlier to pick meals that fit the goal.')
   lines.push('Return ONLY an HTML unordered list (<ul>) in this exact format. Do NOT provide form tips or unrelated commentary.')
   lines.push('Example format:');
   lines.push('<ul>');
@@ -475,11 +515,22 @@ const getAICoachAdvice = async () => {
   lines.push('<ul>');
   lines.push('<li>Adequate volume for back muscles</li>');
   lines.push('<li>Too little for biceps, consider adding a curl variation</li>');
-  lines.push('</ul>');
   lines.push('<li>Suggested exercises to add/remove</li>');
   lines.push('<ul>');
-  lines.push('<li>Add dumbbell curls for biceps</li>');
-  lines.push('<li>Remove assisted pull-ups if overtraining back</li>');
+  lines.push('<li>Add Lat Pulldown <button class="add-btn">Add Exercise</button></li>');
+  lines.push('<ul>');
+  lines.push('<li>Helps balance the workout by targeting the lats, which are undertrained.</li>');
+  lines.push('</ul>');
+  lines.push('<li>Remove Push Up <button class="remove-btn">Remove Exercise</button></li>');
+  lines.push('<ul>');
+  lines.push('<li>Chest volume is already sufficient; removing this helps avoid overtraining.</li>');
+  lines.push('</ul>');
+  lines.push('</ul>');
+  lines.push('<li>Suggested meals</li>');
+  lines.push('<ul>');
+  // Example meal items: include a link that navigates to the recipes view with the meal as a query param
+  lines.push('<li>Tofu & Quinoa Bowl - <a href="/recipes?q=Tofu%20%26%20Quinoa%20Bowl">Search for recipe</a></li>');
+  lines.push('<li>Chickpea Curry & Rice - <a href="/recipes?q=Chickpea%20Curry%20%26%20Rice">Search for recipe</a></li>');
   lines.push('</ul>');
   lines.push('</ul>');
 
@@ -712,6 +763,70 @@ const handleEquipmentIconError = (event) => {
 const toggleEquipmentSection = () => {
   showEquipmentSection.value = !showEquipmentSection.value
 }
+
+// Debug helper: load and log the same user data as profile.vue's loadUserData
+const logCurrentUserData = async () => {
+  try {
+    const user = cartStore.currentUser
+    if (!user) {
+      console.log('No user is currently logged in.')
+      return
+    }
+
+    const uid = user.uid
+    const userDocRef = doc(db, 'users', uid)
+    const userDoc = await getDoc(userDocRef)
+
+    if (userDoc.exists()) {
+      const data = userDoc.data()
+
+      const profileData = {
+        fullName: data.fullName || user.displayName || '',
+        email: data.email || user.email || '',
+        gender: data.gender || '',
+        age: data.age || null,
+        height: data.height || null,
+        weight: data.weight || null
+      }
+
+      const goalsData = {
+        goalType: data.goalType || '',
+        dailyGoal: data.dailyGoal || 2000,
+        dietaryPreference: data.dietaryPreference || '',
+        allergies: data.allergies || '',
+        workoutFrequency: data.workoutFrequency || 3,
+        workoutStreakGoal: data.workoutStreakGoal || 3
+      }
+
+      // Attempt to load calorie-related data (same as profile.vue)
+      try {
+        const calorieData = await caloriesService.getUserCalories(uid)
+        const weeklyCalorieData = caloriesService.getWeekSeries(calorieData.entries || [], 7)
+        const todayConsumed = caloriesService.getTodayConsumed(calorieData.entries || [])
+
+        console.log('Current user data:', {
+          uid,
+          profileData,
+          goalsData,
+          weeklyCalorieData,
+          todayConsumed
+        })
+      } catch (calErr) {
+        console.error('Error loading calorie data:', calErr)
+        console.log('Current user data (without calories):', {
+          uid,
+          profileData,
+          goalsData
+        })
+      }
+    } else {
+      console.log(`No user document found for uid=${uid}.`)
+    }
+  } catch (err) {
+    console.error('Error in logCurrentUserData:', err)
+  }
+}
+
 </script>
 
 <style scoped>
