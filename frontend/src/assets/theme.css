@@ -7,7 +7,7 @@
   --surface-subtle: #272727;
   --border-subtle:#202020;
   --text: #ffffff;
-  --muted: #7b8085;
+  --muted: #CAC4D0;
   --primary: #4828ff;
   --secondary: #0064c9;
   --tertiary: #044e97;
@@ -62,7 +62,7 @@
   font-size: 0.9rem;
   /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
   background: linear-gradient(135deg, var(--primary) 0%, #7083eb 100%);
-  color: white;
+  color: white !important; /* Force white color even for links */
   padding: 0.75rem 1rem;
   border-radius: 25px;
   border: none;
@@ -72,18 +72,31 @@
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
   font-weight: bold;
+  text-decoration: none !important; /* Remove underlines from links */
 }
 
 .u-special-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
   background: linear-gradient(135deg, var(--primary) 0%, #7083eb 100%);
-  text-decoration: none;
+  color: white !important; /* Keep white color on hover */
+  text-decoration: none !important; /* Keep no underline on hover */
 }
 
 .u-special-btn:active {
   transform: translateY(0);
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  color: white !important; /* Keep white color when active */
+}
+
+.u-special-btn:visited {
+  color: white !important; /* Keep white color for visited links */
+}
+
+.u-special-btn:focus {
+  color: white !important; /* Keep white color when focused */
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
 }
 
 .u-special-btn::before {
@@ -126,3 +139,46 @@
   background: linear-gradient(0deg, rgba(15,23,42,0.55), rgba(15,23,42,0.25));
   pointer-events:none;
 }
+
+/* Override modal link colors specifically */
+.modal-content a,
+.modal-content a:link {
+  color: #00BFFF; /* Base link color — bright electric blue */
+  text-decoration: underline;
+}
+
+.modal-content a:visited {
+  color: #66CCFF; /* Slightly lighter to subtly show visited state */
+}
+
+.modal-content a:hover {
+  color: #33E0FF; /* Vibrant cyan for hover, adds pop */
+  text-shadow: 0 0 6px rgba(51, 224, 255, 0.6); /* Optional glow */
+}
+
+.modal-content a:active {
+  color: #009ACD; /* Deeper blue for active click */
+}
+
+
+/* More specific targeting for dynamically inserted HTML content */
+.modal-body a,
+.modal-body a:link {
+  color: #00BFFF !important; /* Electric Blue - base link */
+  text-decoration: underline;
+  transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+
+.modal-body a:visited {
+  color: #66CCFF !important; /* Softer sky blue - shows visited state */
+}
+
+.modal-body a:hover {
+  color: #33E0FF !important; /* Bright cyan - pop on hover */
+  text-shadow: 0 0 6px rgba(51, 224, 255, 0.6); /* Optional glow */
+}
+
+.modal-body a:active {
+  color: #009ACD !important; /* Deep blue when clicked */
+}
+

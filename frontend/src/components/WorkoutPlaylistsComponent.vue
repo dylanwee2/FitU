@@ -78,7 +78,7 @@
                     title="More options"
                     @click.stop="toggleActions(playlist)"
                   >
-                    <i class="fas fa-ellipsis-h" aria-hidden="true"></i>
+                    
                     <span class="visually-hidden">More options</span>
                   </button>
                   <ul 
@@ -118,7 +118,7 @@
               
               <div class="playlist-stats">
                 <div class="stat-item">
-                  <i class="fas fa-dumbbell text-primary"></i>
+                  
                   <span>{{ playlist.exercises?.length || 0 }} exercises</span>
                 </div>
                 <div class="stat-item">

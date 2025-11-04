@@ -11,20 +11,20 @@
     <form @submit.prevent="searchRecipes" class="search-form mt-3">
       <div class="search-input-wrap">
         <input
-          v-model="ingredients"
+          v-model="userPrompt"
           type="text"
-          placeholder="Enter ingredients (comma separated) e.g. apples, flour, sugar"
+          placeholder="Describe your needs (e.g. 'I am a vegan and I want to bulk')"
           class="form-control"
-          aria-label="Ingredients"
+          aria-label="Diet prompt"
         />
       </div>
 
-      <div class="number-input-wrap">
-        <input v-model.number="number" type="number" min="1" class="form-control"/>
+      <div class="col-auto">
+        <input v-model.number="number" type="number" min="1" class="form-control" style="width:100px" />
       </div>
 
-      <div class="search-button-wrap mt-3">
-        <button type="submit" class="u-special-btn">Search</button>
+      <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Search</button>
       </div>
     </form>
 
@@ -74,7 +74,7 @@
               <div class="row mb-3">
                 
 
-                <div class="col-3">
+                <div class="col-4">
                   <!-- Ingredients -->
                   <div v-if="selectedRecipe.extendedIngredients?.length" class="mb-3">
                     <h5><b><u>Ingredients</u></b></h5>
@@ -86,19 +86,29 @@
                   </div>
                 </div>
 
-                <div class="col-6">
+                <div class="col-4">
                   <!-- Nutrition (if available) -->
                   <div v-if="selectedRecipe.nutrition?.nutrients?.length">
                     <h5><b><u>Nutrition (per serving)</u></b></h5>
                     <div class="row">
-                      <div v-for="nutrient in selectedRecipe.nutrition.nutrients.slice(0, 6)" :key="nutrient.name" class="col-md-6 mb-2">
+                      <div v-for="nutrient in selectedRecipe.nutrition.nutrients.slice(0, 1)" :key="nutrient.name" class="col-md-6 mb-2">
                         <small><strong>{{ nutrient.name }}:</strong> {{ nutrient.amount }}{{ nutrient.unit }}</small>
+                      </div>
+                    </div>
+
+                    <!-- Macros breakdown (grams + kcal) -->
+                    <div class="mt-2">
+                      <h6 class="mb-1"><b>Macros (per serving)</b></h6>
+                      <div v-if="macroTotals">
+                        <small class="d-block"><strong>Fat:</strong> {{ macroTotals.fat_g }} g — {{ macroTotals.fat_kcal }} kcal</small>
+                        <small class="d-block"><strong>Protein:</strong> {{ macroTotals.protein_g }} g — {{ macroTotals.protein_kcal }} kcal</small>
+                        <small class="d-block"><strong>Carbs:</strong> {{ macroTotals.carbs_g }} g — {{ macroTotals.carbs_kcal }} kcal</small>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div class="col-3">
+                <div class="col-4">
                   <h5><b><u>Prep & Servings</u></b></h5>
                   <p><strong>Ready in:</strong> {{ selectedRecipe.readyInMinutes }} minutes</p>
                   <p><strong>Servings:</strong> {{ selectedRecipe.servings }}</p>
@@ -179,14 +189,13 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
 export default {
   setup() {
     const ingredients = ref('')
-  const number = ref(5)
-  const showMealIdeas = ref(true)
+    const number = ref(5)
     
   // Meal ideas state (Spoonacular)
   const mealIdeas = ref([])
@@ -289,8 +298,11 @@ export default {
       }
     }
 
+    const route = useRoute()
+    const router = useRouter()
+
     onMounted(() => {
-      fetchMealIdeas()
+      fetchDayMealPlan()
     })
     
     // =============================================================================
@@ -414,7 +426,44 @@ export default {
       return mealIdeasList.value.slice(0, 4)
     })
 
-    const searchRecipes = async () => {
+    // Compute macro grams and calories for selected recipe (per serving)
+    const macroTotals = computed(() => {
+      const r = selectedRecipe.value
+      if (!r || !r.nutrition || !Array.isArray(r.nutrition.nutrients)) return null
+      const nutrients = r.nutrition.nutrients
+      const findAmount = (candidates) => {
+        const lower = candidates.map(s => s.toLowerCase())
+        const found = nutrients.find(n => lower.includes((n.name || '').toLowerCase()))
+        return found ? Number(found.amount || 0) : 0
+      }
+      const fat_g = findAmount(['Fat'])
+      const protein_g = findAmount(['Protein'])
+      const carbs_g = findAmount(['Carbohydrates', 'Carbs', 'Carbohydrate'])
+      const fat_kcal = Math.round(fat_g * 9)
+      const protein_kcal = Math.round(protein_g * 4)
+      const carbs_kcal = Math.round(carbs_g * 4)
+      return {
+        fat_g, protein_g, carbs_g,
+        fat_kcal, protein_kcal, carbs_kcal,
+        macro_kcal_total: fat_kcal + protein_kcal + carbs_kcal
+      }
+    })
+
+    // Flatten all meals from mealIdeas into a single array for simplified display
+    const mealIdeasList = computed(() => {
+      // mealIdeas is an array of { day, meals } (or suggestions)
+      const flat = mealIdeas.value.flatMap(d => (d.meals && Array.isArray(d.meals)) ? d.meals : [])
+      return dedupeMeals(flat)
+    })
+
+    const mealIdeasTotal = computed(() => mealIdeasList.value.length)
+
+    // Up to 4 cards for meal ideas — always use curated meal ideas, even after search
+    const mealIdeaCards = computed(() => {
+      return mealIdeasList.value.slice(0, 4)
+    })
+
+    const searchRecipes = async (ingredientList) => {
       // =============================================================================
       // NOTE: Recipe data is currently HARDCODED above for CSS styling/development
       // The recipes.ref([...]) contains 6 sample recipes that display immediately
@@ -427,16 +476,17 @@ export default {
       error.value = ''
       recipes.value = []
 
-      if (!ingredients.value.trim()) {
-        error.value = 'Please enter at least one ingredient.'
+      // Determine source of ingredients: suggestedIngredients (from Gemini) > manual ingredients
+      const ingredientSource = (suggestedIngredients.value && suggestedIngredients.value.trim()) ? suggestedIngredients.value : ingredients.value
+      if (!ingredientSource || !ingredientSource.trim()) {
+        error.value = 'Please enter at least one ingredient or use the "Suggest ingredients & Search" button.'
         return
       }
+      // set the canonical ingredients value for downstream enrichment
+      ingredients.value = ingredientSource
 
       try {
-  // Keep meal ideas visible below search results
-  showMealIdeas.value = true
         const API_URL = 'http://18.139.200.231:3000/api/recipes'
-        //const API_URL = 'http://localhost:3000/api/recipes'
         const resp = await axios.get(API_URL, {
           params: {
             ingredients: ingredients.value,
@@ -511,6 +561,64 @@ export default {
       
     }
 
+    const suggestAndSearch = async () => {
+      geminiError.value = ''
+      if (!userPrompt.value || !userPrompt.value.trim()) {
+        geminiError.value = 'Please enter a prompt describing your diet and goal.'
+        return
+      }
+
+      geminiLoading.value = true
+      try {
+        // Build a clear prompt for the LLM to return a short list of ingredients
+        const promptText = `You are a helpful assistant. Given the user's request: "${userPrompt.value.trim()}". Reply with a short, comma-separated list of ingredients (no extra explanation). Example: "chickpeas, oats, almond milk".`
+
+        const resp = await axios.post('http://localhost:3000/api/gemini/generate', { prompt: promptText })
+        const resultText = resp?.data?.result || resp?.data || ''
+
+        // Try to parse the returned text into ingredients
+        const parsed = parseIngredients(resultText)
+        if (!parsed || parsed.length === 0) {
+          geminiError.value = 'Could not parse ingredient suggestions. Please refine your prompt or enter ingredients manually.'
+          suggestedIngredients.value = ''
+          return
+        }
+
+        // Use parsed ingredients (comma separated)
+        suggestedIngredients.value = parsed.join(', ')
+        // Trigger search with suggested ingredients
+        await searchRecipes(suggestedIngredients.value)
+      } catch (err) {
+        console.error('Gemini error:', err)
+        geminiError.value = err?.response?.data?.error || err?.message || 'Failed to get suggestions from AI.'
+      } finally {
+        geminiLoading.value = false
+      }
+    }
+
+    const parseIngredients = (text) => {
+      if (!text) return []
+      // If it's JSON array, try parsing
+      try {
+        const maybe = JSON.parse(text)
+        if (Array.isArray(maybe)) return maybe.map(i => String(i).trim()).filter(Boolean)
+      } catch (e) {
+        // not JSON
+      }
+
+      // Remove surrounding text and look for bracketed lists
+      const listMatch = text.match(/\[([^\]]+)\]/)
+      if (listMatch && listMatch[1]) {
+        return listMatch[1].split(/,|\n/).map(s => s.trim()).filter(Boolean)
+      }
+
+      // Otherwise split by commas or newlines. Also strip numbering and extra words.
+      const parts = text.split(/,|\n|;| and /i).map(s => s.replace(/^[0-9]+\.|^[\-\*]\s*/,'').trim()).filter(Boolean)
+      // Clean tokens: remove any parenthetical notes
+      const cleaned = parts.map(p => p.replace(/\(.*?\)/g, '').trim()).filter(Boolean)
+      return cleaned
+    }
+
     const closeModal = () => {
       showModal.value = false
       selectedRecipe.value = null
@@ -520,12 +628,18 @@ export default {
     return { 
       ingredients, 
       number, 
+      userPrompt,
+      geminiLoading,
+      geminiError,
+      suggestedIngredients,
+      macroTotals,
       recipes, 
       error, 
       showModal,
       selectedRecipe,
       loadingRecipe,
       searchRecipes, 
+      suggestAndSearch,
       viewRecipeDetails,
       closeModal,
       // meal ideas
