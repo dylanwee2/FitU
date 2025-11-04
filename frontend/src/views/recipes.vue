@@ -308,7 +308,7 @@ export default {
     const router = useRouter()
 
     onMounted(() => {
-      //fetchMealIdeas()
+      fetchMealIdeas()
     })
     
     // =============================================================================
