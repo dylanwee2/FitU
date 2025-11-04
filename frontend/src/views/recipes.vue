@@ -565,7 +565,7 @@ export default {
         // Build a clear prompt for the LLM to return a short list of ingredients
         const promptText = `You are a helpful assistant. Given the user's request: "${userPrompt.value.trim()}". Reply with a short, comma-separated list of ingredients (no extra explanation). Example: "chickpeas, oats, almond milk".`
 
-        const resp = await axios.post('http://localhost:3000/api/gemini/generate', { prompt: promptText })
+        const resp = await axios.post('http://18.139.200.231:3000/api/gemini/generate', { prompt: promptText })
         const resultText = resp?.data?.result || resp?.data || ''
 
         // Try to parse the returned text into ingredients
