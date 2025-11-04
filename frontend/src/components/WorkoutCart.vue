@@ -126,11 +126,11 @@
             </div>
           </div>
 
-          <div class="muscle-groups">
+          <div class="cart-item-badges">
             <span 
               v-for="muscle in cartMuscleGroups" 
               :key="muscle"
-              class="muscle-badge target-muscle-badge"
+              class="badge target-muscle-badge"
             >
               {{ capitalizeFirstLetter(muscle) }}
             </span>
@@ -507,7 +507,7 @@ const getAICoachAdvice = async () => {
   lines.push('For each exercise in the workout, create a bullet (<li>) with the exercise name in Title Case (e.g., "Inverted Row Bent Knees").')
   lines.push('Under each exercise, create a nested unordered list (<ul>) with 1-2 bullets. Each bullet should be a short, straight-to-the-point comment rating the targeted muscle groups as "Too little", "Adequate", or "Too much" and a 1-2 sentence justification focused only on volume/coverage (NOT form).')
   lines.push('At the end of the list, include one bullet <li> for "Suggested exercises to add/remove" and under it a nested <ul> with 1-2 bullets suggesting any exercises to add or remove based on the overall volume and balance of the workout.')
-  lines.push('Also include one bullet <li> for "Suggested meals" and under it a nested unordered list (<ul>) with 1-3 bullets. Each meal bullet should be concise and follow the format: "Meal Name — X kcal — Short rationale (1 sentence)". Use the user goals/dietary preference provided earlier to pick meals that fit the goal.')
+  lines.push('Also include one bullet <li> for "Suggested meals" and under it a nested unordered list (<ul>) with 1-3 bullets. Each meal bullet should be concise and follow the format: "Meal Name - <a href="/recipes?q=Tofu%20%26%20Quinoa%20Bowl">Search for recipe</a>". Use the user goals/dietary preference provided earlier to pick meals that fit the goal.')
   lines.push('Return ONLY an HTML unordered list (<ul>) in this exact format. Do NOT provide form tips or unrelated commentary.')
   lines.push('Example format:');
   lines.push('<ul>');
@@ -515,16 +515,22 @@ const getAICoachAdvice = async () => {
   lines.push('<ul>');
   lines.push('<li>Adequate volume for back muscles</li>');
   lines.push('<li>Too little for biceps, consider adding a curl variation</li>');
-  lines.push('</ul>');
   lines.push('<li>Suggested exercises to add/remove</li>');
   lines.push('<ul>');
-  lines.push('<li>Add dumbbell curls for biceps</li>');
-  lines.push('<li>Remove assisted pull-ups if overtraining back</li>');
+  lines.push('<li>Add Lat Pulldown <button class="add-btn">Add Exercise</button></li>');
+  lines.push('<ul>');
+  lines.push('<li>Helps balance the workout by targeting the lats, which are undertrained.</li>');
+  lines.push('</ul>');
+  lines.push('<li>Remove Push Up <button class="remove-btn">Remove Exercise</button></li>');
+  lines.push('<ul>');
+  lines.push('<li>Chest volume is already sufficient; removing this helps avoid overtraining.</li>');
+  lines.push('</ul>');
   lines.push('</ul>');
   lines.push('<li>Suggested meals</li>');
   lines.push('<ul>');
-  lines.push('<li>Tofu & Quinoa Bowl — 650 kcal — High-protein vegan meal to support muscle gain</li>');
-  lines.push('<li>Chickpea Curry & Rice — 700 kcal — Calorie-dense vegan option with balanced carbs and protein</li>');
+  // Example meal items: include a link that navigates to the recipes view with the meal as a query param
+  lines.push('<li>Tofu & Quinoa Bowl - <a href="/recipes?q=Tofu%20%26%20Quinoa%20Bowl">Search for recipe</a></li>');
+  lines.push('<li>Chickpea Curry & Rice - <a href="/recipes?q=Chickpea%20Curry%20%26%20Rice">Search for recipe</a></li>');
   lines.push('</ul>');
   lines.push('</ul>');
 

@@ -30,8 +30,7 @@
       </div>
 
       <div class="mt-2">
-        <div v-if="geminiLoading" class="text-muted">Generating ingredients…</div>
-        <div v-else-if="geminiError" class="text-danger">{{ geminiError }}</div>
+        <div v-if="geminiError" class="text-danger">{{ geminiError }}</div>
       </div>
     </form>
 
@@ -197,6 +196,7 @@
 
 <script>
 import { ref, onMounted, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 
 export default {
@@ -310,8 +310,23 @@ export default {
       }
     }
 
+    const route = useRoute()
+    const router = useRouter()
+
     onMounted(() => {
       // fetchMealIdeas()
+      // If we were navigated here with a query param `q`, populate the prompt and trigger search
+      const q = route.query.q || route.query.prompt
+      if (q && String(q).trim()) {
+        userPrompt.value = String(q)
+        // Trigger suggestion+search flow so the page uses the prompt to find ingredients and recipes
+        // Use a short timeout to ensure the component is fully mounted
+        setTimeout(() => {
+          try { suggestAndSearch() } catch (e) { console.warn('Error auto-searching from query param:', e) }
+        }, 100)
+        // Remove query param so successive navigations aren't auto-triggered repeatedly
+        try { router.replace({ query: {} }) } catch (e) { /* ignore */ }
+      }
     })
     
     // =============================================================================
