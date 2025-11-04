@@ -43,7 +43,7 @@
       </div>
     </div>
 
-    <div v-else style="color: var(--muted);">No recipes yet. Enter ingredients and click Search.</div>
+    <div v-else style="color: var(--muted);">No recipes yet. Enter prompt and click search.</div>
 
     <!-- Recipe Details Modal -->
     <div v-if="showModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
