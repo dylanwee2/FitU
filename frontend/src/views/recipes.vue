@@ -8,7 +8,7 @@
 
     <h1>AI Diet Planner</h1>
 
-    <form @submit.prevent="searchRecipes" class="search-form mt-3">
+    <form @submit.prevent="suggestAndSearch" class="search-form mt-3">
       <div class="search-input-wrap">
         <input
           v-model="userPrompt"
@@ -308,7 +308,7 @@ export default {
     const router = useRouter()
 
     onMounted(() => {
-      fetchMealIdeas()
+      //fetchMealIdeas()
     })
     
     // =============================================================================
@@ -468,8 +468,8 @@ export default {
       error.value = ''
       recipes.value = []
 
-      // Determine source of ingredients: suggestedIngredients (from Gemini) > manual ingredients
-      const ingredientSource = (suggestedIngredients.value && suggestedIngredients.value.trim()) ? suggestedIngredients.value : ingredients.value
+      // Determine source of ingredients: parameter (from suggestAndSearch) or ingredients ref (from manual input)
+      const ingredientSource = ingredientList || ingredients.value
       if (!ingredientSource || !ingredientSource.trim()) {
         error.value = 'Please enter at least one ingredient or use the "Suggest ingredients & Search" button.'
         return
