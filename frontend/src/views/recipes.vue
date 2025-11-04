@@ -6,14 +6,14 @@
     <!-- Weekly Meal Plan (generated from Spoonacular) -->
      <div v-if="error" class="alert alert-danger mt-3">{{ error }}</div>
 
-    <h1>Find Recipes by Ingredients</h1>
+    <h1>AI Diet Planner</h1>
 
     <form @submit.prevent="searchRecipes" class="search-form mt-3">
       <div class="search-input-wrap">
         <input
           v-model="userPrompt"
           type="text"
-          placeholder="Describe your needs (e.g. 'I am a vegan and I want to bulk')"
+          placeholder="Describe your needs (e.g. I am a vegan and I want to bulk)"
           class="form-control"
           aria-label="Diet prompt"
         />
@@ -189,13 +189,19 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 
 export default {
   setup() {
     const ingredients = ref('')
     const number = ref(5)
+    const showMealIdeas = ref(true)
+    const userPrompt = ref('')
+    const geminiLoading = ref(false)
+    const geminiError = ref('')
+    const suggestedIngredients = ref([])
     
   // Meal ideas state (Spoonacular)
   const mealIdeas = ref([])
@@ -302,7 +308,7 @@ export default {
     const router = useRouter()
 
     onMounted(() => {
-      fetchDayMealPlan()
+      fetchMealIdeas()
     })
     
     // =============================================================================
@@ -411,20 +417,6 @@ export default {
     // })
     
     const loadingRecipe = ref(false)
-
-    // Flatten all meals from mealIdeas into a single array for simplified display
-    const mealIdeasList = computed(() => {
-      // mealIdeas is an array of { day, meals } (or suggestions)
-      const flat = mealIdeas.value.flatMap(d => (d.meals && Array.isArray(d.meals)) ? d.meals : [])
-      return dedupeMeals(flat)
-    })
-
-    const mealIdeasTotal = computed(() => mealIdeasList.value.length)
-
-    // Up to 4 cards for meal ideas — always use curated meal ideas, even after search
-    const mealIdeaCards = computed(() => {
-      return mealIdeasList.value.slice(0, 4)
-    })
 
     // Compute macro grams and calories for selected recipe (per serving)
     const macroTotals = computed(() => {
