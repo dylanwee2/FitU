@@ -1774,7 +1774,7 @@ async function saveWorkoutEdit() {
 /* Forms */
 .form-label {
   font-weight: 500;
-  color: #495057;
+  color: #CAC4D0 !important;
   margin-bottom: 0.25rem;
   font-size: 0.92rem;
   transition: color 0.2s ease;

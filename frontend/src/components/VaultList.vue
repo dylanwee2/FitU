@@ -32,7 +32,6 @@
 
       <!-- Error State -->
       <div v-else-if="error" class="text-center py-5">
-        <i class="fas fa-exclamation-triangle text-warning mb-3" style="font-size: 3rem;"></i>
         <h4>Unable to Load Vault</h4>
         <p class="text-muted">{{ error }}</p>
         <button @click="loadVaultPosts" class="btn btn-primary">Try Again</button>
@@ -40,7 +39,6 @@
 
       <!-- Empty State -->
       <div v-else-if="filteredPosts.length === 0" class="text-center py-5">
-        <i class="fas fa-search text-muted mb-3" style="font-size: 4rem;"></i>
         <h4>No workout sets found</h4>
         <p class="text-muted">
           {{ searchQuery ? 'Try adjusting your search terms.' : 'Be the first to publish a workout set!' }}
@@ -55,7 +53,7 @@
             <div class="card-header d-flex justify-content-between align-items-center">
               <div class="d-flex align-items-center">
                 <span class="badge bg-info me-2">
-                  <i class="fas fa-star me-1"></i>{{ post.avgRating.toFixed(1) }}
+                  {{ post.avgRating.toFixed(1) }}
                 </span>
                 <small class="text-muted">{{ post.reviewsCount }} reviews</small>
               </div>
@@ -68,8 +66,8 @@
               <p class="card-text text-muted">{{ truncateText(post.description, 80) }}</p>
               
               <div class="small text-muted mb-3">
-                <div><i class="fas fa-dumbbell me-1"></i>{{ post.exercises.length }} exercises</div>
-                <div><i class="fas fa-clock me-1"></i>{{ post.totalDuration || 0 }}min</div>
+                <div>{{ post.exercises.length }} exercises</div>
+                <div>{{ post.totalDuration || 0 }}min</div>
               </div>
             </div>
 
@@ -79,17 +77,17 @@
                 <button v-if="!isImported(post.id)" @click="importPost(post)" 
                         class="btn btn-primary btn-sm me-2" :disabled="importingIds.has(post.id)">
                   <span v-if="importingIds.has(post.id)">
-                    <i class="fas fa-spinner fa-spin me-1"></i>Importing...
+                    Importing...
                   </span>
                   <span v-else>
-                    <i class="fas fa-download me-1"></i>Import
+                    Import
                   </span>
                 </button>
                 <span v-else class="badge bg-success">
-                  <i class="fas fa-check me-1"></i>Imported
+                  Imported
                 </span>
                 <button @click="viewPost(post)" class="btn btn-outline-secondary btn-sm">
-                  <i class="fas fa-eye me-1"></i>View
+                  View
                 </button>
               </div>
               <small class="text-muted align-self-center">{{ formatDate(post.createdAt) }}</small>
