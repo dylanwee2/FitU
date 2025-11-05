@@ -32,7 +32,7 @@
                 :class="{ active: currentView === 'progress' }"
                 @click="currentView = 'progress'"
               >
-                <i class="bi bi-graph-up"></i>
+                
                 <span>Progress Overview</span>
               </button>
               <button
@@ -40,7 +40,6 @@
                 :class="{ active: currentView === 'profile' }"
                 @click="currentView = 'profile'"
               >
-                <i class="bi bi-person-circle"></i>
                 <span>Profile Details</span>
               </button>
             </div>
@@ -52,7 +51,7 @@
           <!-- Personal Information Card -->
           <div class="card mb-4">
             <div class="card-header text-white">
-              <h6 class="mb-0"><i class="bi bi-person-circle me-2"></i>Personal Information</h6>
+              <h1 class="mb-0">Personal Information</h1>
             </div>
             <div class="card-body">
               <form @submit.prevent="saveProfile">
@@ -139,7 +138,7 @@
           <!-- Health & Fitness Goals Card -->
           <div class="card mb-4">
             <div class="card-header text-white">
-              <h6 class="mb-0"><i class="bi bi-trophy me-2"></i>Health & Fitness Goals</h6>
+              <h1 class="mb-0">Health & Fitness Goals</h1>
             </div>
             <div class="card-body">
               <div class="row">
@@ -226,7 +225,7 @@
           <!-- Account Actions Card -->
           <div class="card mb-4">
             <div class="card-header text-white">
-              <h6 class="mb-0"><i class="bi bi-shield-check me-2"></i>Account Actions</h6>
+              <h1 class="mb-0">Account Actions</h1>
             </div>
             <div class="card-body">
               <div class="d-flex flex-wrap gap-2 align-items-start mb-3">
@@ -272,7 +271,7 @@
             <!-- Progress Overview Card -->
             <div class="card mb-4">
               <div class="card-header text-white">
-                <h6 class="mb-0"><i class="bi bi-graph-up me-2"></i>Progress Overview</h6>
+                <h1 class="mb-0">Progress Overview</h1>
               </div>
               <div class="card-body">
                 <!-- Weekly Calorie Chart -->
@@ -337,7 +336,7 @@
             <!-- Your Workouts Card -->
             <div class="card mb-4">
               <div class="card-header text-white d-flex justify-content-between align-items-center">
-                <h6 class="mb-0"><i class="bi bi-lightning-charge me-2"></i>Your Workouts</h6>
+                <h1 class="mb-0">Your Workouts</h1>
                 <button 
                   @click="viewAllWorkouts" 
                   class="btn btn-sm btn-outline-light"
@@ -1775,7 +1774,7 @@ async function saveWorkoutEdit() {
 /* Forms */
 .form-label {
   font-weight: 500;
-  color: #495057;
+  color: #CAC4D0 !important;
   margin-bottom: 0.25rem;
   font-size: 0.92rem;
   transition: color 0.2s ease;

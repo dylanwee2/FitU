@@ -60,15 +60,13 @@
           <!-- Equipment Inspector -->
           <div class="card">
             <div class="card-header">
-              <h5 class="mb-0">
-                <i class="fas fa-info-circle me-2"></i>
+              <h1 class="mb-0">
                 {{ selection ? selection.name : 'Equipment Inspector' }}
-              </h5>
+              </h1>
             </div>
             <div class="card-body">
               <div v-if="!selection">
                 <div class="text-center py-4">
-                  <i class="fas fa-dumbbell fa-3x text-muted mb-3"></i>
                   <p class="text-muted mb-0">Click on any equipment to inspect it</p>
                 </div>
               </div>
@@ -77,8 +75,8 @@
                 <!-- Purpose and Muscle Groups -->
                 <div class="mb-3">
                   <h6 class="muscle-title mb-2">{{ selection.info?.purpose || 'Training equipment' }}</h6>
-                  <div class="d-flex flex-wrap gap-1">
-                    <span class="badge bg-primary" v-for="muscle in selection.info?.muscles || []" :key="muscle">
+                  <div class="muscle-badges d-flex flex-wrap gap-1">
+                    <span class="badge muscle-badge" v-for="muscle in selection.info?.muscles || []" :key="muscle">
                       {{ muscle }}
                     </span>
                   </div>
@@ -87,7 +85,7 @@
                 <!-- Instructions -->
                 <div class="mb-3" v-if="selection.info?.steps?.length">
                   <h6 class="mb-2">
-                    <i class="fas fa-list-ol me-1"></i>Instructions
+                    Instructions
                   </h6>
                   <ul class="list-group list-group-flush">
                     <li class="list-group-item py-1 px-2" v-for="(step, i) in selection.info.steps" :key="i">
@@ -99,7 +97,7 @@
                 <!-- Safety Tips -->
                 <div class="mb-3" v-if="selection.info?.safety?.length">
                   <h6 class="mb-2 text-warning">
-                    <i class="fas fa-exclamation-triangle me-1"></i>Safety Tips
+                    Safety Tips
                   </h6>
                   <ul class="list-group list-group-flush">
                     <li class="list-group-item list-group-item-warning py-1 px-2" v-for="(tip, i) in selection.info.safety" :key="i">
@@ -121,7 +119,6 @@
            :class="`bg-${toast.variant}`"
            role="alert" aria-live="assertive" aria-atomic="true">
         <div class="toast-header">
-          <i :class="`fas fa-${toast.icon} me-2`"></i>
           <strong class="me-auto">{{ toast.title }}</strong>
           <button type="button" class="btn-close" @click="removeToast(toast.id)"></button>
         </div>
@@ -727,6 +724,49 @@ export default {
 .muscle-title {
   color: #e9ecef !important; /* Light gray for better visibility on dark background */
   font-weight: 500;
+}
+
+/* Muscle badge styling */
+.muscle-badges .badge {
+  position: relative;
+  background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
+  color: #e9e9e9 !important;
+  border: 1px solid rgba(201, 162, 39, 0.28) !important;
+  border-radius: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  padding: 0.25rem 0.6rem;
+  width: auto;
+  max-width: 100%;
+  justify-self: start;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.25);
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+  display: inline-block;
+}
+
+.muscle-badges .badge:hover {
+  transform: none;
+  border-color: rgba(201, 162, 39, 0.42) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.28);
+}
+
+.muscle-badges .badge::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 40%);
+  pointer-events: none;
+}
+
+@media (max-width: 420px) {
+  .muscle-badges {
+    grid-template-columns: 1fr;
+  }
 }
 /* --- UI refactor end --- */
 

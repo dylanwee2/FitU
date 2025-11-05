@@ -398,11 +398,11 @@
 
           <div class="muscle-groups u-muted mb-4">
             <h6>Targeted Muscle Groups:</h6>
-            <div class="muscle-badges">
+            <div class="exercise-badges">
               <span 
                 v-for="muscle in viewingPlaylist.muscleGroups" 
                 :key="muscle"
-                class="badge bg-primary me-1 mb-1"
+                class="badge target-muscle-badge me-1 clickable-badge"
               >
                 {{ formatMuscleGroup(muscle) }}
               </span>
@@ -417,7 +417,7 @@
                 :key="exercise.id"
                 class="exercise-detail-item"
               >
-                <div class="exercise-number">{{ index + 1 }}</div>
+                <div class="exercise-number badge bg-secondary">{{ index + 1 }}</div>
                 <div class="exercise-image">
                   <img 
                     :src="exercise.gifUrl || '/images/exercise-placeholder.png'" 

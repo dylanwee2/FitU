@@ -84,11 +84,11 @@
 
               <div class="muscle-groups mb-4" v-if="viewingPlaylist?.muscleGroups?.length">
                 <h6 class="u-muted">Targeted Muscle Groups:</h6>
-                <div class="muscle-badges">
+                <div class="exercise-badges">
                   <span 
                     v-for="muscle in viewingPlaylist.muscleGroups" 
                     :key="muscle"
-                    class="badge bg-primary me-1 mb-1"
+                    class="badge target-muscle-badge me-1 clickable-badge"
                   >
                     {{ formatMuscleGroup(muscle) }}
                   </span>
@@ -327,9 +327,6 @@
               ></button>
             </div>
             <div class="modal-body text-center py-4">
-              <div class="mb-3">
-                <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
-              </div>
               <h6 class="mb-3">
                 {{ isEditingReview ? 'Review updated successfully!' : 'Thank you for rating this workout!' }}
               </h6>
@@ -370,9 +367,6 @@
             </div>
             
             <div class="modal-body text-center py-4">
-              <div class="mb-3">
-                <i class="fas fa-info-circle text-info" style="font-size: 2.5rem;"></i>
-              </div>
               <h6 class="mb-3">You've already reviewed this workout</h6>
               <p class="mb-3 u-muted">
                 You previously gave "{{ viewingPlaylist?.name || 'this workout' }}" 
@@ -459,7 +453,6 @@
               <!-- Reviews List -->
               <div class="reviews-container">
                 <div v-if="workoutReviews.length === 0" class="no-reviews text-center py-4">
-                  <i class="fas fa-star text-muted" style="font-size: 3rem; opacity: 0.3;"></i>
                   <h6 class="mt-3 text-muted">No reviews yet</h6>
                   <p class="text-muted">Be the first to review this workout!</p>
                 </div>
@@ -543,7 +536,6 @@
       <!-- Error State -->
       <div v-else-if="error" class="error-section text-center py-5">
         <div class="error-icon mb-3">
-          <i class="fas fa-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
         </div>
         <h4>Unable to Load Workout Sets</h4>
         <p class="text-muted">{{ error }}</p>
@@ -553,7 +545,6 @@
       <!-- Empty State -->
       <div v-else-if="filteredWorkoutSets.length === 0" class="empty-state text-center py-5">
         <div class="empty-icon mb-3">
-          <i class="fas fa-dumbbell text-muted" style="font-size: 4rem;"></i>
         </div>
         <h4>No Workout Sets Found</h4>
         <p class="text-muted" v-if="searchQuery">Try adjusting your search criteria</p>
@@ -589,7 +580,7 @@
                 
                 <div class="workout-meta mb-3">
                   <div class="creator d-flex align-items-center">
-                    <span class="">{{ getUserName(workoutSet) }}</span>
+                    <span class="">Created by: {{ getUserName(workoutSet) }}</span>
                   </div>
                 </div>
 
