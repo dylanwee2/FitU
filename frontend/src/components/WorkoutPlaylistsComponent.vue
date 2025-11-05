@@ -118,7 +118,7 @@
               
               <div class="playlist-stats">
                 <div class="stat-item">
-                  
+                  <i class="fas fa-dumbbell text-primary"></i>
                   <span>{{ playlist.exercises?.length || 0 }} exercises</span>
                 </div>
                 <div class="stat-item">
