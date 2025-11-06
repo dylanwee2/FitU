@@ -6,7 +6,7 @@
         <div class="col-12 col-xxl-6 mb-3 mb-xxl-0">
           <div class="card h-100">
             <div class="card-header">
-              <h5 class="mb-0">Timetable</h5>
+              <h1 class="mb-0">Timetable</h1>
             </div>
             <div class="card-body">
               <CalendarComponent 
@@ -24,7 +24,7 @@
          <div class="col-12 col-xxl-6">
           <div class="card h-100">
             <div class="card-header">
-              <h5 class="mb-0">My Workouts</h5>
+              <h1 class="mb-0">My Workouts</h1>
             </div>
             <div class="card-body workout-scrollable">
               <WorkoutPlaylistsComponent
