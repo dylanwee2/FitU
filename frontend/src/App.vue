@@ -37,7 +37,7 @@ const route = useRoute()
 const { isAuthenticated, isLoading } = useAuth()
 
 // Routes that don't require authentication
-const publicRoutes = ['/', '/login', '/signup']
+const publicRoutes = ['/', '/login', '/signup', '/index.html']
 
 // Computed property to determine if auth modal should show
 const showAuthModal = computed(() => {
