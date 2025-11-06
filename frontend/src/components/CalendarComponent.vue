@@ -7,7 +7,7 @@
           
           <div class="file-upload-container info-icon-tooltip-wrapper">
             <input type="file" class="upload-box visually-hidden" accept=".ics" @change="handleIcsUpload" ref="fileInput" id="icsFileInput" />
-            <label for="icsFileInput" class="custom-upload-btn u-btn u-btn--primary">Import ICS</label>
+            <label for="icsFileInput" id="importBtn" class="custom-upload-btn u-btn u-btn--primary">Import ICS</label>
             <span class="ics-info-icon-btn" tabindex="0" @mouseenter="showTooltip = true" @mouseleave="showTooltip = false" @focus="showTooltip = true" @blur="showTooltip = false">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
                 <circle cx="8" cy="8" r="8" fill="var(--primary)"/>
@@ -19,19 +19,19 @@
             </div>
           </div>
         </div>
-        <div class="col-6 d-flex justify-content-end">
+        <div class="col-6 d-flex justify-content-end mb-1">
           <div class="d-flex gap-2 align-items-center">
             <button id="clearCalendar"
               v-if="hasImportedIcs" 
-              class="u-btn u-btn--danger mb-1" 
+              class="u-btn u-btn--danger" 
               @click="clearCalendar" 
               title="Clear all calendar events"
             >
           
               Clear Calendar
             </button>
-            <button v-if="showAddEvent" id = 'addEvent' class="u-btn u-btn--primary mb-1" @click="openEventForm">
-              Add Event
+            <button v-if="showAddEvent" id = 'addEvent' class="u-btn u-btn--primary" @click="openEventForm">
+              + Event
             </button>
           </div>
         </div>
@@ -1654,22 +1654,38 @@ defineExpose({
     margin: 1rem;
     width: calc(100% - 2rem);
   }
-}
-
-/* Responsive: smaller button text for mobile */
-@media (max-width: 668px) {
-  #clearCalendar,
-  #addEvent {
-    font-size: 0.8rem !important;
-    padding: 0.4rem 0.6rem !important;
+  #importBtn {
+    margin-top: 10px;
   }
 }
 
-@media (max-width: 546px) {
+/* Responsive: smaller button text for mobile */
+
+
+@media (max-width: 648px) {
   #clearCalendar,
-  #addEvent {
+  #addEvent,
+  #importBtn {
     font-size: 0.65rem !important;
-    padding: 0.4rem 0.6rem !important;
+    padding: 10px;
+  }
+}
+
+@media (max-width: 522px) {
+  #clearCalendar,
+  #addEvent,
+  #importBtn {
+    font-size: 0.55rem !important;
+    padding: 10px;
+  }
+}
+
+@media (max-width: 422px) {
+  #clearCalendar,
+  #addEvent,
+  #importBtn {
+    font-size: 0.50rem !important;
+    padding: 8px;
   }
 }
 
@@ -1791,8 +1807,8 @@ defineExpose({
 
 /* Extra-extra-small screens: make Clear calendar and Add Event buttons smaller (<=432px) */
 @media (max-width: 432px) {
-  .calendar-controls .u-btn.u-btn--primary,
-  .calendar-controls .u-btn.u-btn--danger,
+  .calendar-controls ,
+  .calendar-controls ,
   .calendar-controls .custom-upload-btn {
     font-size: 11px !important;
     padding: 4px 8px !important;
