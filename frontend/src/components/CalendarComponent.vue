@@ -6,29 +6,34 @@
         <div class="col-6 mb-2 mb-md-0" v-if="showFileUpload">
           
           <div class="file-upload-container info-icon-tooltip-wrapper">
-            <template v-if="!hasImportedIcs">
-              <input type="file" class="upload-box visually-hidden" accept=".ics" @change="handleIcsUpload" ref="fileInput" id="icsFileInput" />
-              <label for="icsFileInput" class="custom-upload-btn u-btn u-btn--primary">Import ICS File</label>
-              <span class="ics-info-icon-btn" tabindex="0" @mouseenter="showTooltip = true" @mouseleave="showTooltip = false" @focus="showTooltip = true" @blur="showTooltip = false">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-                  <circle cx="8" cy="8" r="8" fill="var(--primary)"/>
-                  <text x="8" y="12" text-anchor="middle" font-size="10" fill="#fff" font-family="Arial" font-weight="bold">?</text>
-                </svg>
-              </span>
-              <div v-if="showTooltip" class="custom-tooltip custom-tooltip-icon">
-                You can export an ICS file from your Google Calendar and import it here.
-              </div>
-            </template>
-            <template v-else>
-              <button class="u-btn u-btn--danger mt-2 mt-md-0" @click="clearCalendar">Clear calendar</button>
-            </template>
+            <input type="file" class="upload-box visually-hidden" accept=".ics" @change="handleIcsUpload" ref="fileInput" id="icsFileInput" />
+            <label for="icsFileInput" class="custom-upload-btn u-btn u-btn--primary">Import ICS</label>
+            <span class="ics-info-icon-btn" tabindex="0" @mouseenter="showTooltip = true" @mouseleave="showTooltip = false" @focus="showTooltip = true" @blur="showTooltip = false">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                <circle cx="8" cy="8" r="8" fill="var(--primary)"/>
+                <text x="8" y="12" text-anchor="middle" font-size="10" fill="#fff" font-family="Arial" font-weight="bold">?</text>
+              </svg>
+            </span>
+            <div v-if="showTooltip" class="custom-tooltip custom-tooltip-icon">
+              Import an ICS file to merge with your existing calendar events. Events will be combined, not replaced.
+            </div>
           </div>
         </div>
         <div class="col-6 d-flex justify-content-end">
-
-          <button v-if="showAddEvent" class="u-btn u-btn--primary" @click="openEventForm">
-            Add Event
-          </button>
+          <div class="d-flex gap-2 align-items-center">
+            <button 
+              v-if="hasImportedIcs" 
+              class="u-btn u-btn--danger" 
+              @click="clearCalendar" 
+              title="Clear all calendar events"
+            >
+          
+              Clear Calendar
+            </button>
+            <button v-if="showAddEvent" class="u-btn u-btn--primary" @click="openEventForm">
+              Add Event
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -248,7 +253,8 @@ const emit = defineEmits([
   'event-deleted',
   'event-clicked',
   'date-selected',
-  'events-imported'
+  'events-imported',
+  'workout-dropped'
 ])
 
 const calendarRef = ref(null)
@@ -483,6 +489,7 @@ const initializeCalendar = async () => {
     navLinks: true,
     editable: props.editable,
     selectable: props.selectable,
+    droppable: true,
     nowIndicator: true,
     events: props.events,
     // Ensure times display full meridiem (am/pm) instead of just a/p
@@ -520,6 +527,9 @@ const initializeCalendar = async () => {
     },
     eventResize: (info) => {
       handleEventUpdate(info)
+    },
+    drop: (info) => {
+      handleDrop(info)
     }
   })
   
@@ -591,6 +601,30 @@ const handleEventUpdate = async (info) => {
   }
 }
 
+const handleDrop = (info) => {
+  // Check if this is an external drop (from workout cards)
+  if (info.draggedEl && info.draggedEl.classList.contains('playlist-card')) {
+    try {
+      // Get workout data from the data attribute set during drag start
+      const transferElement = info.draggedEl.querySelector('[data-transfer]')
+      if (transferElement) {
+        const data = JSON.parse(transferElement.getAttribute('data-transfer'))
+        
+        if (data.type === 'workout' && data.workout) {
+          // Emit the drop event to parent component
+          emit('workout-dropped', {
+            workout: data.workout,
+            date: info.date,
+            allDay: info.allDay
+          })
+        }
+      }
+    } catch (error) {
+      console.error('Error parsing dropped workout data:', error)
+    }
+  }
+}
+
 // Validation: start time must be before end time (only when both provided)
 const timeError = computed(() => {
   const s = newEvent.value?.start
@@ -627,49 +661,126 @@ const handleIcsUpload = async (event) => {
       }
     })
     
-    // Render parsed events immediately
+    // Add imported events to calendar (don't remove existing ones)
     if (calendarInstance) {
-      calendarInstance.removeAllEvents()
       calendarInstance.addEventSource(events)
       emit('events-imported', events)
     }
 
-    // Persist the raw ICS content to Firestore under this user's calendar doc
+    // Merge imported ICS with existing ICS content in Firestore
     try {
       if (currentUser.value && currentUser.value.uid) {
         const q = query(collection(db, 'calendar'), where('userId', '==', currentUser.value.uid))
         const snap = await getDocs(q)
+        
+        let mergedIcs = text // Start with the imported ICS
+        let duplicateCount = 0
+        
         if (!snap.empty) {
+          // Existing ICS found - merge with imported ICS
           const existing = snap.docs[0]
-          // update the existing doc (may have arbitrary id)
+          const existingData = existing.data()
+          const existingIcs = existingData.ics || ''
+          
+          if (existingIcs) {
+            // Extract VEVENTs from existing ICS
+            try {
+              const existingJcal = ICAL.parse(existingIcs)
+              const existingComp = new ICAL.Component(existingJcal)
+              const existingVevents = existingComp.getAllSubcomponents('vevent')
+              
+              // Extract VEVENTs from imported ICS
+              const importedVevents = vevents
+              
+              // Simple duplicate detection based on UID, or title+start time
+              const existingEventKeys = new Set()
+              existingVevents.forEach(vevent => {
+                try {
+                  const event = new ICAL.Event(vevent)
+                  const uid = event.uid
+                  const key = uid || `${event.summary}-${event.startDate.toJSDate().getTime()}`
+                  existingEventKeys.add(key)
+                } catch (e) {
+                  // Ignore parsing errors for individual events
+                }
+              })
+              
+              // Filter out duplicates from imported events
+              const uniqueImportedVevents = importedVevents.filter(vevent => {
+                try {
+                  const event = new ICAL.Event(vevent)
+                  const uid = event.uid
+                  const key = uid || `${event.summary}-${event.startDate.toJSDate().getTime()}`
+                  const isDuplicate = existingEventKeys.has(key)
+                  if (isDuplicate) duplicateCount++
+                  return !isDuplicate
+                } catch (e) {
+                  return true // Include events that can't be parsed
+                }
+              })
+              
+              // Combine all VEVENTs
+              const allVevents = [...existingVevents, ...uniqueImportedVevents]
+              
+              // Create a new VCALENDAR with all events
+              const mergedComp = new ICAL.Component(['vcalendar', [], []])
+              mergedComp.updatePropertyWithValue('version', '2.0')
+              mergedComp.updatePropertyWithValue('prodid', '-//FitU//EN')
+              
+              // Add all VEVENTs to the merged calendar
+              allVevents.forEach(vevent => {
+                mergedComp.addSubcomponent(vevent)
+              })
+              
+              mergedIcs = mergedComp.toString()
+              
+            } catch (parseErr) {
+              console.warn('[Calendar] Error parsing existing ICS for merge, will append:', parseErr)
+              // Fallback: string concatenation approach (no duplicate detection)
+              if (/END:VCALENDAR/i.test(existingIcs)) {
+                // Extract events from imported ICS and insert before END:VCALENDAR
+                const importedEventsText = text.replace(/BEGIN:VCALENDAR.*?\n/i, '').replace(/END:VCALENDAR.*$/i, '').trim()
+                mergedIcs = existingIcs.replace(/\r?\n?END:VCALENDAR\s*$/i, '\r\n' + importedEventsText + '\r\nEND:VCALENDAR')
+              } else {
+                // Just append
+                mergedIcs = existingIcs + '\r\n' + text
+              }
+            }
+          }
+          
+          // Update the existing doc with merged ICS
           await updateDoc(firestoreDoc(db, 'calendar', existing.id), {
-            ics: text,
+            ics: mergedIcs,
             updatedAt: serverTimestamp()
           })
-          console.debug('[Calendar] updated ICS for doc', existing.id)
+          console.debug('[Calendar] merged and updated ICS for doc', existing.id)
+          
         } else {
-          // Prefer a document whose id equals the user's uid. Use setDoc with merge
-          // so we don't accidentally overwrite other fields. This ensures we write
-          // into a predictable doc id (user's uid) instead of creating a new one.
+          // No existing ICS - create new document with imported ICS
           const userDocRef = firestoreDoc(db, 'calendar', currentUser.value.uid)
           await setDoc(userDocRef, {
             userId: currentUser.value.uid,
-            ics: text,
+            ics: mergedIcs,
             createdAt: serverTimestamp()
           }, { merge: true })
-          console.debug('[Calendar] created/merged calendar doc with id (uid)', currentUser.value.uid)
+          console.debug('[Calendar] created new calendar doc with imported ICS', currentUser.value.uid)
         }
+        
+        // Show success message with duplicate info
+        const newEventsCount = events.length - duplicateCount
+        let successMessage = `${newEventsCount} new event${newEventsCount === 1 ? '' : 's'} imported and merged`
+        if (duplicateCount > 0) {
+          successMessage += ` (${duplicateCount} duplicate${duplicateCount === 1 ? '' : 's'} skipped)`
+        }
+        openImportSuccess(successMessage)
+        
       } else {
         console.debug('[Calendar] user not signed in; ICS not saved to Firestore')
+        openImportSuccess(`${events.length} event${events.length === 1 ? '' : 's'} imported locally (not saved)`)
       }
     } catch (err) {
-      console.error('[Calendar] error saving ICS to Firestore:', err)
-    }
-    // Show success popup (even if user not signed in, we rendered locally)
-    try {
-      openImportSuccess(`${events.length} event${events.length === 1 ? '' : 's'} imported`)
-    } catch (e) {
-      // ignore
+      console.error('[Calendar] error merging ICS to Firestore:', err)
+      openImportSuccess(`${events.length} event${events.length === 1 ? '' : 's'} imported, but merge failed`)
     }
     
     // Clear the file input
@@ -1221,9 +1332,19 @@ const formatDateForInput = (date) => {
 }
 
 // Public methods (exposed via defineExpose)
-const addEvent = (eventData) => {
+const addEvent = async (eventData) => {
   if (calendarInstance) {
-    return calendarInstance.addEvent(eventData)
+    const event = calendarInstance.addEvent(eventData)
+    
+    // Also persist to Firebase
+    try {
+      await appendEventToIcs(eventData)
+      console.debug('[Calendar] Event added and persisted to Firebase:', eventData.title)
+    } catch (error) {
+      console.error('[Calendar] Error persisting event to Firebase:', error)
+    }
+    
+    return event
   }
 }
 
@@ -1714,5 +1835,27 @@ defineExpose({
 /* Title text (already set to white above, keep consistent) */
 .calendar-component .fc .fc-toolbar-title {
   color: #ffffff !important;
+}
+
+/* Drag and Drop Styling */
+.calendar-component .fc-day {
+  transition: background-color 0.2s ease;
+}
+
+.calendar-component .fc-day:hover {
+  background-color: rgba(0, 191, 255, 0.1) !important;
+}
+
+.calendar-component .fc-timegrid-slot {
+  transition: background-color 0.2s ease;
+}
+
+.calendar-component .fc-timegrid-slot:hover {
+  background-color: rgba(0, 191, 255, 0.05) !important;
+}
+
+/* Drop target indicator */
+.calendar-component .fc-highlight {
+  background-color: rgba(0, 191, 255, 0.2) !important;
 }
 </style>
