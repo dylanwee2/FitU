@@ -82,8 +82,11 @@
                   @click="editPlaylist(playlist)"
                   class="u-btn u-btn--secondary"
                   title="Edit playlist"
+                  aria-label="Edit workout"
+                  style="padding:8px;"
                 >
-                  Edit Workout
+                  <i class="bi bi-pencil" aria-hidden="true"></i>
+                  <span class="visually-hidden">Edit Workout</span>
                 </button>
                 <div class="dropdown">
                   <button 
