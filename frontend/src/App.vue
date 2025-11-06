@@ -1,7 +1,9 @@
 <template>
   <div id="app" class="u-bg u-text d-flex flex-column min-vh-100">
+    <!-- Global NavBar Component -->
     <Navbar />
 
+    <!-- Main content area -->
     <main id="main" class="flex-grow-1" tabindex="-1">
       <!-- Route transitions -->
       <router-view v-slot="{ Component }">
@@ -11,10 +13,13 @@
       </router-view>
     </main>
 
+    <!-- Global Footer Component -->
     <Footer />
 
+    <!-- Global Workout Cart Component -->
     <WorkoutCart />
 
+    <!-- Global Auth Modal Component -->
     <AuthModal :show="showAuthModal" />
   </div>
 </template>
@@ -31,15 +36,20 @@ import AuthModal from './components/AuthModal.vue'
 const route = useRoute()
 const { isAuthenticated, isLoading } = useAuth()
 
+// Routes that don't require authentication
 const publicRoutes = ['/', '/login', '/signup']
+
+// Computed property to determine if auth modal should show
 const showAuthModal = computed(() => {
-  if (isLoading.value) return false 
+  if (isLoading.value) return false // Don't show modal while loading
+  
   const requiresAuth = !publicRoutes.includes(route.path)
   return !isAuthenticated.value && requiresAuth
 })
 </script>
 
 <style>
+/* Ensure main element is focusable for accessibility */
 #main:focus {
   outline: none;
 }
@@ -49,6 +59,7 @@ const showAuthModal = computed(() => {
   outline-offset: 2px;
 }
 
+/* Ensure proper flexbox layout for footer positioning */
 #app {
   display: flex;
   flex-direction: column;
@@ -61,6 +72,7 @@ const showAuthModal = computed(() => {
   flex-direction: column;
 }
 
+/* Route transition animations */
 .route-enter-active,
 .route-leave-active {
   transition: opacity .25s ease, transform .25s ease;

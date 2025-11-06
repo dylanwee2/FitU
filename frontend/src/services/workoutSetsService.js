@@ -1,4 +1,4 @@
-
+// Service for managing personal workout sets in users/{uid}/workoutSets
 import {
   collection,
   doc,
@@ -25,6 +25,9 @@ class WorkoutSetsService {
     return doc(db, 'users', uid, 'workoutSets', setId);
   }
 
+  /**
+   * Get all workout sets for a user
+   */
   async getMyWorkoutSets(uid) {
     try {
       const q = query(
@@ -46,6 +49,9 @@ class WorkoutSetsService {
     }
   }
 
+  /**
+   * Subscribe to real-time updates for user's workout sets
+   */
   subscribeToWorkoutSets(uid, callback) {
     const q = query(
       this.getCollectionRef(uid),
@@ -66,6 +72,9 @@ class WorkoutSetsService {
     });
   }
 
+  /**
+   * Create a new workout set
+   */
   async createWorkoutSet(uid, workoutSetData) {
     try {
       const now = new Date().toISOString();
@@ -89,10 +98,14 @@ class WorkoutSetsService {
     }
   }
 
+  /**
+   * Update an existing workout set
+   */
   async updateWorkoutSet(uid, setId, updateData) {
     try {
       const docRef = this.getDocRef(uid, setId);
       
+      // Verify ownership
       const docSnap = await getDoc(docRef);
       if (!docSnap.exists()) {
         throw new Error('Workout set not found');
@@ -109,6 +122,7 @@ class WorkoutSetsService {
         updatedAt: now
       };
 
+      // Update computed fields if exercises changed
       if (updateData.exercises) {
         finalUpdateData.totalDuration = calculateWorkoutDuration(updateData.exercises);
         finalUpdateData.muscleGroups = extractMuscleGroups(updateData.exercises);
@@ -122,10 +136,14 @@ class WorkoutSetsService {
     }
   }
 
+  /**
+   * Delete a workout set
+   */
   async deleteWorkoutSet(uid, setId) {
     try {
       const docRef = this.getDocRef(uid, setId);
       
+      // Verify ownership
       const docSnap = await getDoc(docRef);
       if (!docSnap.exists()) {
         throw new Error('Workout set not found');
@@ -143,6 +161,9 @@ class WorkoutSetsService {
     }
   }
 
+  /**
+   * Get a single workout set by ID
+   */
   async getWorkoutSet(uid, setId) {
     try {
       const docRef = this.getDocRef(uid, setId);
@@ -170,6 +191,9 @@ class WorkoutSetsService {
     }
   }
 
+  /**
+   * Check if user already imported a specific post
+   */
   async alreadyImported(uid, postId) {
     try {
       const q = query(
@@ -186,8 +210,12 @@ class WorkoutSetsService {
     }
   }
 
+  /**
+   * Import a workout set from vault to user's personal collection
+   */
   async importFromVault(uid, postId, vaultPostData) {
     try {
+      // Check if already imported
       const alreadyExists = await this.alreadyImported(uid, postId);
       if (alreadyExists) {
         throw new Error('You have already imported this workout set');
@@ -217,6 +245,9 @@ class WorkoutSetsService {
     }
   }
 
+  /**
+   * Mark a workout set as published (called by vault service)
+   */
   async markAsPublished(uid, setId, publishedAt, publishedBy) {
     try {
       const docRef = this.getDocRef(uid, setId);
@@ -234,5 +265,6 @@ class WorkoutSetsService {
   }
 }
 
+// Create and export singleton instance
 export const workoutSetsService = new WorkoutSetsService();
 export default workoutSetsService;

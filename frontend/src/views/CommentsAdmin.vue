@@ -1,11 +1,13 @@
 <template>
   <div class="comments-admin-page">
     <div class="container mt-4">
+      <!-- Header -->
       <div class="header-section mb-4">
         <h1>Comments Administration</h1>
         <p class="text-muted">View all comments across all exercises in the database</p>
       </div>
 
+      <!-- Controls -->
       <div class="controls-section mb-4">
         <div class="row">
           <div class="col-md-6">
@@ -20,6 +22,7 @@
         </div>
       </div>
 
+      <!-- Statistics -->
       <div class="stats-section mb-4" v-if="stats.totalComments > 0">
         <div class="row">
           <div class="col-md-4">
@@ -62,6 +65,7 @@
         </div>
       </div>
 
+      <!-- Loading State -->
       <div v-if="loading" class="text-center py-5">
         <div class="spinner-border text-primary" role="status">
           <span class="visually-hidden">Loading...</span>
@@ -69,20 +73,24 @@
         <p class="mt-2">Loading all comments from Firebase...</p>
       </div>
 
+      <!-- Error State -->
       <div v-else-if="error" class="alert alert-danger">
         <h5>Error Loading Comments</h5>
         <p>{{ error }}</p>
         <button @click="loadAllComments" class="btn btn-outline-danger">Try Again</button>
       </div>
 
+      <!-- Empty State -->
       <div v-else-if="allComments.length === 0" class="text-center py-5">
         <h5>No Comments Found</h5>
         <p class="text-muted">There are no comments in the database yet.</p>
       </div>
 
+      <!-- Comments List -->
       <div v-else class="comments-list">
         <h4 class="mb-3">All Comments ({{ allComments.length }})</h4>
         
+        <!-- Filter Controls -->
         <div class="filter-section mb-3">
           <div class="row">
             <div class="col-md-4">
@@ -104,6 +112,7 @@
           </div>
         </div>
 
+        <!-- Comments -->
         <div class="row">
           <div 
             v-for="comment in filteredComments" 
@@ -141,6 +150,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { firebaseForumService } from '../services/firebaseForumService.js'
 
+// State
 const loading = ref(false)
 const error = ref(null)
 const allComments = ref([])
@@ -151,16 +161,20 @@ const stats = ref({
   recentActivity: []
 })
 
+// Filters
 const selectedExercise = ref('')
 const searchText = ref('')
 
+// Computed
 const filteredComments = computed(() => {
   let filtered = allComments.value
 
+  // Filter by exercise
   if (selectedExercise.value) {
     filtered = filtered.filter(comment => comment.exerciseId === selectedExercise.value)
   }
 
+  // Filter by search text
   if (searchText.value.trim()) {
     const search = searchText.value.toLowerCase()
     filtered = filtered.filter(comment => 
@@ -173,6 +187,7 @@ const filteredComments = computed(() => {
   return filtered
 })
 
+// Methods
 const loadAllComments = async () => {
   try {
     loading.value = true
@@ -180,9 +195,11 @@ const loadAllComments = async () => {
     
     console.log('Loading all comments from database...')
     
+    // Get all comments with enhanced metadata
     const commentsData = await firebaseForumService.getAllComments()
     allComments.value = commentsData.items
     
+    // Get statistics
     const statsData = await firebaseForumService.getCommentStats()
     stats.value = statsData
     
@@ -214,6 +231,7 @@ const formatTime = (date) => {
   return date.toLocaleDateString()
 }
 
+// Lifecycle
 onMounted(() => {
   loadAllComments()
 })

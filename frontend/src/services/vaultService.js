@@ -100,10 +100,13 @@ class VaultService {
     }
   }
 
-
+  /**
+   * Publish a workout set to the vault
+   */
   async publishWorkoutSet(uid, setId) {
     try {
       return await runTransaction(db, async (transaction) => {
+        // Get the workout set
         const setDocRef = workoutSetsService.getDocRef(uid, setId);
         const setDoc = await transaction.get(setDocRef);
         
@@ -113,6 +116,7 @@ class VaultService {
 
         const setData = setDoc.data();
         
+        // Verify ownership and publishing eligibility
         if (setData.ownerUid !== uid) {
           throw new Error('Not authorized to publish this workout set');
         }
@@ -125,11 +129,12 @@ class VaultService {
           throw new Error('Workout set is already published');
         }
 
+        // Create vault post
         const now = new Date().toISOString();
         const vaultPostData = {
           title: setData.title,
           description: setData.description,
-          exercises: setData.exercises, 
+          exercises: setData.exercises, // Snapshot at publish time
           createdBy: uid,
           createdAt: now,
           avgRating: 0,
@@ -141,6 +146,7 @@ class VaultService {
         const vaultPostRef = doc(this.getPostsCollectionRef());
         transaction.set(vaultPostRef, vaultPostData);
 
+        // Update original workout set to mark as published
         transaction.update(setDocRef, {
           isPublished: true,
           publishedAt: now,
@@ -156,6 +162,9 @@ class VaultService {
     }
   }
 
+  /**
+   * Add a review to a vault post
+   */
   async addReview(postId, reviewData) {
     try {
       return await runTransaction(db, async (transaction) => {
@@ -168,6 +177,7 @@ class VaultService {
 
         const postData = postDoc.data();
         
+        // Add the review
         const reviewRef = doc(this.getReviewsCollectionRef(postId));
         const reviewWithTimestamp = {
           ...reviewData,
@@ -175,6 +185,7 @@ class VaultService {
         };
         transaction.set(reviewRef, reviewWithTimestamp);
 
+        // Update post averages
         const newReviewsCount = postData.reviewsCount + 1;
         const currentTotal = postData.avgRating * postData.reviewsCount;
         const newAvgRating = (currentTotal + reviewData.rating) / newReviewsCount;
@@ -192,6 +203,9 @@ class VaultService {
     }
   }
 
+  /**
+   * Get reviews for a vault post
+   */
   async getReviews(postId) {
     try {
       const q = query(
@@ -211,14 +225,22 @@ class VaultService {
     }
   }
 
+  /**
+   * Check if user already imported a specific post
+   */
   async alreadyImported(uid, postId) {
     return workoutSetsService.alreadyImported(uid, postId);
   }
 
+  /**
+   * Import a workout set from vault to user's personal collection
+   */
   async importFromVault(uid, postId) {
     try {
+      // Get the vault post data
       const vaultPost = await this.getVaultPost(postId);
       
+      // Import using workoutSetsService
       return workoutSetsService.importFromVault(uid, postId, {
         title: vaultPost.title,
         description: vaultPost.description,
@@ -230,6 +252,9 @@ class VaultService {
     }
   }
 
+  /**
+   * Subscribe to real-time updates for vault posts
+   */
   subscribeToVaultPosts(callback, options = {}) {
     const { sort = 'newest', limit = 20 } = options;
     
@@ -270,6 +295,9 @@ class VaultService {
     });
   }
 
+  /**
+   * Subscribe to real-time updates for reviews of a specific post
+   */
   subscribeToReviews(postId, callback) {
     const q = query(
       this.getReviewsCollectionRef(postId),
@@ -289,5 +317,6 @@ class VaultService {
   }
 }
 
+// Create and export singleton instance
 export const vaultService = new VaultService();
 export default vaultService;

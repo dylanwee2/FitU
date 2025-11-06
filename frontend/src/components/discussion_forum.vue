@@ -15,6 +15,7 @@
       <small class="text-muted">{{ posts.length }} discussion{{ posts.length !== 1 ? 's' : '' }}</small>
     </div>
 
+    <!-- New Post Section -->
     <div class="new-post-section">
       <div class="new-post-form">
         <textarea
@@ -35,6 +36,7 @@
       </div>
     </div>
 
+    <!-- Loading State -->
     <div v-if="loading" class="loading-state">
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Loading...</span>
@@ -42,16 +44,19 @@
       <p class="mt-2">Loading discussions from Firebase...</p>
     </div>
 
+    <!-- Empty State -->
     <div v-else-if="posts.length === 0" class="empty-state">
       <p>No discussions yet. Be the first to share your thoughts!</p>
     </div>
 
+    <!-- Posts List -->
     <div v-else class="posts-list">
       <div
         v-for="post in posts"
         :key="post.id"
         class="post-card"
       >
+        <!-- Post Content -->
         <div class="post-content">
           <div class="post-main">
             <div class="post-info">
@@ -59,6 +64,7 @@
               <span class="post-time">{{ formatTime(post.createdAt) }}</span>
             </div>
             
+            <!-- Edit Mode -->
             <div v-if="editingPost === post.id" class="edit-form">
               <textarea
                 v-model="editPostContent"
@@ -75,11 +81,13 @@
               </div>
             </div>
             
+            <!-- View Mode -->
             <div v-else class="post-message">
               {{ post.content }}
             </div>
           </div>
 
+          <!-- Post Actions -->
           <div v-if="canEdit(post)" class="post-actions">
             <button
               @click="startEdit(post)"
@@ -97,6 +105,7 @@
           </div>
         </div>
 
+        <!-- Comments Toggle -->
         <div class="comments-toggle">
           <button
             @click="toggleComments(post.id)"
@@ -107,7 +116,9 @@
           </button>
         </div>
 
+        <!-- Comments Section -->
         <div v-if="expandedPosts.has(post.id)" class="comments-section">
+          <!-- Existing Comments -->
           <div
             v-for="comment in post.comments"
             :key="comment.id"
@@ -130,6 +141,7 @@
             </div>
           </div>
 
+          <!-- New Comment Form -->
           <div class="new-comment-form">
             <textarea
               v-model="newCommentContent[post.id]"
@@ -152,6 +164,7 @@
     </div>
   </div>
 
+  <!-- Delete Confirmation Modal -->
   <div v-if="showDeleteConfirm" class="delete-confirm-overlay" @click="cancelDelete">
     <div class="delete-confirm-modal" @click.stop>
       <div class="delete-confirm-header">
@@ -173,6 +186,7 @@
 import { ref, reactive, onMounted, computed, watch } from 'vue'
 import { firebaseForumService } from '../services/firebaseForumService.js'
 
+// Types
 interface User {
   id: string | number
   name: string
@@ -193,6 +207,7 @@ interface Post {
   comments: Comment[]
 }
 
+// Props
 interface Props {
   exerciseId: string | number
   currentUser?: User
@@ -203,6 +218,7 @@ const props = withDefaults(defineProps<Props>(), {
   initialOpen: false
 })
 
+// Emits
 const emit = defineEmits<{
   'created-post': [post: Post]
   'updated-post': [post: Post]
@@ -211,6 +227,7 @@ const emit = defineEmits<{
   'deleted-comment': [postId: string | number, commentId: string | number]
 }>()
 
+// State
 const loading = ref(false)
 const posts = ref<Post[]>([])
 const expandedPosts = ref(new Set<string | number>())
@@ -219,14 +236,17 @@ const newCommentContent = reactive<Record<string | number, string>>({})
 const editingPost = ref<string | number | null>(null)
 const editPostContent = ref('')
 
+// Delete confirmation modal state
 const showDeleteConfirm = ref(false)
 const postToDelete = ref<string | number | null>(null)
 const commentToDelete = ref<{ postId: string | number; commentId: string | number } | null>(null)
 
+// Computed
 const canEdit = computed(() => (item: Post | Comment) => {
   return props.currentUser && item.author.id === props.currentUser.id
 })
 
+// Delete modal computed properties
 const isPostDeletion = computed(() => !!postToDelete.value)
 const isCommentDeletion = computed(() => !!commentToDelete.value)
 const deleteModalTitle = computed(() => isPostDeletion.value ? 'Delete Post' : 'Delete Comment')
@@ -241,6 +261,7 @@ const deleteModalWarning = computed(() =>
     : 'This action cannot be undone.'
 )
 
+// Methods
 const loadPosts = async () => {
   loading.value = true
   try {
@@ -252,11 +273,13 @@ const loadPosts = async () => {
     console.log('✅ Successfully fetched posts:', fetchedPosts.length)
     posts.value = fetchedPosts
     
+    // Auto-expand if initialOpen is true
     if (props.initialOpen && posts.value.length > 0) {
       expandedPosts.value.add(posts.value[0].id)
     }
   } catch (error) {
     console.error('❌ Failed to load posts:', error)
+    // Show user-friendly error
     alert('Failed to load discussions. Please check your connection.')
   } finally {
     loading.value = false
@@ -320,6 +343,7 @@ const updatePost = async (postId: string | number) => {
     console.log('Updating post...')
     await firebaseForumService.updatePost(postId.toString(), editPostContent.value.trim())
     
+    // Update local state
     const index = posts.value.findIndex(p => p.id === postId)
     if (index !== -1) {
       posts.value[index].content = editPostContent.value.trim()
@@ -336,6 +360,7 @@ const updatePost = async (postId: string | number) => {
 }
 
 const deletePost = async (postId: string | number) => {
+  // Show confirmation modal instead of browser confirm
   postToDelete.value = postId
   showDeleteConfirm.value = true
 }
@@ -348,9 +373,12 @@ const cancelDelete = () => {
 
 const confirmDelete = async () => {
   try {
+    // Delete post
     if (postToDelete.value) {
       console.log('Deleting post...')
       await firebaseForumService.deletePost(postToDelete.value.toString())
+      
+      // Update local state
       const index = posts.value.findIndex(p => p.id === postToDelete.value)
       if (index !== -1) {
         posts.value.splice(index, 1)
@@ -361,10 +389,12 @@ const confirmDelete = async () => {
       
       console.log('Post deleted successfully!')
     }
+    // Delete comment
     else if (commentToDelete.value) {
       console.log('Deleting comment...')
       await firebaseForumService.deleteComment(commentToDelete.value.commentId.toString())
       
+      // Update local state
       const post = posts.value.find(p => p.id === commentToDelete.value!.postId)
       if (post) {
         const index = post.comments.findIndex(c => c.id === commentToDelete.value!.commentId)
@@ -378,12 +408,14 @@ const confirmDelete = async () => {
       console.log('Comment deleted successfully!')
     }
     
+    // Close modal
     showDeleteConfirm.value = false
     postToDelete.value = null
     commentToDelete.value = null
   } catch (error) {
     console.error('Failed to delete:', error)
     alert('Failed to delete. Please try again.')
+    // Close modal even on error
     showDeleteConfirm.value = false
     postToDelete.value = null
     commentToDelete.value = null
@@ -409,6 +441,7 @@ const createComment = async (postId: string | number) => {
       props.currentUser
     )
     
+    // Update local state
     const post = posts.value.find(p => p.id === postId)
     if (post) {
       post.comments.push(newComment)
@@ -425,6 +458,7 @@ const createComment = async (postId: string | number) => {
 }
 
 const deleteComment = async (postId: string | number, commentId: string | number) => {
+  // Show confirmation modal instead of browser confirm
   commentToDelete.value = { postId, commentId }
   showDeleteConfirm.value = true
 }
@@ -441,12 +475,13 @@ const formatTime = (date: Date) => {
   return `${days}d ago`
 }
 
+// Lifecycle
 onMounted(() => {
   console.log('🚀 Discussion forum component mounted for exercise:', props.exerciseId)
   loadPosts()
 })
 
-
+// Watch for exercise ID changes (when navigating between exercises)
 watch(() => props.exerciseId, (newExerciseId, oldExerciseId) => {
   console.log('🔄 Exercise ID changed!', { from: oldExerciseId, to: newExerciseId })
   if (newExerciseId !== oldExerciseId) {
@@ -477,10 +512,12 @@ watch(() => props.exerciseId, (newExerciseId, oldExerciseId) => {
   border-bottom: 2px solid #e5e7eb;
 }
 
+/* New Post Section */
 .new-post-section {
   margin-bottom: 2rem;
 }
 
+/* Delete Confirmation Modal */
 .delete-confirm-overlay {
   position: fixed;
   top: 0;
@@ -569,12 +606,14 @@ watch(() => props.exerciseId, (newExerciseId, oldExerciseId) => {
   justify-content: flex-end;
 }
 
+/* States */
 .loading-state, .empty-state {
   text-align: center;
   padding: 3rem 1rem;
   color: #6b7280;
 }
 
+/* Posts */
 
 .post-card {
   background: white;
@@ -624,6 +663,7 @@ watch(() => props.exerciseId, (newExerciseId, oldExerciseId) => {
   margin-left: 1rem;
 }
 
+/* Edit Form */
 .edit-form {
   margin-top: 0.5rem;
 }
@@ -649,6 +689,7 @@ watch(() => props.exerciseId, (newExerciseId, oldExerciseId) => {
   gap: 0.5rem;
 }
 
+/* Comments */
 .comments-toggle {
   margin-bottom: 1rem;
 }
@@ -716,6 +757,7 @@ watch(() => props.exerciseId, (newExerciseId, oldExerciseId) => {
   margin-left: 0.75rem;
 }
 
+/* New Comment Form */
 .new-comment-form {
   background: white;
   border: 1px solid #e5e7eb;
@@ -744,6 +786,7 @@ watch(() => props.exerciseId, (newExerciseId, oldExerciseId) => {
   justify-content: flex-end;
 }
 
+/* Buttons */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -847,3 +890,15 @@ watch(() => props.exerciseId, (newExerciseId, oldExerciseId) => {
 }
 </style>
 
+<!-- Example Usage:
+<discussion_forum
+  :exercise-id="101"
+  :current-user="{ id: 1, name: 'Dylan' }"
+  :initial-open="true"
+  @created-post="handlePostCreated"
+  @updated-post="handlePostUpdated"
+  @deleted-post="handlePostDeleted"
+  @created-comment="handleCommentCreated"
+  @deleted-comment="handleCommentDeleted"
+/>
+-->

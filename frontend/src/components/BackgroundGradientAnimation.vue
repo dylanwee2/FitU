@@ -5,10 +5,10 @@
     :style="cssVars"
     aria-hidden="true"
   >
-    
+    <!-- decorative animated background layers -->
     <div class="bg-layers" aria-hidden="true"></div>
 
-    
+    <!-- slot for content that sits above the animation -->
     <div class="bg-content">
       <slot />
     </div>
@@ -44,7 +44,9 @@ export default {
       '--c5': props.fifthColor,
       '--pointer': props.pointerColor,
       '--blend': props.blendingValue,
+      // pointer position is now animated by CSS (autonomous orb)
     }))
+    // No pointer-driven updates: the decorative orb is driven by CSS animation
     onMounted(() => {})
 
     onBeforeUnmount(() => {})
@@ -67,12 +69,17 @@ export default {
   inset: 0;
   z-index: 0;
   pointer-events: none;
+  /* layered radial gradients where the primary decorative orb is animated autonomously
+     (no mouse tracking). We rely on background-position animation to move the orb
+     across the entire element/view. */
+  /* slightly increased alpha values so the orb appears lighter/stronger */
   background: radial-gradient(600px circle, rgba(var(--pointer,140,100,255),0.28) 0%, rgba(0,0,0,0) 40%),
               radial-gradient(400px circle, rgba(var(--c1),0.28) 0%, transparent 40%),
               radial-gradient(300px circle, rgba(var(--c2),0.22) 0%, transparent 35%),
               radial-gradient(350px circle, rgba(var(--c3),0.14) 0%, transparent 38%),
               linear-gradient(90deg, var(--bg-start), var(--bg-end));
   background-size: 300% 300%, 200% 200%, 200% 200%, 200% 200%, 100% 100%;
+  /* slower, smoother movement for a free-floating orb */
   animation: bgMove 18s ease-in-out infinite;
   mix-blend-mode: var(--blend, overlay);
   filter: saturate(1.05) blur(0.6px);

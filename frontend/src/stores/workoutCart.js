@@ -7,6 +7,7 @@ import { workoutVaultService } from '@/services/workoutVaultService.js'
 import { formatDuration } from '@/types/workout.js'
 
 export const useWorkoutCartStore = defineStore('workoutCart', () => {
+  // State
   const cartItems = ref([])
   const savedPlaylists = ref([])
   const isAuthenticated = ref(false)
@@ -16,8 +17,8 @@ export const useWorkoutCartStore = defineStore('workoutCart', () => {
   const cartItemCount = computed(() => cartItems.value.length)
   const cartTotalDuration = computed(() => {
     return cartItems.value.reduce((total, item) => {
-      const sets = item.sets || 3 
-      return total + (sets * 5) 
+      const sets = item.sets || 3 // Default to 3 sets if not specified
+      return total + (sets * 5) // 5 minutes per set
     }, 0)
   })
 
@@ -38,19 +39,22 @@ export const useWorkoutCartStore = defineStore('workoutCart', () => {
 
   // Actions
   const addToCart = (exercise) => {
+    // Check if exercise is already in cart
     const existingItem = cartItems.value.find(item => item.id === exercise.id)
     
     if (existingItem) {
+      // If already in cart, show notification or update quantity
       console.log('Exercise already in cart')
       return false
     }
 
+    // Add exercise to cart with additional metadata
     const cartItem = {
       ...exercise,
       addedAt: new Date().toISOString(),
-      sets: 3, 
-      reps: 10, 
-      weight: null, 
+      sets: 3, // Default sets
+      reps: 10, // Default reps
+      weight: null, // User can set this later
       notes: ''
     }
 
@@ -94,6 +98,7 @@ export const useWorkoutCartStore = defineStore('workoutCart', () => {
     }
 
     try {
+      // Create workout set document in Firebase
       const docRef = await addDoc(collection(db, "workoutSets"), {
         userId: currentUser.value.uid,
         name: playlistName,
@@ -105,8 +110,9 @@ export const useWorkoutCartStore = defineStore('workoutCart', () => {
         muscleGroups: [...cartMuscleGroups.value]
       })
 
+      // Create local playlist object with Firebase document ID
       const playlist = {
-        id: docRef.id, 
+        id: docRef.id, // Use Firebase document ID
         userId: currentUser.value.uid,
         name: playlistName,
         description,
@@ -128,17 +134,20 @@ export const useWorkoutCartStore = defineStore('workoutCart', () => {
   const loadPlaylist = async (playlistId) => {
     const playlist = savedPlaylists.value.find(p => p.id === playlistId)
     if (playlist) {
+      // Update last used timestamp in Firebase
       try {
         const playlistRef = doc(db, "workoutSets", playlistId)
         await updateDoc(playlistRef, {
           lastUsed: new Date().toISOString()
         })
         
+        // Update local playlist
         playlist.lastUsed = new Date().toISOString()
       } catch (error) {
         console.error('Error updating last used timestamp:', error)
       }
       
+      // Load exercises into cart
       cartItems.value = [...playlist.exercises]
       saveToLocalStorage()
       return true
@@ -152,20 +161,25 @@ export const useWorkoutCartStore = defineStore('workoutCart', () => {
     }
 
     try {
+      // Find the playlist to check if it's published
       const playlist = savedPlaylists.value.find(p => p.id === playlistId)
       
+      // If the workout is published, delete it from the vault first
       if (playlist && playlist.isPublished && playlist.publishedId) {
         try {
           await workoutVaultService.unpublishWorkout(playlist.publishedId, currentUser.value.uid)
           console.log('Successfully deleted published workout from vault')
         } catch (error) {
           console.error('Error deleting from published workouts:', error)
+          // Continue with deletion even if unpublishing fails
         }
       }
       
+      // Delete the document from Firebase
       const playlistRef = doc(db, "workoutSets", playlistId)
       await deleteDoc(playlistRef)
       
+      // Remove from local array
       const index = savedPlaylists.value.findIndex(p => p.id === playlistId)
       if (index > -1) {
         savedPlaylists.value.splice(index, 1)
@@ -184,17 +198,20 @@ export const useWorkoutCartStore = defineStore('workoutCart', () => {
     }
 
     try {
+      // First check if it's already in local storage
       const localPlaylist = savedPlaylists.value.find(p => p.id === playlistId)
       if (localPlaylist) {
         return localPlaylist
       }
 
+      // If not found locally, fetch from Firebase
       const docRef = doc(db, "workoutSets", playlistId)
       const docSnap = await getDoc(docRef)
       
       if (docSnap.exists()) {
         const workoutData = { id: docSnap.id, ...docSnap.data() }
         
+        // Verify ownership
         if (workoutData.userId === currentUser.value.uid) {
           return workoutData
         } else {
@@ -215,8 +232,10 @@ export const useWorkoutCartStore = defineStore('workoutCart', () => {
     }
 
     try {
+      // Find the local playlist to check if it's published
       const playlist = savedPlaylists.value.find(p => p.id === playlistId)
       
+      // Update in Firebase (local user workout)
       const playlistRef = doc(db, "workoutSets", playlistId)
       const firebaseUpdates = {
         ...updates,
@@ -225,17 +244,23 @@ export const useWorkoutCartStore = defineStore('workoutCart', () => {
       
       await updateDoc(playlistRef, firebaseUpdates)
       
+      // Update local playlist immediately after successful Firebase update
       if (playlist) {
         Object.assign(playlist, updates)
         playlist.updatedAt = new Date().toISOString()
       }
       
+      // If the workout is published, try to update the published version as well
       if (playlist && playlist.isPublished && playlist.publishedId) {
         try {
+          // Use the workoutVaultService to properly update the published workout
           await workoutVaultService.updatePublishedWorkout(playlist.publishedId, updates, currentUser.value.uid)
         } catch (vaultError) {
           console.error('Error updating published workout in vault:', vaultError)
+          // Show a warning but don't fail the entire operation
           console.warn('Published workout in vault could not be updated. Local workout was updated successfully.')
+          // The local update succeeded, so we return true
+          // User could try republishing if needed
         }
       }
       
@@ -251,6 +276,7 @@ export const useWorkoutCartStore = defineStore('workoutCart', () => {
     const originalPlaylist = savedPlaylists.value.find(p => p.id === playlistId)
     if (originalPlaylist) {
       try {
+        // Create new document in Firebase
         const docRef = await addDoc(collection(db, "workoutSets"), {
           userId: currentUser.value.uid,
           name: `${originalPlaylist.name} (Copy)`,
@@ -262,8 +288,9 @@ export const useWorkoutCartStore = defineStore('workoutCart', () => {
           muscleGroups: [...originalPlaylist.muscleGroups]
         })
 
+        // Create local playlist object with Firebase document ID
         const duplicatedPlaylist = {
-          id: docRef.id, 
+          id: docRef.id, // Use Firebase document ID
           userId: currentUser.value.uid,
           name: `${originalPlaylist.name} (Copy)`,
           description: originalPlaylist.description,
@@ -284,6 +311,7 @@ export const useWorkoutCartStore = defineStore('workoutCart', () => {
     return null
   }
 
+  // Storage persistence (Firebase for authenticated users, localStorage for guests)
   const saveToLocalStorage = () => {
     try {
       localStorage.setItem('fitU_workout_cart', JSON.stringify(cartItems.value))
@@ -305,11 +333,13 @@ export const useWorkoutCartStore = defineStore('workoutCart', () => {
 
   const loadPlaylistsFromStorage = async () => {
     if (!currentUser.value) {
+      // Clear playlists for non-authenticated users
       savedPlaylists.value = []
       return
     }
 
     try {
+      // Load workout sets from Firebase for authenticated users
       const q = query(
         collection(db, "workoutSets"), 
         where("userId", "==", currentUser.value.uid)
@@ -320,7 +350,7 @@ export const useWorkoutCartStore = defineStore('workoutCart', () => {
       querySnapshot.forEach((doc) => {
         const data = doc.data()
         savedPlaylists.value.push({
-          id: doc.id, 
+          id: doc.id, // Firebase document ID
           userId: data.userId,
           name: data.name,
           description: data.description,
@@ -332,6 +362,7 @@ export const useWorkoutCartStore = defineStore('workoutCart', () => {
         })
       })
       
+      // Sort by last used date (most recent first)
       savedPlaylists.value.sort((a, b) => new Date(b.lastUsed) - new Date(a.lastUsed))
       
     } catch (error) {
@@ -347,31 +378,37 @@ export const useWorkoutCartStore = defineStore('workoutCart', () => {
       currentUser.value = user
       
       if (user) {
+        // User is logged in, load their workout sets from Firebase
         await loadPlaylistsFromStorage()
       } else {
+        // User is not logged in, clear playlists (they're stored locally in cart only)
         savedPlaylists.value = []
       }
     })
   }
 
   const initializeStore = () => {
-    loadFromLocalStorage() 
+    loadFromLocalStorage() // Cart is always local
     initializeAuth()
   }
 
+  // Initialize store when created
   initializeStore()
 
   return {
+    // State
     cartItems,
     savedPlaylists,
     isAuthenticated,
     currentUser,
     
+    // Getters
     cartItemCount,
     cartTotalDuration,
     cartTotalDurationFormatted,
     cartMuscleGroups,
     
+    // Actions
     addToCart,
     removeFromCart,
     updateCartItem,

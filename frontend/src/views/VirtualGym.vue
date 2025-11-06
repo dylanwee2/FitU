@@ -1,13 +1,16 @@
 <template>
   <div class="virtual-gym container-fluid py-3">
+    <!-- --- UI refactor start --- -->
     <div class="d-flex align-items-center justify-content-center mb-3">
       <h2 class="u-text">Virtual Gym</h2>
     </div>
 
     <div class="row g-3">
+      <!-- Left pane: Canvas -->
       <div class="col-12 col-lg-7 col-xxl-8">
         <div class="card bg-dark border-0 shadow-sm h-100">
           <div ref="canvasWrap" class="gym-canvas position-relative" :style="{height: canvasHeight}">
+            <!-- Skeleton loader while initializing -->
             <div v-if="loading" class="skeleton-loader">
               <div class="placeholder-glow">
                 <span class="placeholder col-12 h-100"></span>
@@ -22,6 +25,7 @@
             <div v-if="webglError" class="alert alert-warning m-2">WebGL unavailable. Showing 2D fallback.</div>
           </div>
           
+          <!-- Canvas status bar -->
           <div class="card-footer bg-dark text-white py-2">
             <div class="d-flex justify-content-between align-items-center small">
               <span v-if="selection">
@@ -34,8 +38,10 @@
         </div>
       </div>
 
+      <!-- Right pane: Inspector (sticky) -->
       <div class="col-12 col-lg-5 col-xxl-4">
         <div class="sticky-pane">
+          <!-- Action toolbar -->
           <div class="card mb-3">
             <div class="card-body py-2">
               <div class="btn-group w-100" role="group">
@@ -51,6 +57,7 @@
             </div>
           </div>
 
+          <!-- Equipment Inspector -->
           <div class="card">
             <div class="card-header">
               <h1 class="mb-0">
@@ -65,6 +72,7 @@
               </div>
               
               <div v-else>
+                <!-- Purpose and Muscle Groups -->
                 <div class="mb-3">
                   <h6 class="muscle-title mb-2">{{ selection.info?.purpose || 'Training equipment' }}</h6>
                   <div class="muscle-badges d-flex flex-wrap gap-1">
@@ -74,6 +82,7 @@
                   </div>
                 </div>
 
+                <!-- Instructions -->
                 <div class="mb-3" v-if="selection.info?.steps?.length">
                   <h6 class="mb-2">
                     Instructions
@@ -85,6 +94,7 @@
                   </ul>
                 </div>
 
+                <!-- Safety Tips -->
                 <div class="mb-3" v-if="selection.info?.safety?.length">
                   <h6 class="mb-2 text-warning">
                     Safety Tips
@@ -102,6 +112,7 @@
       </div>
     </div>
 
+    <!-- Toast container -->
     <div class="toast-container position-fixed bottom-0 end-0 p-3">
       <div v-for="toast in toasts" :key="toast.id" 
            class="toast show" 
@@ -116,6 +127,7 @@
         </div>
       </div>
     </div>
+    <!-- --- UI refactor end --- -->
   </div>
 </template>
 
@@ -136,6 +148,8 @@ export default {
     const webglError = ref(false)
     const selection = ref(null)
     const visited = ref(new Set())
+    
+    // --- UI refactor start ---
     const toasts = ref([])
     let toastId = 0
     
@@ -175,8 +189,9 @@ export default {
       toast('Layout saved successfully', 'success', 'Save', 'save')
     }
     
+    // Keyboard shortcuts
     const handleKeydown = (e) => {
-      if (e.target.tagName === 'INPUT') return
+      if (e.target.tagName === 'INPUT') return // Don't interfere with input fields
       
       switch(e.key) {
         case 'f':
@@ -184,7 +199,9 @@ export default {
           break
       }
     }
+    // --- UI refactor end ---
 
+    // three core
     let renderer, scene, camera, controls, clock
     let hoverMesh = null
     const raycaster = new THREE.Raycaster()
@@ -197,23 +214,29 @@ export default {
         const el = canvasWrap.value
         const width = el.clientWidth
         const height = el.clientHeight
+        // renderer
         renderer = new THREE.WebGLRenderer({ antialias: true })
         renderer.setSize(width, height)
         renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
         renderer.shadowMap.enabled = true
         el.appendChild(renderer.domElement)
 
+        // scene
         scene = new THREE.Scene()
-        scene.background = new THREE.Color(0x0f0f10) 
+        scene.background = new THREE.Color(0x0f0f10) // Dark background for better contrast
         scene.fog = new THREE.FogExp2(0x0f0f10, 0.02)
 
         textureLoader = new THREE.TextureLoader()
 
+        // camera
         camera = new THREE.PerspectiveCamera(75, width/height, 0.1, 200)
         camera.position.set(0, 1.8, 8)
 
+        // Modern gym lighting setup
+        // Main ambient light (bright daylight)
         scene.add(new THREE.HemisphereLight(0xFFFFFF, 0xE8E8E8, 0.8))
         
+        // Primary directional light (LED ceiling panels)
         const mainLight = new THREE.DirectionalLight(0xFFFFFF, 1.2)
         mainLight.position.set(0, 8, 0)
         mainLight.castShadow = true
@@ -227,6 +250,7 @@ export default {
         mainLight.shadow.camera.bottom = -20
         scene.add(mainLight)
         
+        // Side fill lights (window daylight simulation)
         const fillLight1 = new THREE.DirectionalLight(0xFFEECF, 0.4)
         fillLight1.position.set(-15, 6, 0)
         scene.add(fillLight1)
@@ -235,13 +259,15 @@ export default {
         fillLight2.position.set(15, 6, 0)
         scene.add(fillLight2)
         
+        // Accent lighting (royal blue accent)
         const accentLight = new THREE.PointLight(0x3B82F6, 0.3, 20)
         accentLight.position.set(0, 4, 0)
         scene.add(accentLight)
 
+        // floor - professional gym rubber flooring
         const floorGeo = new THREE.PlaneGeometry(30, 20)
         const floorMat = new THREE.MeshStandardMaterial({ 
-          color: 0xE8E8E8,
+          color: 0xE8E8E8, // Light gray rubber floor
           roughness: 0.8,
           metalness: 0.0
         })
@@ -250,6 +276,7 @@ export default {
         floor.receiveShadow = true
         scene.add(floor)
         
+        // Add gym floor pattern/markings
         const floorMarkings = new THREE.Group()
         for (let i = -12; i <= 12; i += 2) {
           const lineGeo = new THREE.PlaneGeometry(0.1, 20)
@@ -269,6 +296,7 @@ export default {
         }
         scene.add(floorMarkings)
 
+        // walls & ceiling - modern gym aesthetic
         const makeWall = (w,h,color,texPath,repeatX=4, repeatY=2) => {
           let mat
           try {
@@ -292,6 +320,7 @@ export default {
           return new THREE.Mesh(g, mat)
         }
         
+        // Light warm grey walls
         const wallColor = 0xEAEAEA
         const back = makeWall(30,6, wallColor, '/textures/wall_plain.jpg')
         back.position.set(0,3,-10); back.receiveShadow = true; scene.add(back)
@@ -302,6 +331,7 @@ export default {
         const right = makeWall(20,6, wallColor, '/textures/wall_plain.jpg')
         right.position.set(15,3,0); right.rotation.y = -Math.PI/2; scene.add(right)
         
+        // Neutral grey ceiling with LED strip effect
         const ceilingGeo = new THREE.PlaneGeometry(30,20)
         const ceiling = new THREE.Mesh(ceilingGeo, new THREE.MeshStandardMaterial({ 
           color: 0xD9D9D9, 
@@ -310,10 +340,11 @@ export default {
         }))
         ceiling.position.set(0,6,0); ceiling.rotation.x = Math.PI/2; scene.add(ceiling)
         
+        // LED light strips on ceiling (visual accent)
         for (let i = -12; i <= 12; i += 6) {
           const stripGeo = new THREE.PlaneGeometry(0.2, 20)
           const stripMat = new THREE.MeshBasicMaterial({ 
-            color: 0x3B82F6,
+            color: 0x3B82F6, // Royal blue accent
             transparent: true,
             opacity: 0.6
           })
@@ -323,9 +354,11 @@ export default {
           scene.add(strip)
         }
 
+        // blob shadow texture (optional)
         let blobTex = null
         try { blobTex = textureLoader.load('/textures/blob_shadow.png') } catch {}
 
+        // equipment: load models in parallel for better performance
         const loader = new GLTFLoader()
         
         const addLabelAndShadow = (spec, centerY = spec.size[1]/2) => {
@@ -342,6 +375,7 @@ export default {
           }
         }
 
+        // Create loading promises for all equipment
         const totalModels = EQUIPMENT.filter(spec => spec.model).length
         let loadedCount = 0
         
@@ -352,6 +386,7 @@ export default {
                 console.log(`Loaded ${spec.id}:`, gltf.scene)
                 const root = gltf.scene
                 
+                // Ensure all meshes are visible and clickable
                 root.traverse(obj => { 
                   if (obj.isMesh) { 
                     obj.visible = true
@@ -360,31 +395,34 @@ export default {
                     obj.receiveShadow = true;
                     obj.userData = { id: spec.id, parent: root }
                     
+                    // Apply modern gym equipment materials
                     if (obj.material) {
                       if (Array.isArray(obj.material)) {
                         obj.material.forEach(mat => {
-                          mat.color.setHex(0x2B2B2B)
+                          mat.color.setHex(0x2B2B2B) // Matte black
                           mat.roughness = 0.8
                           mat.metalness = 0.2
                           mat.transparent = false
                         })
                       } else {
-                        obj.material.color.setHex(0x2B2B2B)
+                        obj.material.color.setHex(0x2B2B2B) // Matte black
                         obj.material.roughness = 0.8
                         obj.material.metalness = 0.2
                         obj.material.transparent = false
                       }
                     }
                     
+                    // Add each mesh to clickable array individually
                     clickable.push(obj)
                     console.log(`Added mesh for ${spec.id}:`, obj)
                   } 
                 })
                 
+                // center and scale roughly to match size box
                 const box = new THREE.Box3().setFromObject(root)
                 const size = new THREE.Vector3(); box.getSize(size)
                 const center = new THREE.Vector3(); box.getCenter(center)
-                root.position.sub(center)
+                root.position.sub(center) // center to origin
                 const targetMax = Math.max(spec.size[0], spec.size[1], spec.size[2])
                 const currentMax = Math.max(size.x, size.y, size.z) || 1
                 const scale = targetMax / currentMax
@@ -397,6 +435,7 @@ export default {
                 console.log(`Added ${spec.id} to scene, clickable count:`, clickable.length)
                 addLabelAndShadow(spec, spec.size[1]/2)
                 
+                // Update progress
                 loadedCount++
                 progress.value = loadedCount / totalModels
                 console.log(`Progress: ${Math.round(progress.value * 100)}% (${loadedCount}/${totalModels})`)
@@ -404,7 +443,8 @@ export default {
                 resolve(spec.id)
               }, undefined, (error) => {
                 console.error(`Failed to load ${spec.model}:`, error)
-                const color = new THREE.Color('#2B2B2B')
+                // fallback box on error - modern gym style
+                const color = new THREE.Color('#2B2B2B') // Matte black
                 const geo = new THREE.BoxGeometry(spec.size[0], spec.size[1], spec.size[2])
                 const mat = new THREE.MeshStandardMaterial({ 
                   color, 
@@ -419,15 +459,17 @@ export default {
                 scene.add(mesh); clickable.push(mesh)
                 addLabelAndShadow(spec)
                 
+                // Update progress even on error
                 loadedCount++
                 progress.value = loadedCount / totalModels
                 console.log(`Progress: ${Math.round(progress.value * 100)}% (${loadedCount}/${totalModels}) - Fallback created`)
                 
-                resolve(spec.id)
+                resolve(spec.id) // Resolve even on error with fallback
               })
             })
           } else {
-            const color = new THREE.Color('#2B2B2B')
+            // Handle equipment without models immediately
+            const color = new THREE.Color('#2B2B2B') // Matte black
             const geo = new THREE.BoxGeometry(spec.size[0], spec.size[1], spec.size[2])
             const mat = new THREE.MeshStandardMaterial({ 
               color, 
@@ -445,26 +487,32 @@ export default {
           }
         })
 
+        // Wait for all models to load in parallel
         Promise.all(loadPromises).then(() => {
           console.log('All models loaded successfully!')
           console.log('Final clickable array:', clickable)
-          progress.value = 1
+          progress.value = 1 // Ensure 100% before hiding
           loading.value = false
         }).catch(error => {
           console.error('Error loading models:', error)
           loading.value = false
         })
 
+        // controls
         controls = new OrbitControls(camera, renderer.domElement)
         controls.enableDamping = true
         controls.maxPolarAngle = Math.PI/2.1
         controls.target.set(0,1.2,0)
 
         clock = new THREE.Clock()
+
+        // events
         window.addEventListener('resize', onResize)
         renderer.domElement.addEventListener('mousemove', onPointerMove)
         renderer.domElement.addEventListener('click', onClick)
+        // --- UI refactor start ---
         document.addEventListener('keydown', handleKeydown)
+        // --- UI refactor end ---
 
         loading.value = false
         animate()
@@ -479,7 +527,7 @@ export default {
       const canvas = document.createElement('canvas')
       const ctx = canvas.getContext('2d')
       canvas.width = 256; canvas.height = 64
-      ctx.fillStyle = '#FFFFFF';
+      ctx.fillStyle = '#FFFFFF'; // White text for dark background
       ctx.font = 'bold 24px system-ui'
       ctx.fillText(text, 10, 40)
       const tex = new THREE.CanvasTexture(canvas)
@@ -514,15 +562,18 @@ export default {
     const animate = () => {
       const dt = clock.getDelta()
       controls.update()
+      // hover/raycast
       raycaster.setFromCamera(mouse, camera)
       const hits = raycaster.intersectObjects(clickable, false)
       const hit = hits[0]?.object || null
       
+      // Only log when hover state changes to avoid infinite console spam
       if (hit !== hoverMesh) {
         console.log('Raycast hits:', hits.length, 'Hit object:', hit?.userData?.id || 'none', 'Clickable count:', clickable.length)
       }
       
       if (hoverMesh && hoverMesh !== hit) {
+        // Reset emissive on previous hover
         let material = hoverMesh.material
         if (Array.isArray(material)) material = material[0]
         if (material && material.emissive) {
@@ -533,10 +584,11 @@ export default {
       }
       if (hit && hoverMesh !== hit) {
         hoverMesh = hit
+        // Try to find emissive material on the hit mesh or its parent
         let material = hit.material
         if (Array.isArray(material)) material = material[0]
         if (material && material.emissive) {
-          material.emissive.setHex(0x3B82F6)
+          material.emissive.setHex(0x3B82F6) // Royal blue hover effect
         }
         renderer.domElement.style.cursor = 'pointer'
       }
@@ -564,7 +616,9 @@ export default {
       window.removeEventListener('resize', onResize)
       renderer?.domElement?.removeEventListener('mousemove', onPointerMove)
       renderer?.domElement?.removeEventListener('click', onClick)
+      // --- UI refactor start ---
       document.removeEventListener('keydown', handleKeydown)
+      // --- UI refactor end ---
       renderer?.dispose?.()
     })
 
@@ -577,16 +631,19 @@ export default {
       selection, 
       visited, 
       resetView,
+      // --- UI refactor start ---
       toasts,
       focusOnSelection,
       saveLayout,
       removeToast
+      // --- UI refactor end ---
     }
   }
 }
 </script>
 
 <style scoped>
+/* --- UI refactor start --- */
 .gym-canvas { 
   height: 70vh; 
   background: #0f0f10; 
@@ -614,11 +671,13 @@ export default {
   z-index: 1050;
 }
 
+/* Focus-visible rings for accessibility */
 .btn:focus-visible {
   outline: 2px solid var(--bs-primary);
   outline-offset: 2px;
 }
 
+/* Dark theme adjustments */
 .card.bg-dark {
   background-color: #1a1a1a !important;
 }
@@ -628,6 +687,7 @@ export default {
   border-top: 1px solid #333;
 }
 
+/* Input group styling for dark theme */
 .input-group-text {
   background-color: #2a2a2a;
   border-color: #444;
@@ -647,6 +707,7 @@ export default {
   box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
 }
 
+/* List group dark theme */
 .list-group-item {
   background-color: transparent;
   border-color: #444;
@@ -659,11 +720,13 @@ export default {
   color: #ffc107;
 }
 
+/* Muscle title styling */
 .muscle-title {
-  color: #e9ecef !important; 
+  color: #e9ecef !important; /* Light gray for better visibility on dark background */
   font-weight: 500;
 }
 
+/* Muscle badge styling */
 .muscle-badges .badge {
   position: relative;
   background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
@@ -705,6 +768,7 @@ export default {
     grid-template-columns: 1fr;
   }
 }
+/* --- UI refactor end --- */
 
 .loader { 
   position: absolute; 

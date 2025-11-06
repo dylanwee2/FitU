@@ -1,10 +1,12 @@
 <template>
   <div class="page-bg-wrap">
+    <!-- Top-half hero video -->
     <section class="video-carousel" v-reveal>
       <div class="iframe-wrap">
         <video class="hero-video" src="/videos/fitu.mp4" autoplay muted loop playsinline></video>
       </div>
 
+      <!-- Overlay hero copy on top of video -->
       <div class="vc-content">
         <div class="vc-content-wrap">
             <div class="container vc-hero-container">
@@ -21,9 +23,11 @@
     </section>
 
       <div class="container mt-4">
+      <!-- Starfield wrapper starts: applies from here onwards -->
       <div class="starfield-wrap">
         
 
+      <!-- Stats Section (full-bleed white bar placed above features) -->
       <section class="stats-bleed" v-reveal>
         <div class="container py-3">
           <div class="row text-center">
@@ -43,6 +47,7 @@
         </div>
       </section>
 
+      <!-- Feature Highlights (simplified: icons above text, no cards) -->
       <BackgroundGradientAnimation
         gradientBackgroundStart="rgb(8,10,18)"
         gradientBackgroundEnd="rgb(18,22,40)"
@@ -62,6 +67,7 @@
               <div class="col-12 col-md-6 col-lg-3">
                 <div class="feature-simple">
                   <div class="feature-icon-wrap">
+                    <!-- stopwatch icon -->
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                       <path d="M9 2h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                       <path d="M12 7v6l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -76,6 +82,7 @@
               <div class="col-12 col-md-6 col-lg-3">
                 <div class="feature-simple">
                   <div class="feature-icon-wrap">
+                    <!-- dumbbell icon -->
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                       <path d="M2 12h2v2H2zM20 12h2v2h-2z" fill="currentColor"/>
                       <path d="M9 12h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -91,6 +98,7 @@
               <div class="col-12 col-md-6 col-lg-3">
                 <div class="feature-simple">
                   <div class="feature-icon-wrap">
+                    <!-- users icon -->
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                       <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                       <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -105,6 +113,7 @@
               <div class="col-12 col-md-6 col-lg-3">
                 <div class="feature-simple">
                   <div class="feature-icon-wrap">
+                    <!-- lightning/fast results icon -->
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                       <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
@@ -113,10 +122,11 @@
                   <small class="u-muted">See progress in just weeks</small>
                 </div>
               </div>
-            </div> 
-          </div> 
+            </div> <!-- .row -->
+          </div> <!-- .container -->
         </section>
 
+        <!-- Reviews Section -->
         <section class="p-3 mb-4" v-reveal>
           <div class="container">
             <h2 class="mb-3">Student Reviews</h2>
@@ -135,10 +145,11 @@
                   <p class="m-0">{{ r.comment }}</p>
                 </div>
               </div>
-            </div> 
-          </div> 
+            </div> <!-- .row -->
+          </div> <!-- .container -->
         </section>
 
+        <!-- Bottom CTA -->
         <section class="p-4 text-center">
           <h2 class="mb-2" style="color: var(--text)">Ready to Transform Your Campus Fitness?</h2>
           <p class="u-muted mb-3">Join thousands of students getting stronger, healthier, and more energized.</p>
@@ -148,9 +159,9 @@
         </section>
       </BackgroundGradientAnimation>
 
-      </div> 
+      </div> <!-- end starfield-wrap -->
 
-      </div> 
+      </div> <!-- end starfield-wrap -->
 
     </div>
 </template>
@@ -182,11 +193,13 @@ export default {
     const nextSlide = () => { currentSlide.value = (currentSlide.value + 1) % videoIds.value.length }
     const prevSlide = () => { currentSlide.value = (currentSlide.value - 1 + videoIds.value.length) % videoIds.value.length }
 
+    // Auth state watcher
     onMounted(() => {
       onAuthStateChanged(auth, (user) => {
         isAuthenticated.value = !!user;
       });
     });
+    // Pause/play when slide changes
     onBeforeUnmount(() => { if (intervalHandle) clearInterval(intervalHandle) })
 
     watch(currentSlide, (idx) => {
@@ -196,6 +209,7 @@ export default {
       })
     })
 
+    // Pause videos when tab is hidden, resume active on visible
     const onVisibility = () => {
       const active = videoEls.value[currentSlide.value]
       if (document.hidden) {
@@ -209,6 +223,7 @@ export default {
       onBeforeUnmount(() => document.removeEventListener('visibilitychange', onVisibility))
     }
 
+    // Reviews state (unchanged)
     const reviews = ref([
       { id: 'r1', name: 'Aisha K.', course: 'Computer Science', year: 'Year 2', rating: 5, comment: 'FitU keeps me on track during exam season. Love the clean visuals!' },
       { id: 'r2', name: 'Liam D.', course: 'Mechanical Eng.', year: 'Year 3', rating: 5, comment: 'The workout planner and calorie tracker combo is perfect.' },
@@ -220,12 +235,14 @@ export default {
       try {
         const raw = localStorage.getItem('fitu:reviews')
         if (!raw) {
+          // Seed defaults into storage on first run
           saveReviews()
           return
         }
         const parsed = JSON.parse(raw)
         if (Array.isArray(parsed)) reviews.value = parsed
       } catch {
+        // Keep seeded defaults if parsing fails
       }
     }
     const saveReviews = () => {
@@ -264,6 +281,7 @@ input.form-control {
 .btn-elevate { box-shadow: 0 6px 18px rgba(230, 57, 70, 0.25); }
 .btn-elevate:active { transform: translateY(1px); }
 
+/* Carousel theming */
 .carousel-item-tinted::after {
   content: "";
   position: absolute;
@@ -274,8 +292,10 @@ input.form-control {
 .carousel .carousel-caption h5 { color: #FFF7E6; text-shadow: 0 2px 8px rgba(0,0,0,.3); }
 .carousel .carousel-caption p { color: #FFF7E6; text-shadow: 0 1px 4px rgba(0,0,0,.3); }
 
+/* Feature cards */
 .feature-icon { font-size: 1.5rem; color: var(--primary); margin-bottom: .25rem; }
 
+/* Image feature cards */
 .feature-card {
   position: relative;
   border-radius: 14px;
@@ -305,17 +325,20 @@ input.form-control {
 .feature-card:hover { transform: translateY(-6px); box-shadow: 0 22px 40px -18px rgba(0,0,0,.6); }
 .feature-card:hover img { transform: scale(1.06); filter: brightness(.95); }
 
+/* Simplified feature layout (icons above text) */
 .feature-simple { display: flex; flex-direction: column; align-items: center; gap: .5rem; padding: .75rem 0; text-align: center; }
 .feature-simple .feature-icon-wrap { width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; color: var(--primary); margin-bottom: .25rem; transition: transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .22s cubic-bezier(.2,.8,.2,1); will-change: transform; }
 .feature-simple h6 { margin: 0; }
 .feature-simple small { display: block; }
 
+/* Pop-out effect on icon when hovering the feature */
 .feature-simple:hover .feature-icon-wrap,
 .feature-simple:focus-within .feature-icon-wrap {
   transform: translateY(-6px) scale(1.08);
   box-shadow: 0 12px 24px rgba(15,23,42,0.12);
 }
 
+/* Full-width safe stats bar that overlays the features section */
 .stats-bleed {
   background-color: rgb(21, 21, 21);
   width: 100vw;
@@ -327,8 +350,10 @@ input.form-control {
 .stats-bleed .h3 { color: var(--text); }
 .stats-bleed .u-muted { color: var(--muted); }
 
+/* Remove top gap between the hero video area and the main container so the stats bar sits directly under the video */
 .page-bg-wrap > .container { margin-top: 0 !important; }
 
+/* Make carousel full width and remove border radius/shadow */
 .home-carousel {
   width: 100% !important;
   margin-left: 0 !important;
@@ -337,6 +362,7 @@ input.form-control {
   overflow: hidden;
 }
 
+/* Ensure carousel images fill width and height */
 .home-carousel .carousel-item img {
   width: 100% !important;
   object-fit: cover;
@@ -347,6 +373,7 @@ input.form-control {
 .carousel-text:hover { cursor: default; }
 .carousel-item img{ filter: brightness(40%); }
 
+/* Top-half hero video */
 .video-carousel {
   position: relative;
   width: 100%;
@@ -378,13 +405,14 @@ input.form-control {
   object-fit: cover;
   pointer-events: none;
 }
+/* Darken carousel video and add an internal overlay so hero text is readable */
 .video-carousel video { filter: brightness(0.8) contrast(0.8); z-index: 0; }
 .video-carousel::before {
   content: "";
   position: absolute;
   inset: 0;
   background: rgba(0,0,0,0.45);
-  z-index: 1; 
+  z-index: 1; /* sits above the video but below .vc-content (z-index:2) */
   pointer-events: none;
 }
 .video-carousel .nav {
@@ -403,6 +431,7 @@ input.form-control {
 .video-carousel .prev { left: 12px; }
 .video-carousel .next { right: 12px; }
 
+/* Overlay content on video */
 .vc-content { position: absolute; inset: 0; display: flex; align-items: center; z-index: 2; }
 .vc-content-wrap { width: min(100%, 1200px); margin-inline: auto; padding: 0 1rem; }
 .vc-content-wrap { position: relative; }
@@ -410,12 +439,14 @@ input.form-control {
 .vc-title { font-size: clamp(2rem, 6vw, 5rem); line-height: 1.02; }
 .vc-sub { max-width: 680px; }
 
+/* Limit background to page content (exclude navbar & footer) */
 .page-bg-wrap { position: relative; overflow-x: hidden; }
 .page-bg-wrap > .bg-video { position: absolute; top: 0; left: 0; right: 0; height: 65vh; overflow: hidden; }
 .page-bg-wrap > .bg-overlay { position: absolute; top: 0; left: 0; right: 0; height: 65vh; }
 
+/* Background video covering the landing content area */
 .bg-video {
-  z-index: -2; 
+  z-index: -2; /* behind content within landing only */
   overflow: hidden;
   background: transparent;
 }
@@ -424,16 +455,19 @@ input.form-control {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  /* Cover technique for 16:9 video */
   width: 100%;
   height: 100%;
   min-width: 100%;
   min-height: 100%;
   object-fit: cover;
-  pointer-events: none; 
+  pointer-events: none; /* allow page interaction */
+  /* Darken the video for better overlay contrast. Adjust brightness value as needed. */
   filter: brightness(0.28) contrast(0.9);
 }
 .bg-overlay { z-index: -1; background: rgba(0,0,0,0.72); }
 
+/* Reviews animations */
 @keyframes review-fade-up {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
@@ -445,6 +479,7 @@ input.form-control {
 }
 .review-card:hover { transform: translateY(-4px); box-shadow: 0 12px 22px -12px rgba(0,0,0,.6); }
 
+/* Elevated, high-impact animations */
 @keyframes hero-shimmer {
   0% { background-position: 0% 50%; }
   100% { background-position: 200% 50%; }
@@ -464,6 +499,7 @@ input.form-control {
   50% { transform: translateY(-2px) scale(1.02); box-shadow: 0 14px 28px rgba(102, 126, 234, 0.5); }
 }
 
+/* 3D tilt + lift on cards */
 .u-card {
   transition: transform .25s ease, box-shadow .25s ease, filter .25s ease;
   transform-style: preserve-3d;
@@ -474,22 +510,28 @@ input.form-control {
   filter: brightness(1.02);
 }
 
+/* Stronger reveal on enter for elements that use v-reveal */
 .reveal { opacity: 0; transform: translateY(14px) scale(.98); will-change: transform, opacity; }
 .reveal--visible { opacity: 1; transform: translateY(0) scale(1); transition: opacity .35s cubic-bezier(.2,.65,.25,1), transform .35s cubic-bezier(.2,.65,.25,1); }
 
+/* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
   .vc-title { filter: none; }
 }
 
+/* Limit hover effects to precise pointers */
 @media (hover: none), (pointer: coarse) {
   .u-card:hover { transform: none; box-shadow: none; filter: none; }
 }
+
+/* Mobile tuning for stars */
 @media (max-width: 768px) {
   .shooting_star { animation-duration: 4s, 4s; opacity: .7; }
   .shooting_star:nth-child(n+8) { display: none; }
 }
 
+/* Shooting star backdrop (inspired by https://codepen.io/nefejames/pen/PwYMqoE) */
 .starfield-wrap { position: relative; isolation: isolate; }
 .starfield-wrap > *:not(.night) { position: relative; z-index: 1; }
 .night { position: absolute; inset: 0; overflow: hidden; z-index: 0; pointer-events: none; }

@@ -1,6 +1,7 @@
 <template>
   <div class="vault-list">
     <div class="container mt-4">
+      <!-- Header -->
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h2>🏆 Community Vault</h2>
@@ -8,6 +9,7 @@
         </div>
       </div>
 
+      <!-- Filters -->
       <div class="row g-3 mb-4">
         <div class="col-md-6">
           <select v-model="sortBy" @change="loadVaultPosts" class="form-select">
@@ -22,17 +24,20 @@
         </div>
       </div>
 
+      <!-- Loading State -->
       <div v-if="loading" class="text-center py-5">
         <div class="spinner-border text-primary mb-3"></div>
         <p>Loading community workout sets...</p>
       </div>
 
+      <!-- Error State -->
       <div v-else-if="error" class="text-center py-5">
         <h4>Unable to Load Vault</h4>
         <p class="text-muted">{{ error }}</p>
         <button @click="loadVaultPosts" class="btn btn-primary">Try Again</button>
       </div>
 
+      <!-- Empty State -->
       <div v-else-if="filteredPosts.length === 0" class="text-center py-5">
         <h4>No workout sets found</h4>
         <p class="text-muted">
@@ -40,9 +45,11 @@
         </p>
       </div>
 
+      <!-- Vault Posts List -->
       <div v-else class="row g-3">
         <div v-for="post in filteredPosts" :key="post.id" class="col-sm-6 col-lg-4">
           <div class="card h-100">
+            <!-- Card Header -->
             <div class="card-header d-flex justify-content-between align-items-center">
               <div class="d-flex align-items-center">
                 <span class="badge bg-info me-2">
@@ -53,6 +60,7 @@
               <small class="text-muted">by {{ post.createdBy }}</small>
             </div>
 
+            <!-- Card Body -->
             <div class="card-body">
               <h5 class="card-title">{{ post.title }}</h5>
               <p class="card-text text-muted">{{ truncateText(post.description, 80) }}</p>
@@ -63,6 +71,7 @@
               </div>
             </div>
 
+            <!-- Card Footer -->
             <div class="card-footer d-flex justify-content-between">
               <div>
                 <button v-if="!isImported(post.id)" @click="importPost(post)" 
@@ -98,6 +107,7 @@ import { vaultService } from '@/services/vaultService.js'
 
 const router = useRouter()
 
+// Reactive state
 const vaultPosts = ref([])
 const loading = ref(false)
 const error = ref('')
@@ -106,8 +116,10 @@ const searchQuery = ref('')
 const importingIds = ref(new Set())
 const importedPostIds = ref(new Set())
 
+// Real-time subscription
 let unsubscribe = null
 
+// Computed properties
 const currentUser = computed(() => auth.currentUser)
 
 const filteredPosts = computed(() => {
@@ -120,6 +132,7 @@ const filteredPosts = computed(() => {
   )
 })
 
+// Methods
 const loadVaultPosts = async () => {
   loading.value = true
   error.value = ''
@@ -183,8 +196,10 @@ const isImported = (postId) => {
 }
 
 const handleSearch = () => {
+  // Debounce search if needed in future
 }
 
+// Utility functions
 const truncateText = (text, maxLength) => {
   if (!text) return ''
   if (text.length <= maxLength) return text
@@ -203,6 +218,7 @@ const formatDate = (dateString) => {
   return date.toLocaleDateString()
 }
 
+// Lifecycle
 onMounted(() => {
   setupRealtimeListener()
   if (currentUser.value) {

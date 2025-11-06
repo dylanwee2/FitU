@@ -1,4 +1,4 @@
-
+// pages/api/gemini/generate.js
 import { GoogleGenAI } from "@google/genai";
 
 export default async function generateContent(req, res) {
@@ -19,7 +19,7 @@ export default async function generateContent(req, res) {
       contents: prompt,
     });
 
-    
+    // `response.text` contains the generated text
     res.status(200).json({ result: response.text });
   } catch (err) {
     console.error("Gemini SDK error:", err);

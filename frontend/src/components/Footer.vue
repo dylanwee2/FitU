@@ -70,6 +70,8 @@ export default {
 
 <style scoped>
 
+/* center all the unordered list in the center, when the screen becomes really small*/
+
 @media (max-width: 575px) {
   .footer-list-col-align,
   .footer-list-col-align ul,
@@ -112,6 +114,7 @@ export default {
 }
 
 
+/* Center the bottom footer text */
 .footer-bottom-center {
   width: 100%;
   text-align: center;
