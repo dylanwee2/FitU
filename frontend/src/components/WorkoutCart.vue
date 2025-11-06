@@ -1049,8 +1049,7 @@ const processAIAdvice = async (html) => {
   try {
     aiSuggestions.value = parseAISuggestions(html || '')
     
-    // Clean up the HTML to remove (search: ...) text before displaying
-    // Create a temporary DOM to manipulate the HTML
+
     const tempDiv = document.createElement('div')
     tempDiv.innerHTML = html || ''
     

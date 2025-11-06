@@ -295,9 +295,7 @@ class VaultService {
     });
   }
 
-  /**
-   * Subscribe to real-time updates for reviews of a specific post
-   */
+
   subscribeToReviews(postId, callback) {
     const q = query(
       this.getReviewsCollectionRef(postId),

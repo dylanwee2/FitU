@@ -311,111 +311,19 @@ export default {
       fetchMealIdeas()
     })
     
-    // =============================================================================
-    // HARDCODED DATA FOR DEVELOPMENT/CSS STYLING
-    // =============================================================================
-    // TO SWITCH TO API CALLS:
-    // 1. Change this to: const recipes = ref([])
-    // 2. Uncomment the API code in searchRecipes() function below
-    // 3. Uncomment the API code in viewRecipeDetails() function below
+
     
     // API Call 
     const recipes = ref([])
     const selectedRecipe = ref(null)
 
-  // =============================================================================
-  // Sample data removed — using live API calls by default
-  // =============================================================================
+
     
     const error = ref('')
     
     // Modal state
     const showModal = ref(false)
-    
-    // Hardcoded detailed recipe data for modal
-    // const selectedRecipe = ref({
-    //   id: 631807,
-    //   title: "Toasted Agnolotti (or Ravioli)",
-    //   image: "https://img.spoonacular.com/recipes/631807-556x370.jpg",
-    //   readyInMinutes: 45,
-    //   servings: 2,
-    //   healthScore: 61,
-    //   vegetarian: false,
-    //   vegan: false,
-    //   glutenFree: false,
-    //   dairyFree: true,
-    //   summary: "Toasted Agnolotti (or Ravioli) requires around <b>45 minutes</b> from start to finish. This recipe serves 2 and costs $1.95 per serving. This main course has <b>965 calories</b>, <b>41g of protein</b>, and <b>28g of fat</b> per serving.",
-    //   extendedIngredients: [
-    //     {
-    //       id: 93832,
-    //       name: "pre-made agnolotti/ravioli",
-    //       amount: 13.0,
-    //       unit: "oz"
-    //     },
-    //     {
-    //       id: 1123,
-    //       name: "egg",
-    //       amount: 1.0,
-    //       unit: ""
-    //     },
-    //     {
-    //       id: 18079,
-    //       name: "breadcrumbs",
-    //       amount: 1.5,
-    //       unit: "cup"
-    //     }
-    //   ],
-    //   analyzedInstructions: [
-    //     {
-    //       steps: [
-    //         {
-    //           number: 1,
-    //           step: "Preheat oven to 180 degrees Celsius (350 F) for a fan-forced oven or 200 degrees Celsius (392 F) for a convection oven."
-    //         },
-    //         {
-    //           number: 2,
-    //           step: "Line a baking tray with baking paper."
-    //         },
-    //         {
-    //           number: 3,
-    //           step: "Spray a thin layer of olive oil on the baking paper. Set aside."
-    //         },
-    //         {
-    //           number: 4,
-    //           step: "Crack and beat an egg on a plate. On a separate plate add breadcrumbs."
-    //         },
-    //         {
-    //           number: 5,
-    //           step: "Dip agnolotti in the beaten egg first, then coat it with breadcrumbs."
-    //         },
-    //         {
-    //           number: 6,
-    //           step: "Place the crumbed agnolotti onto a baking tray and spray another thin layer of oil over them."
-    //         },
-    //         {
-    //           number: 7,
-    //           step: "Bake the crumbed agnolotti for 25 minutes or until golden brown."
-    //         },
-    //         {
-    //           number: 8,
-    //           step: "Serve immediately with pasta sauce or ketchup."
-    //         }
-    //       ]
-    //     }
-    //   ],
-    //   nutrition: {
-    //     nutrients: [
-    //       { name: "Calories", amount: 965, unit: "kcal" },
-    //       { name: "Protein", amount: 41, unit: "g" },
-    //       { name: "Fat", amount: 28, unit: "g" },
-    //       { name: "Carbohydrates", amount: 142, unit: "g" },
-    //       { name: "Fiber", amount: 8, unit: "g" },
-    //       { name: "Sugar", amount: 12, unit: "g" }
-    //     ]
-    //   },
-    //   sourceUrl: "https://www.foodista.com/recipe/HR6QS422/toasted-agnolotti-or-ravioli"
-    // })
-    
+       
     const loadingRecipe = ref(false)
 
     // Compute macro grams and calories for selected recipe (per serving)
@@ -456,15 +364,6 @@ export default {
     })
 
     const searchRecipes = async (ingredientList) => {
-      // =============================================================================
-      // NOTE: Recipe data is currently HARDCODED above for CSS styling/development
-      // The recipes.ref([...]) contains 6 sample recipes that display immediately
-      // =============================================================================
-      
-      // =============================================================================
-      // API CALL VERSION (uncomment this section to use real backend API)
-      // =============================================================================
-      
       error.value = ''
       recipes.value = []
 
@@ -517,17 +416,7 @@ export default {
     }
 
     const viewRecipeDetails = async (recipeId) => {
-      // =============================================================================
-      // HARDCODED DATA VERSION (for CSS styling/development)
-      // =============================================================================
-      // Using fake data - modal opens instantly with hardcoded recipe details
-      // (uncomment this) showModal.value = true
-      // selectedRecipe.value already contains hardcoded detailed recipe data from above
-      
-      // =============================================================================
-      // API CALL VERSION (uncomment this section to use real Spoonacular API)
-      // =============================================================================
-      
+
       try {
         loadingRecipe.value = true
         showModal.value = true

@@ -16,10 +16,7 @@ import {
 } from 'firebase/firestore'
 import { getAuth } from 'firebase/auth'
 
-/**
- * CaloriesService - Direct Firestore interface for calorie management
- * Replaces the complex meals.js/user.js/persistence.js architecture
- */
+
 class CaloriesService {
   constructor() {
     this.auth = getAuth()

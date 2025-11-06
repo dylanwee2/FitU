@@ -49,9 +49,7 @@ class WorkoutSetsService {
     }
   }
 
-  /**
-   * Subscribe to real-time updates for user's workout sets
-   */
+
   subscribeToWorkoutSets(uid, callback) {
     const q = query(
       this.getCollectionRef(uid),
@@ -245,9 +243,7 @@ class WorkoutSetsService {
     }
   }
 
-  /**
-   * Mark a workout set as published (called by vault service)
-   */
+
   async markAsPublished(uid, setId, publishedAt, publishedBy) {
     try {
       const docRef = this.getDocRef(uid, setId);

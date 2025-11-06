@@ -182,8 +182,6 @@ class WorkoutVaultService {
         throw new Error('Unauthorized: You can only update your own published workouts');
       }
 
-      // Prepare updates for published workout
-      // Only update fields that are safe to update (don't overwrite ratings, etc.)
       const safeUpdates = {
         name: updates.name,
         description: updates.description,

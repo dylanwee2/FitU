@@ -259,8 +259,6 @@ export const useWorkoutCartStore = defineStore('workoutCart', () => {
           console.error('Error updating published workout in vault:', vaultError)
           // Show a warning but don't fail the entire operation
           console.warn('Published workout in vault could not be updated. Local workout was updated successfully.')
-          // The local update succeeded, so we return true
-          // User could try republishing if needed
         }
       }
       

@@ -69,10 +69,6 @@ export default {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  /* layered radial gradients where the primary decorative orb is animated autonomously
-     (no mouse tracking). We rely on background-position animation to move the orb
-     across the entire element/view. */
-  /* slightly increased alpha values so the orb appears lighter/stronger */
   background: radial-gradient(600px circle, rgba(var(--pointer,140,100,255),0.28) 0%, rgba(0,0,0,0) 40%),
               radial-gradient(400px circle, rgba(var(--c1),0.28) 0%, transparent 40%),
               radial-gradient(300px circle, rgba(var(--c2),0.22) 0%, transparent 35%),

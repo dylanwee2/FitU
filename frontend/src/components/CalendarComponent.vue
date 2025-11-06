@@ -510,11 +510,7 @@ const initializeCalendar = async () => {
     },
     eventColor: getComputedStyle(document.documentElement).getPropertyValue('--muted').trim(),
 
-    //eventColor: getComputedStyle(document.documentElement).getPropertyValue('--primary').trim(),
-    // eventContent: function(arg) {
-    //   // Only show the event title, not the time
-    //   return { domNodes: [document.createTextNode(arg.event.title)] };
-    // },
+
     // Event handlers
     eventClick: (info) => {
       handleEventClick(info)
@@ -556,18 +552,13 @@ const handleEventClick = (info) => {
 }
 
 const handleDateSelect = (info) => {
-  // Pre-fill form with selected date
-  // If end is provided, set it to 23:59 of the previous day (if time is 00:00)
+
   let endDate = info.end ? new Date(info.end) : null;
-  // if (endDate && endDate.getHours() === 0 && endDate.getMinutes() === 0) {
-  //   endDate.setMinutes(endDate.getMinutes() - 1); // Go to 23:59 of previous day
-  // }
   newEvent.value = {
     title: '',
     start: formatDateForInput(info.start),
     end: endDate ? formatDateForInput(endDate) : '',
     allDay: info.allDay, 
-    //allDay: false,
     description: '',
 
   }
@@ -1318,7 +1309,6 @@ const updateEventInIcs = async (editingEventId, ev) => {
 }
 
 // Utility functions
-// Format date for datetime-local input in local time (not UTC)
 const formatDateForInput = (date) => {
   if (!date) return ''
   const d = new Date(date)
@@ -1828,10 +1818,7 @@ defineExpose({
   }
 }
 
-/* =====================
-   FullCalendar toolbar (dark theme, element-level styling)
-   ===================== */
-/* Leave toolbar background transparent (explicitly avoid painting the whole header) */
+
 .calendar-component .fc .fc-toolbar {
   background: transparent !important;
 }

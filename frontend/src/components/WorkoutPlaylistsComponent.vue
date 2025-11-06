@@ -672,12 +672,7 @@ const checkPublishedStatus = async () => {
         const isActuallyPublished = publishedMap.has(userWorkout.id)
         const publishedWorkout = publishedMap.get(userWorkout.id)
         
-        // console.log(`Checking workout ${userWorkout.id}:`, {
-        //   localPublished: localPlaylist.isPublished,
-        //   firebaseUserWorkoutPublished: userWorkout.isPublished,
-        //   actuallyPublished: isActuallyPublished,
-        //   publishedWorkout: publishedWorkout
-        // })
+
         
         // Update the status based on whether it's actually in the publishedWorkouts collection
         if (localPlaylist.isPublished !== isActuallyPublished) {
