@@ -1,7 +1,6 @@
 <template>
   <div class="progress-tracker">
     <div class="row">
-      <!-- Stats Overview -->
       <div class="col-md-8">
         <div class="stats-grid">
           <div class="stat-card">
@@ -37,7 +36,6 @@
           </div>
         </div>
 
-        <!-- Recent Workouts -->
         <div class="recent-workouts mt-4">
           <h5>Recent Workouts</h5>
           <div v-if="recentWorkouts.length > 0" class="workout-list">
@@ -62,7 +60,6 @@
         </div>
       </div>
 
-      <!-- Achievements -->
       <div class="col-md-4">
         <div class="achievements-section">
           <h5>Achievements</h5>
@@ -85,7 +82,6 @@
           </div>
         </div>
 
-        <!-- Quick Actions -->
         <div class="quick-actions mt-4">
           <h6>Quick Actions</h6>
           <div class="d-grid gap-2">
@@ -112,7 +108,6 @@
       </div>
     </div>
 
-    <!-- Import Dialog -->
     <div v-if="showImportDialog" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -143,7 +138,6 @@
       </div>
     </div>
 
-    <!-- Reset Confirmation -->
     <div v-if="showResetConfirm" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -181,13 +175,11 @@ export default {
     const importError = ref('')
     const fileInput = ref(null)
 
-    // Load progress data
     const loadProgress = () => {
       stats.value = progressService.getUserStats() || {}
       recentWorkouts.value = progressService.getWorkoutHistory(5)
     }
 
-    // Format date for display
     const formatDate = (dateString) => {
       const date = new Date(dateString)
       return date.toLocaleDateString('en-US', {
@@ -199,12 +191,10 @@ export default {
       })
     }
 
-    // Export progress
     const exportProgress = () => {
       progressService.exportProgress()
     }
 
-    // Handle file import
     const handleFileImport = async (event) => {
       const file = event.target.files[0]
       if (!file) return
@@ -215,7 +205,6 @@ export default {
         showImportDialog.value = false
         importError.value = ''
         
-        // Reset file input
         if (fileInput.value) {
           fileInput.value.value = ''
         }
@@ -225,23 +214,19 @@ export default {
       }
     }
 
-    // Confirm reset
     const confirmReset = () => {
       showResetConfirm.value = true
     }
 
-    // Reset progress
     const resetProgress = () => {
       progressService.clearProgress()
       loadProgress()
       showResetConfirm.value = false
     }
 
-    // Check for new achievements
     const checkAchievements = () => {
       const newAchievements = progressService.checkAchievements()
       if (newAchievements.length > 0) {
-        // Emit event or show notification
         console.log('New achievements earned:', newAchievements)
         loadProgress()
       }
@@ -420,7 +405,6 @@ export default {
   filter: invert(1);
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);

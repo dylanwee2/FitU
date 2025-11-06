@@ -1,13 +1,11 @@
 <template>
   <div class="exercise-browser">
     <div class="container mt-4">
-      <!-- Header -->
       <div class="text-center mb-4 pt-4">
         <h1 >Exercise Library</h1>
         <p class="u-muted">Discover thousands of exercises to reach your fitness goals</p>
       </div>
 
-      <!-- Search Bar + Filter inline -->
       <div class="search-section mb-4">
         <div class="row justify-content-center">
           <div class="col-md-8 col-lg-6">
@@ -23,10 +21,8 @@
                 >
               </div>
 
-              <!-- Bodypart filter dropdown placed beside the search input -->
               <div class="search-filters mt-0" v-if="bodyPartsList.length">
                 <div class="d-flex gap-2 align-items-center">
-                  <!-- Custom fixed-position dropdown to avoid layout shifting when native select opens -->
                   <div class="bodypart-dropdown" ref="bodyDropdownRef">
                     <button
                       class="form-select bodypart-toggle"
@@ -56,7 +52,6 @@
         </div>
       </div>
 
-      <!-- Loading State -->
       <div v-if="loading" class="loading-section text-center py-5">
         <div class="spinner-border text-primary mb-3" role="status">
           <span class="visually-hidden">Loading...</span>
@@ -64,7 +59,6 @@
         <p class="loading-text">Loading exercises...</p>
       </div>
 
-      <!-- Error State -->
       <div v-else-if="error" class="error-section text-center py-5">
         <div class="error-icon mb-3">
           <i class="fas fa-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
@@ -76,9 +70,7 @@
         </button>
       </div>
 
-      <!-- Exercise Grid -->
       <div v-else class="exercises-section">
-        <!-- Results Info -->
         <div class="results-info mb-4">
           <div class="row align-items-center">
             <div class="col">
@@ -93,7 +85,6 @@
           </div>
         </div>
 
-        <!-- No Results -->
         <div v-if="exercises.length === 0" class="no-results text-center py-5">
           <div class="no-results-icon mb-3">
           </div>
@@ -102,7 +93,6 @@
           <button @click="clearSearch" class="btn btn-primary">Browse All Exercises</button>
         </div>
 
-        <!-- Exercise Cards Grid -->
         <div v-else class="exercise-grid">
           <div class="row g-4">
             <div 
@@ -111,7 +101,6 @@
               class="col-sm-6 col-md-4 col-lg-3"
             >
               <div class="exercise-card u-card" @click="viewExercise(exercise)">
-                <!-- Exercise Image -->
                 <div class="exercise-image-container">
                   <img 
                     :src="exercise.gifUrl || '/images/exercise-placeholder.png'" 
@@ -122,7 +111,6 @@
                   >
                 </div>
 
-                <!-- Exercise Info -->
                 <div class="exercise-info">
                   <h5 class="exercise-name">{{ formatExerciseName(exercise.name) }}</h5>
                   
@@ -151,7 +139,6 @@
                   </div>
                 </div>
 
-                <!-- Action Buttons -->
                 <div class="exercise-actions">
                   <button 
                     @click.stop="toggleCart(exercise)"
@@ -168,7 +155,6 @@
           </div>
         </div>
 
-        <!-- Load More Button -->
         <div v-if="hasMorePages" class="load-more-section text-center mt-5">
           <button @click="loadMoreExercises" class="btn btn-outline-primary" :disabled="loadingMore">
             <span v-if="loadingMore" class="spinner-border spinner-border-sm me-2"></span>
@@ -177,7 +163,6 @@
           </button>
         </div>
         
-        <!-- End of Results Indicator -->
         <div v-else-if="exercises.length > 0" class="text-center mt-5 mb-4">
           <p class="text-muted">
             <i class="fas fa-check me-2"></i>
@@ -194,13 +179,10 @@ import { ref, onMounted, watch, computed, nextTick, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useWorkoutCartStore } from '../stores/workoutCart'
 
-// Router
 const router = useRouter()
 
-// Cart store
 const cartStore = useWorkoutCartStore()
 
-// Reactive state
 const exercises = ref([])
 const loading = ref(false)
 const loadingMore = ref(false)
@@ -211,11 +193,9 @@ const totalExercises = ref(0)
 const currentPage = ref(1)
 const hasMorePages = ref(false)
 
-// API Configuration
 const API_BASE_URL = 'https://www.exercisedb.dev/api/v1'
 const EXERCISES_PER_PAGE = 12
 
-// Methods
 const fetchExercises = async (query = '', append = false) => {
   if (!append) {
     loading.value = true
@@ -231,9 +211,6 @@ const fetchExercises = async (query = '', append = false) => {
     const url = query 
       ? `${API_BASE_URL}/exercises/search?q=${encodeURIComponent(query)}&limit=${EXERCISES_PER_PAGE}&offset=${offset}`
       : `${API_BASE_URL}/exercises?limit=${EXERCISES_PER_PAGE}&offset=${offset}`
-    
-    // console.log('Fetching exercises from:', url)
-    
     const response = await fetch(url)
     
     if (!response.ok) {
@@ -242,9 +219,7 @@ const fetchExercises = async (query = '', append = false) => {
     
     const data = await response.json()
     
-    // Handle ExerciseDB API response structure
     if (data.success && data.data) {
-      // Map the API response to our expected format
       const mappedExercises = data.data.map(exercise => ({
         id: exercise.exerciseId,
         name: exercise.name,
@@ -264,7 +239,6 @@ const fetchExercises = async (query = '', append = false) => {
         ) : []
       }))
       
-      // Handle pagination
       if (append) {
         exercises.value = [...exercises.value, ...mappedExercises]
         currentPage.value += 1
@@ -273,18 +247,15 @@ const fetchExercises = async (query = '', append = false) => {
         currentPage.value = 1
       }
       
-      // Update pagination info from metadata
       if (data.metadata) {
         totalExercises.value = data.metadata.totalExercises || 0
         hasMorePages.value = !!data.metadata.nextPage
       }
       
     } else {
-      // Fallback for other API structures
       exercises.value = Array.isArray(data) ? data : (data.exercises || [])
     }
     
-    // console.log(`Loaded ${exercises.value.length} exercises (${totalExercises.value} total available)`)
     
   } catch (err) {
     console.error('Error fetching exercises:', err)
@@ -298,14 +269,12 @@ const fetchExercises = async (query = '', append = false) => {
   }
 }
 
-// Load more exercises (pagination)
 const loadMoreExercises = async () => {
   if (!hasMorePages.value || loadingMore.value) return
   await fetchExercises(searchQuery.value, true)
 }
 
 const handleSearch = () => {
-  // Debounce search to avoid too many API calls
   clearTimeout(searchTimeout.value)
   
   searchTimeout.value = setTimeout(() => {
@@ -323,16 +292,13 @@ const clearSearch = () => {
 }
 
 const viewExercise = (exercise) => {
-  // Navigate to exercise detail page
   router.push(`/exercise/${exercise.id}`)
 }
 
 const handleImageError = (event) => {
-  // Fallback for broken images
   event.target.src = '/images/exercise-placeholder.png'
 }
 
-// Cart methods
 const addToCart = (exercise) => {
   cartStore.addToCart(exercise)
 }
@@ -353,7 +319,6 @@ const isInCart = (exerciseId) => {
   return cartStore.cartItems.some(item => item.id === exerciseId)
 }
 
-// Search by category methods
 const searchByTarget = (target) => {
   const cleanTarget = formatTarget(target)
   searchQuery.value = cleanTarget
@@ -372,7 +337,6 @@ const searchByEquipment = (equipment) => {
   fetchExercises(cleanEquipment)
 }
 
-// Body-part filters: fetch full list from API and expose to UI
 const bodyPartsList = ref([])
 const selectedBodyPart = ref('')
 const isBodyDropdownOpen = ref(false)
@@ -384,7 +348,6 @@ const closeBodyDropdown = () => {
 }
 
 const toggleBodyDropdown = () => {
-  // Simply toggle; positioning is handled via CSS (absolute under the toggle)
   isBodyDropdownOpen.value = !isBodyDropdownOpen.value
   if (!isBodyDropdownOpen.value) {
     bodyDropdownStyle.value = {}
@@ -397,7 +360,6 @@ const selectBodyPart = (part) => {
   closeBodyDropdown()
 }
 
-// Close on outside click or Escape
 const onDocClick = (e) => {
   if (!bodyDropdownRef.value) return
   if (!bodyDropdownRef.value.contains(e.target)) {
@@ -415,7 +377,6 @@ const fetchBodyParts = async () => {
     if (!resp.ok) return
     const data = await resp.json()
     
-    // The API may return { success, data } or just an array. Items can be strings or objects like { name: 'neck' }.
     const items = data?.data || (Array.isArray(data) ? data : data.bodyParts || [])
     if (!Array.isArray(items)) return
     const parts = items
@@ -445,7 +406,6 @@ const clearBodyFilter = () => {
   fetchExercises()
 }
 
-// Format functions to clean up array data
 const formatExerciseName = (name) => {
   if (!name) return 'Exercise'
   return name
@@ -488,10 +448,8 @@ const capitalizeFirstLetter = (text) => {
     .join(' ')
 }
 
-// Lifecycle
 onMounted(() => {
   fetchExercises()
-  // fetch bodyparts for filter chips under the search bar
   fetchBodyParts()
   document.addEventListener('click', onDocClick)
   document.addEventListener('keydown', onKeyDown)
@@ -527,7 +485,7 @@ onBeforeUnmount(() => {
   transition: all 0.3s ease;
 }
 
-/* Search filters inline beside search */
+
 .search-inline { 
   display: flex; 
   align-items: center; 
@@ -538,8 +496,8 @@ onBeforeUnmount(() => {
   min-width: 0; 
 }
 .search-filters {
-  margin-top: 0; /* inline with search */
-  width: 100px; /* make filter control narrower */
+  margin-top: 0; 
+  width: 100px; 
   font-size: 12px;
 }
 .search-filters .badge {
@@ -562,7 +520,6 @@ onBeforeUnmount(() => {
 }
 
 
-/* Loading */
 .loading-section {
   min-height: 300px;
   display: flex;
@@ -576,7 +533,6 @@ onBeforeUnmount(() => {
   font-size: 1.1rem;
 }
 
-/* Error */
 .error-section {
   min-height: 300px;
   display: flex;
@@ -596,14 +552,12 @@ onBeforeUnmount(() => {
   max-width: 500px;
 }
 
-/* Results */
 
 .search-query {
   color: #007bff;
   font-weight: 600;
 }
 
-/* Exercise Grid */
 .exercise-grid {
   margin-bottom: 3rem;
 }
@@ -615,7 +569,6 @@ onBeforeUnmount(() => {
   transition: all 0.3s ease;
 }
 
-/* Custom bodypart dropdown overlay (fixed-position) */
 .bodypart-dropdown {
   position: relative;
   display: inline-block;
@@ -632,7 +585,7 @@ onBeforeUnmount(() => {
   border: 1px solid var(--border-subtle);
 }
 .bodypart-menu {
-  position: absolute; /* anchor to dropdown container, not viewport */
+  position: absolute; 
   top: calc(100% + 4px);
   left: 0;
   width: 100%;
@@ -645,9 +598,8 @@ onBeforeUnmount(() => {
   border-radius: 8px;
   padding: 0.25rem 0;
   color: #ffffff;
-  /* Dark themed scrollbar (Chrome-like) */
-  scrollbar-color: #555 var(--surface-subtle); /* Firefox */
-  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #555 var(--surface-subtle); 
+  scrollbar-width: thin; 
 }
 .bodypart-menu::-webkit-scrollbar { width: 10px; height: 10px; }
 .bodypart-menu::-webkit-scrollbar-track { background: var(--surface-subtle); border-radius: 8px; }
@@ -661,7 +613,7 @@ onBeforeUnmount(() => {
   color: #ffffff;
 }
 .bodypart-option:hover {
-  background-color: rgba(255,255,255,0.06); /* slightly lighter on hover */
+  background-color: rgba(255,255,255,0.06); 
 }
 
 .exercise-card:hover {
@@ -716,7 +668,6 @@ onBeforeUnmount(() => {
   color: #495057;
   margin-bottom: 1rem;
   font-size: 0.9rem;
-  /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
   background: linear-gradient(135deg, var(--primary) 0%, #7083eb 100%);
   color: white;
   padding: 0.75rem 1rem;
@@ -801,7 +752,6 @@ onBeforeUnmount(() => {
   background-color: #495057 !important;
 }
 
-/* Nuanced charcoal pill theme for badges with color-coded dots */
 .exercise-badges .badge {
   position: relative;
   display: block;
@@ -812,11 +762,11 @@ onBeforeUnmount(() => {
   border-radius: 12px;
   font-weight: 600;
   letter-spacing: 0.01em;
-  padding: 0.25rem 0.6rem 0.25rem 1.2rem; /* extra space between dot and text */
-  width: auto; /* let content decide */
+  padding: 0.25rem 0.6rem 0.25rem 1.2rem; 
+  width: auto; 
   max-width: 100%;
-  justify-self: start; /* prevent grid stretch */
-  white-space: nowrap; /* single line */
+  justify-self: start; 
+  white-space: nowrap; 
   overflow: hidden;
   text-overflow: ellipsis;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.25);
@@ -898,7 +848,6 @@ onBeforeUnmount(() => {
   background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
 }
 
-/* No Results */
 .no-results {
   min-height: 300px;
   display: flex;
@@ -917,12 +866,10 @@ onBeforeUnmount(() => {
   margin-bottom: 2rem;
 }
 
-/* Load More */
 .load-more-section {
   padding: 2rem 0;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
 
   
@@ -949,7 +896,6 @@ onBeforeUnmount(() => {
     padding: 0.75rem 0.75rem 0.75rem 2.5rem;
   }
 
-  /* On small screens, allow filter to wrap below input */
   .search-inline { flex-wrap: wrap; }
   .search-filters { width: 100%; }
 }

@@ -16,21 +16,14 @@ import {
 } from 'firebase/firestore'
 import { getAuth } from 'firebase/auth'
 
-/**
- * CaloriesService - Direct Firestore interface for calorie management
- * Replaces the complex meals.js/user.js/persistence.js architecture
- */
 class CaloriesService {
   constructor() {
     this.auth = getAuth()
     this.caloriesCollection = 'calories'
     this.userProfilesCollection = 'userProfiles'
-    this.listeners = new Map() // Store unsubscribe functions for real-time listeners
+    this.listeners = new Map() 
   }
 
-  /**
-   * Get current authenticated user ID
-   */
   getCurrentUserId() {
     const user = this.auth.currentUser
     if (!user) {
@@ -39,9 +32,6 @@ class CaloriesService {
     return user.uid
   }
 
-  /**
-   * Check if user exists in calories table, if not create empty structure
-   */
   async ensureUserCaloriesExist(userId = null) {
     try {
       const uid = userId || this.getCurrentUserId()
@@ -49,11 +39,10 @@ class CaloriesService {
       const userCaloriesDoc = await getDoc(userCaloriesRef)
 
       if (!userCaloriesDoc.exists()) {
-        // User doesn't exist in calories table, create empty structure
         const emptyCaloriesData = {
           userId: uid,
-          dailyGoal: 2000, // Default daily goal
-          entries: [], // Array of calorie entries
+          dailyGoal: 2000, 
+          entries: [], 
           createdAt: new Date(),
           updatedAt: new Date()
         }
@@ -70,19 +59,14 @@ class CaloriesService {
     }
   }
 
-  /**
-   * Get user's calorie data
-   */
   async getUserCalories(userId = null) {
     try {
       const uid = userId || this.getCurrentUserId()
       
-      // Ensure user exists in calories table
       const userData = await this.ensureUserCaloriesExist(uid)
       return userData
     } catch (error) {
       console.error('Error getting user calories:', error)
-      // Return empty data structure if error occurs
       return {
         userId: uid,
         dailyGoal: 2000,
@@ -93,30 +77,22 @@ class CaloriesService {
     }
   }
 
-  /**
-   * Add a calorie entry for the current user
-   */
   async addCalorieEntry(calories, note = '', date = null) {
     try {
       const uid = this.getCurrentUserId()
       const entryDate = date || new Date()
-      
-      // Get current user calories data
       const userCalories = await this.getUserCalories(uid)
       
-      // Create new entry
       const newEntry = {
-        id: Date.now().toString(), // Simple ID based on timestamp
+        id: Date.now().toString(), 
         calories: Number(calories),
         note: note.trim(),
         date: entryDate,
         createdAt: new Date()
       }
 
-      // Add entry to the entries array
       const updatedEntries = [...(userCalories.entries || []), newEntry]
       
-      // Update the document
       const userCaloriesRef = doc(db, this.caloriesCollection, uid)
       await updateDoc(userCaloriesRef, {
         entries: updatedEntries,
@@ -131,9 +107,6 @@ class CaloriesService {
     }
   }
 
-  /**
-   * Update user's daily calorie goal
-   */
   async updateDailyGoal(goal) {
     try {
       const uid = this.getCurrentUserId()
@@ -143,10 +116,8 @@ class CaloriesService {
         throw new Error('Daily goal must be between 800 and 5000 calories')
       }
 
-      // Ensure user exists first
       await this.ensureUserCaloriesExist(uid)
       
-      // Update daily goal
       const userCaloriesRef = doc(db, this.caloriesCollection, uid)
       await updateDoc(userCaloriesRef, {
         dailyGoal: Math.round(parsedGoal),
@@ -161,9 +132,6 @@ class CaloriesService {
     }
   }
 
-  /**
-   * Get today's total consumed calories
-   */
   getTodayConsumed(entries = []) {
     const today = new Date()
     const todayString = today.toDateString()
@@ -176,9 +144,6 @@ class CaloriesService {
       .reduce((total, entry) => total + (Number(entry.calories) || 0), 0)
   }
 
-  /**
-   * Get week series data for charts (last 7 days)
-   */
   getWeekSeries(entries = [], days = 7) {
     const today = new Date()
     const series = []
@@ -204,18 +169,13 @@ class CaloriesService {
     return series
   }
 
-  /**
-   * Delete a calorie entry
-   */
   async deleteCalorieEntry(entryId) {
     try {
       const uid = this.getCurrentUserId()
       const userCalories = await this.getUserCalories(uid)
       
-      // Filter out the entry to delete
       const updatedEntries = userCalories.entries.filter(entry => entry.id !== entryId)
       
-      // Update the document
       const userCaloriesRef = doc(db, this.caloriesCollection, uid)
       await updateDoc(userCaloriesRef, {
         entries: updatedEntries,
@@ -230,9 +190,6 @@ class CaloriesService {
     }
   }
 
-  /**
-   * Set up real-time listener for user's calorie data
-   */
   subscribeToUserCalories(callback, userId = null) {
     try {
       const uid = userId || this.getCurrentUserId()
@@ -242,7 +199,6 @@ class CaloriesService {
         if (doc.exists()) {
           callback(doc.data())
         } else {
-          // Document doesn't exist, create it and return empty data
           this.ensureUserCaloriesExist(uid).then(data => callback(data))
         }
       }, (error) => {
@@ -250,7 +206,6 @@ class CaloriesService {
         callback(null, error)
       })
 
-      // Store the unsubscribe function
       this.listeners.set(uid, unsubscribe)
       return unsubscribe
     } catch (error) {
@@ -259,9 +214,6 @@ class CaloriesService {
     }
   }
 
-  /**
-   * Clean up all listeners
-   */
   unsubscribeAll() {
     this.listeners.forEach((unsubscribe) => {
       if (typeof unsubscribe === 'function') {
@@ -271,9 +223,6 @@ class CaloriesService {
     this.listeners.clear()
   }
 
-  /**
-   * Clean up specific user listener
-   */
   unsubscribeUser(userId = null) {
     const uid = userId || this.getCurrentUserId()
     const unsubscribe = this.listeners.get(uid)
@@ -284,6 +233,5 @@ class CaloriesService {
   }
 }
 
-// Export singleton instance
 export const caloriesService = new CaloriesService()
 export default caloriesService

@@ -1,7 +1,6 @@
 <template>
   <div class="vault-page">
     <div class="container mt-4">
-      <!-- Header -->
       <div class="vault-header mb-4">
         <div class="row align-items-center">
           <div class="col-12">
@@ -11,7 +10,6 @@
         </div>
       </div>
 
-      <!-- Filters and Sorting -->
       <div class="filters-section mb-4">
         <div class="row g-3">
           <div class="col-md-6">
@@ -35,7 +33,6 @@
         </div>
       </div>
 
-      <!-- View Playlist Modal -->
       <div 
         v-if="showViewModal" 
         class="modal fade show d-block" 
@@ -143,7 +140,6 @@
                 </div>
               </div>
 
-              <!-- Comments Section -->
               <div class="comments-section mt-4">
                 <h6 class="mb-3">Reviews & Comments</h6>
                 <div v-if="workoutReviews.length === 0" class="text-center py-3">
@@ -156,7 +152,6 @@
                     class="review-item mb-3 p-3 border rounded"
                     :class="{ 'user-own-review': review.userId === currentUser?.id }"
                   >
-                    <!-- Reviewer Header -->
                     <div class="reviewer-header d-flex align-items-center gap-2 mb-2">
                       <div class="reviewer-avatar">
                         <div class="avatar-circle">
@@ -184,7 +179,6 @@
                       </div>
                     </div>
                     
-                    <!-- Review Content -->
                     <div class="review-content">
                       <p v-if="review.comment && review.comment.trim()" class="review-comment mb-0">
                         {{ review.comment }}
@@ -218,7 +212,6 @@
         </div>
       </div>
 
-      <!-- Rating Modal -->
       <div 
         v-if="showRatingModal" 
         class="modal fade show d-block" 
@@ -270,7 +263,6 @@
                 </span>
               </div>
 
-              <!-- Comment Section -->
               <div class="comment-section">
                 <label for="reviewComment" class="form-label u-muted">Share your thoughts (optional):</label>
                 <textarea
@@ -308,7 +300,6 @@
         </div>
       </div>
 
-      <!-- Thank You Modal -->
       <div 
         class="modal fade show d-block" 
         v-if="showThankYouModal" 
@@ -347,7 +338,6 @@
         </div>
       </div>
 
-      <!-- Update Confirmation Modal -->
       <div 
         v-if="showUpdateConfirmModal" 
         class="modal fade show d-block" 
@@ -397,7 +387,6 @@
         </div>
       </div>
 
-      <!-- Reviews Modal -->
       <div 
         v-if="showReviewsModal" 
         class="modal fade show d-block" 
@@ -419,7 +408,6 @@
             </div>
             
             <div class="modal-body">
-              <!-- Rating Summary -->
               <div class="rating-summary mb-4 p-3 border rounded">
                 <div class="row align-items-center">
                   <div class="col-md-4 text-center">
@@ -450,7 +438,6 @@
                 </div>
               </div>
 
-              <!-- Reviews List -->
               <div class="reviews-container">
                 <div v-if="workoutReviews.length === 0" class="no-reviews text-center py-4">
                   <h6 class="mt-3 text-muted">No reviews yet</h6>
@@ -463,7 +450,6 @@
                     class="review-item-modal mb-3 p-3 border rounded"
                     :class="{ 'user-own-review': review.userId === currentUser?.id }"
                   >
-                    <!-- Reviewer Header -->
                     <div class="reviewer-header d-flex align-items-center gap-2 mb-2">
                       <div class="reviewer-avatar">
                         <div class="avatar-circle">
@@ -491,7 +477,6 @@
                       </div>
                     </div>
                     
-                    <!-- Review Content -->
                     <div class="review-content">
                       <p v-if="review.comment && review.comment.trim()" class="review-comment mb-0">
                         {{ review.comment }}
@@ -525,7 +510,6 @@
         </div>
       </div>
 
-      <!-- Loading State -->
       <div v-if="loading" class="loading-section text-center py-5">
         <div class="spinner-border text-primary mb-3" role="status">
           <span class="visually-hidden">Loading...</span>
@@ -533,7 +517,6 @@
         <p>Loading workout sets...</p>
       </div>
 
-      <!-- Error State -->
       <div v-else-if="error" class="error-section text-center py-5">
         <div class="error-icon mb-3">
         </div>
@@ -542,7 +525,6 @@
         <button @click="loadWorkouts" class="btn btn-primary">Try Again</button>
       </div>
 
-      <!-- Empty State -->
       <div v-else-if="filteredWorkoutSets.length === 0" class="empty-state text-center py-5">
         <div class="empty-icon mb-3">
         </div>
@@ -551,7 +533,6 @@
         <p class="text-muted" v-else>No published workout sets available yet</p>
       </div>
 
-      <!-- Workout Sets Grid -->
       <div v-else class="workout-sets-grid">
         <div class="row g-4">
           <div 
@@ -560,12 +541,10 @@
             class="col-sm-6 col-lg-4 col-xl-3 vault-item"
           >
             <div class="workout-set-card u-card" @click="viewWorkoutSet(workoutSet)">
-              <!-- Media header (first exercise image if available) -->
               <div class="card-media" v-if="(workoutSet.exercises && workoutSet.exercises[0]?.gifUrl)" >
                 <img :src="workoutSet.exercises[0].gifUrl" :alt="workoutSet.name || 'Workout image'" loading="lazy" @error="handleImageError">
                 <div class="media-gradient"></div>
               </div>
-              <!-- Card Header -->
               <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="workout-title mb-0">{{ workoutSet.name || workoutSet.title || 'Unnamed Workout' }}</h5>
                 <div class="exercise-count u-muted text-end">
@@ -573,7 +552,6 @@
                 </div>
               </div>
 
-              <!-- Card Body -->
               <div class="card-body d-flex flex-column justify-content-start">
                 
                 <p class="workout-description mb-3 u-muted">{{ truncateText(workoutSet.description, 100) }}</p>
@@ -607,7 +585,6 @@
                 
               </div>
 
-              <!-- Card Footer -->
               <div class="card-footer d-flex gap-2">
                 <button 
                   v-if="!isOwner(workoutSet)"
@@ -647,7 +624,6 @@ import { formatDuration } from '@/types/workout.js'
 
 const router = useRouter()
 
-// Reactive data
 const workoutSets = ref([])
 const loading = ref(false)
 const error = ref('')
@@ -672,7 +648,6 @@ const showReviewsModal = ref(false)
 const selectedWorkoutForReviews = ref(null)
 const userHasReviewedSelected = ref(false)
 
-// Computed properties
 const currentUser = computed(() => {
   const user = auth.currentUser
   if (user) {
@@ -687,13 +662,10 @@ const currentUser = computed(() => {
 
 const hasUserReviewed = computed(() => {
   if (!currentUser.value) return false
-  
-  // For reviews modal, use the dedicated reactive variable that checks the database
   if (selectedWorkoutForReviews.value) {
     return userHasReviewedSelected.value
   }
   
-  // For view modal context, check the loaded reviews
   if (viewingPlaylist.value) {
     return workoutReviews.value.some(review => review.userId === currentUser.value.id)
   }
@@ -704,10 +676,9 @@ const hasUserReviewed = computed(() => {
 
 
 const viewWorkoutSet = async (workoutSet) => {
-  // Convert workoutSet to playlist format for the modal
   const playlist = {
     ...workoutSet,
-    id: workoutSet.id, // Ensure ID is preserved
+    id: workoutSet.id,
     name: workoutSet.name || workoutSet.title || 'Unnamed Workout',
     exercises: workoutSet.exercises || [],
     muscleGroups: workoutSet.muscleGroups || [],
@@ -722,7 +693,6 @@ const viewWorkoutSet = async (workoutSet) => {
   hoverRating.value = 0
   showViewModal.value = true
   
-  // Load reviews for this workout
   await loadWorkoutReviews(workoutSet.id)
 }
 
@@ -739,12 +709,10 @@ const openReviewsModal = async (workoutSet) => {
   selectedWorkoutForReviews.value = workoutSet
   showReviewsModal.value = true
   
-  // Load reviews for this workout
   try {
     workoutReviews.value = await workoutVaultService.getWorkoutReviews(workoutSet.id)
     console.log(`Loaded ${workoutReviews.value.length} reviews for workout:`, workoutSet.name)
     
-    // Check if current user has already reviewed this workout
     if (currentUser.value) {
       const userReview = await workoutVaultService.getUserReviewForWorkout(
         workoutSet.id, 
@@ -773,7 +741,6 @@ const getInitials = (name) => {
 const formatDate = (timestamp) => {
   if (!timestamp) return 'Unknown date'
   
-  // Handle Firebase timestamp
   const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
@@ -784,21 +751,16 @@ const formatDate = (timestamp) => {
 
 const formatWorkoutDuration = (workoutSet) => {
   let totalMinutes = 0;
-  
-  // Calculate duration from exercises using 5 minutes per set rule
   if (workoutSet.exercises && workoutSet.exercises.length > 0) {
     totalMinutes = workoutSet.exercises.reduce((total, exercise) => {
-      const sets = exercise.sets || 3; // Default to 3 sets
-      return total + (sets * 5); // 5 minutes per set
+      const sets = exercise.sets || 3;
+      return total + (sets * 5);
     }, 0);
   } else if (workoutSet.estimatedDuration || workoutSet.totalDuration) {
-    // Use stored duration as fallback
     totalMinutes = workoutSet.estimatedDuration || workoutSet.totalDuration;
   }
   
-  // If we still have 0 and there are exercises, use a basic fallback
   if (totalMinutes === 0 && workoutSet.exercises && workoutSet.exercises.length > 0) {
-    // Each exercise gets 3 sets by default = 15 minutes per exercise
     totalMinutes = workoutSet.exercises.length * 3 * 5;
   }
   
@@ -806,31 +768,25 @@ const formatWorkoutDuration = (workoutSet) => {
 }
 
 const openRatingModalFromReviews = async () => {
-  // Close reviews modal and open rating modal with the selected workout
   showReviewsModal.value = false
   
-  // Set the viewing playlist to the selected workout
   viewingPlaylist.value = selectedWorkoutForReviews.value
   
-  // Open the rating modal
   await openRatingModal()
 }
 const openRatingModal = async () => { 
   try {
-    // Check if user has already reviewed this workout
     existingUserReview.value = await workoutVaultService.getUserReviewForWorkout(
       viewingPlaylist.value.id, 
       currentUser.value.id
     )
     
     if (existingUserReview.value) {
-      // User has already reviewed, show update confirmation modal
       isUpdatingReview.value = true
       userRating.value = existingUserReview.value.rating
       userComment.value = existingUserReview.value.comment || ''
       showUpdateConfirmModal.value = true
     } else {
-      // New review
       isUpdatingReview.value = false
       userRating.value = 0
       userComment.value = ''
@@ -839,7 +795,6 @@ const openRatingModal = async () => {
     }
   } catch (error) {
     console.error('Error checking existing review:', error)
-    // If there's an error checking, proceed as if it's a new review
     isUpdatingReview.value = false
     userRating.value = 0
     userComment.value = ''
@@ -884,35 +839,29 @@ const submitRating = async () => {
   submittingRating.value = true
   
   try {
-    // Add/update the review using the vault service
     const result = await workoutVaultService.addReview(
       viewingPlaylist.value.id, 
       currentUser.value.id,
       currentUser.value.name,
       userRating.value,
-      userComment.value || '' // Include the comment
+      userComment.value || ''
     )
     
-    // Refresh the workout data from Firebase to get the updated rating statistics
     const updatedWorkoutData = await workoutVaultService.getWorkoutById(viewingPlaylist.value.id)
     
-    // Update the local data with the fresh data from Firebase
     const updatedWorkout = workoutSets.value.find(w => w.id === viewingPlaylist.value.id)
     if (updatedWorkout && updatedWorkoutData) {
       updatedWorkout.reviewsCount = updatedWorkoutData.reviewsCount
       updatedWorkout.totalRating = updatedWorkoutData.totalRating
       updatedWorkout.avgRating = updatedWorkoutData.avgRating
       
-      // Update the viewing playlist as well
       viewingPlaylist.value.reviewsCount = updatedWorkoutData.reviewsCount
       viewingPlaylist.value.totalRating = updatedWorkoutData.totalRating
       viewingPlaylist.value.avgRating = updatedWorkoutData.avgRating
     }
     
-    // Refresh the reviews list to show the new/updated review
     await loadWorkoutReviews(viewingPlaylist.value.id)
     
-    // Close modals and show appropriate thank you message
     showViewModal.value = false
     showRatingModal.value = false
     userRating.value = 0
@@ -929,7 +878,6 @@ const submitRating = async () => {
 }
 
 const editWorkout = (workoutSet) => {
-  // Navigate to workout-sets page for editing with the workout ID
   router.push({
     path: '/workout-sets',
     query: { 
@@ -946,7 +894,6 @@ const handleImageError = (event) => {
 const filteredWorkoutSets = computed(() => {
   let filtered = [...workoutSets.value]
 
-  // Apply search filter - search by title only
   if (searchQuery.value.trim()) {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(set => {
@@ -958,7 +905,6 @@ const filteredWorkoutSets = computed(() => {
   return filtered
 })
 
-// Methods
 const loadWorkouts = async () => {
   loading.value = true
   error.value = ''
@@ -987,7 +933,6 @@ const setupRealtimeListener = () => {
 const handleSearch = () => {
   clearTimeout(searchTimeout.value)
   searchTimeout.value = setTimeout(() => {
-    // Search is done client-side for now
   }, 300)
 }
 
@@ -996,17 +941,14 @@ const isOwner = (workoutSet) => {
 }
 
 const getUserName = (workoutSet) => {
-  // Try to get user name from workout data
   return workoutSet.authorDisplayName  
 }
 
-// Utility functions
 const formatRating = (workoutSet) => {
   if (!workoutSet || !workoutSet.reviewsCount || workoutSet.reviewsCount === 0) {
     return 'No ratings'
   }
   
-  // Use the avgRating that Firebase calculates for us, rounded up to whole number
   const avgRating = Math.ceil(workoutSet.avgRating || 0)
   return `${avgRating}/5 (${workoutSet.reviewsCount} review${workoutSet.reviewsCount !== 1 ? 's' : ''})`
 }
@@ -1017,7 +959,6 @@ const truncateText = (text, maxLength) => {
   return text.substring(0, maxLength) + '...'
 }
 
-// Watch for sort changes
 watch(() => sortBy.value, () => {
   if (unsubscribe.value) {
     unsubscribe.value()
@@ -1025,7 +966,6 @@ watch(() => sortBy.value, () => {
   setupRealtimeListener()
 })
 
-// Format functions to clean up and capitalize text
 const formatTarget = (target) => {
   if (!target) return 'Full Body'
   if (Array.isArray(target)) {
@@ -1067,7 +1007,6 @@ const capitalizeFirstLetter = (text) => {
     .join(' ')
 }
 
-// Lifecycle
 onMounted(() => {
   loadWorkouts()
   setupRealtimeListener()
@@ -1112,14 +1051,11 @@ onUnmounted(() => {
   box-shadow: 0 8px 25px rgba(0,0,0,0.15);
 }
 
-/* Media header */
 .card-media { position: relative; height: 160px; overflow: hidden; border-radius: 12px 12px 0 0; }
 .card-media img { width: 100%; height: 100%; object-fit: cover; display: block; filter: brightness(.9); transition: transform .35s ease, filter .35s ease; }
 .workout-set-card:hover .card-media img { transform: scale(1.05); filter: brightness(1); }
 .media-gradient { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.0), rgba(0,0,0,0.35)); }
-/* Removed quick action overlay buttons over media */
 
-/* Staggered reveal */
 .vault-item { animation: vault-fade-up .5s ease both; }
 .vault-item:nth-child(1) { animation-delay: .02s; }
 .vault-item:nth-child(2) { animation-delay: .06s; }
@@ -1146,20 +1082,20 @@ onUnmounted(() => {
 .star-display {
   width: 16px;
   height: 16px;
-  opacity: 0.3; /* Unfilled stars are dim */
-  filter: grayscale(100%); /* Gray out unfilled stars */
+  opacity: 0.3;
+  filter: grayscale(100%);
   transition: all 0.2s ease;
 }
 
 .star-display.star-filled {
-  opacity: 1; /* Filled stars are fully visible */
-  filter: grayscale(0%) hue-rotate(20deg) saturate(1.5); /* Make filled stars yellow */
+  opacity: 1;
+  filter: grayscale(0%) hue-rotate(20deg) saturate(1.5);
 }
 
 .rating-text {
   font-size: 0.8rem;
   margin-left: 0.25rem;
-  color: white !important; /* Make rating text white and visible */
+  color: white !important;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1168,7 +1104,6 @@ onUnmounted(() => {
 .card-body {
   padding: 1rem;
   flex-grow: 1;
-  /* Remove conflicting flex properties - let Bootstrap handle them */
 }
 
 .workout-title {
@@ -1202,7 +1137,7 @@ onUnmounted(() => {
 
 .workout-stats {
   display: flex;
-  flex-direction: column; /* stack rating and duration vertically */
+  flex-direction: column;
   align-items: flex-start;
   gap: 0.35rem;
   font-size: 0.8rem;
@@ -1222,10 +1157,7 @@ onUnmounted(() => {
   padding: 1rem;
   border-top: 1px solid var(--border-subtle);
   border-radius: 0 0 12px 12px;
-  /* Remove conflicting flex properties - let Bootstrap handle them */
 }
-
-/* Remove conflicting button styles - let Bootstrap handle them */
 
 .loading-section, .error-section, .empty-state {
   min-height: 400px;
@@ -1235,7 +1167,6 @@ onUnmounted(() => {
   align-items: center;
 }
 
-/* Modal specific styles */
 .stars-rating-container {
   display: flex;
   justify-content: center;
@@ -1342,7 +1273,6 @@ onUnmounted(() => {
   border-top: black !important;
 }
 
-/* Comments Section Styles */
 .comments-section {
   border-top: 1px solid var(--border-subtle);
   padding-top: 1rem;
@@ -1376,7 +1306,7 @@ onUnmounted(() => {
 }
 
 .reviewer-name {
-  color: white !important; /* Make reviewer name bright white */
+  color: white !important;
   font-size: 0.95rem;
 }
 
@@ -1391,13 +1321,12 @@ onUnmounted(() => {
 }
 
 .review-comment {
-  color: white !important; /* Make review text bright white */
+  color: white !important;
   font-size: 0.9rem;
   line-height: 1.4;
   margin-top: 0.5rem;
 }
 
-/* Comment form styles */
 .comment-section textarea {
   background: var(--surface-subtle);
   border: 1px solid var(--border-subtle);
@@ -1416,7 +1345,6 @@ onUnmounted(() => {
   color: rgba(255, 255, 255, 0.5);
 }
 
-/* Reviews Modal Styles */
 .rating-summary {
   background: var(--surface-subtle);
   border: 1px solid var(--border-subtle) !important;
@@ -1425,7 +1353,7 @@ onUnmounted(() => {
 .overall-rating .rating-number {
   font-size: 3rem;
   font-weight: bold;
-  color: #ffc107 !important; /* Force yellow color for rating number */
+  color: #ffc107 !important;
 }
 
 .rating-stars-large {
@@ -1439,18 +1367,18 @@ onUnmounted(() => {
   width: 24px;
   height: 24px;
   margin-right: 3px;
-  opacity: 0.3; /* Unfilled stars are dim */
-  filter: grayscale(100%); /* Gray out unfilled stars */
+  opacity: 0.3;
+  filter: grayscale(100%);
   transition: all 0.2s ease;
 }
 
 .star-display-large.star-filled {
-  opacity: 1; /* Filled stars are fully visible */
-  filter: grayscale(0%) hue-rotate(20deg) saturate(1.5); /* Make filled stars yellow */
+  opacity: 1;
+  filter: grayscale(0%) hue-rotate(20deg) saturate(1.5);
 }
 
 .rating-text {
-  color: white !important; /* Make rating text bright white */
+  color: white !important;
   font-size: 0.9rem;
 }
 
@@ -1509,7 +1437,7 @@ onUnmounted(() => {
 }
 
 .reviewer-name {
-  color: white !important; /* Make reviewer name bright white */
+  color: white !important;
   font-size: 1rem;
   margin: 0;
 }
@@ -1518,7 +1446,6 @@ onUnmounted(() => {
   align-items: center;
 }
 
-/* Make dates white in review sections */
 .review-meta .text-muted,
 .reviewer-details .text-muted,
 .review-comment.text-muted {
@@ -1536,11 +1463,11 @@ onUnmounted(() => {
 }
 
 .review-content {
-  margin-left: 48px; /* Align with reviewer details */
+  margin-left: 48px;
 }
 
 .review-comment {
-  color: white !important; /* Make review text bright white */
+  color: white !important;
   font-size: 0.95rem;
   line-height: 1.5;
   margin: 0;
@@ -1554,7 +1481,6 @@ onUnmounted(() => {
   font-style: italic;
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
   .page-title {
     font-size: 2rem;
@@ -1569,7 +1495,6 @@ onUnmounted(() => {
   }
 }
 
-/* Exercise Badge Styling - Matching Exercise Detail */
 .exercise-badges {
   margin-bottom: 1rem;
 }
@@ -1598,7 +1523,6 @@ onUnmounted(() => {
   background-color: #495057 !important;
 }
 
-/* Nuanced charcoal pill theme for badges with color-coded dots */
 .exercise-badges .badge {
   position: relative;
   background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
@@ -1607,11 +1531,11 @@ onUnmounted(() => {
   border-radius: 12px;
   font-weight: 600;
   letter-spacing: 0.01em;
-  padding: 0.25rem 0.6rem 0.25rem 1.2rem; /* extra space between dot and text */
-  width: auto; /* let content decide */
+  padding: 0.25rem 0.6rem 0.25rem 1.2rem;
+  width: auto;
   max-width: 100%;
-  justify-self: start; /* prevent grid stretch */
-  white-space: nowrap; /* single line */
+  justify-self: start;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.25);

@@ -1,6 +1,4 @@
-// JavaScript interfaces and utility functions for Workout Sets and Vault Posts
 
-// Helper type guards
 export const isCreatedWorkoutSet = (set) => {
   return set.origin === 'created';
 };
@@ -15,15 +13,13 @@ export const canPublish = (set, currentUid) => {
          !set.isPublished;
 };
 
-// Utility functions
 export const calculateWorkoutDuration = (exercises) => {
   return exercises.reduce((total, exercise) => {
     const sets = exercise.sets || 3;
-    return total + (sets * 5); // 5 minutes per set
+    return total + (sets * 5); 
   }, 0);
 };
 
-// Format duration as "Xh Ym" or "Ym"
 export const formatDuration = (totalMinutes) => {
   if (!totalMinutes || isNaN(totalMinutes)) return '0m';
   

@@ -3,7 +3,6 @@
 
     
 
-    <!-- Weekly Meal Plan (generated from Spoonacular) -->
      <div v-if="error" class="alert alert-danger mt-3">{{ error }}</div>
 
     <h1>AI Diet Planner</h1>
@@ -45,7 +44,6 @@
 
     <div v-else style="color: var(--muted);">No recipes yet. Enter prompt and click search.</div>
 
-    <!-- Recipe Details Modal -->
     <div v-if="showModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
       <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
@@ -61,21 +59,17 @@
               <p class="mt-2">Loading recipe details...</p>
             </div>
             <div v-else-if="selectedRecipe">
-              <!-- Recipe Image -->
               <img :src="selectedRecipe.image" :alt="selectedRecipe.title" class="img-fluid rounded mb-3" style="width: 100%; max-height: 300px; object-fit: cover;">
               
-              <!-- Recipe Summary -->
               <div v-if="selectedRecipe.summary" class="mb-3">
                 <h5><b><u>Summary</u></b></h5>
                 <div v-html="selectedRecipe.summary"></div>
               </div>
 
-              <!-- Recipe Summary -->
               <div class="row mb-3">
                 
 
                 <div class="col-4">
-                  <!-- Ingredients -->
                   <div v-if="selectedRecipe.extendedIngredients?.length" class="mb-3">
                     <h5><b><u>Ingredients</u></b></h5>
                     <ul class="list-unstyled">
@@ -156,8 +150,6 @@
       </div>
 
       <div v-else-if="mealIdeasError" class="alert alert-danger">{{ mealIdeasError }}</div>
-
-      <!-- Render up to 4 meal idea cards. Prefer `recipes` (search results) when available, otherwise fall back to fetched meal ideas -->
       <div class="row g-3">
           <div v-for="(meal, i) in mealIdeaCards" :key="meal.id || i" class="col-6 col-lg-3">
           <div class="card h-100">
@@ -203,30 +195,23 @@ export default {
     const geminiError = ref('')
     const suggestedIngredients = ref([])
     
-  // Meal ideas state (Spoonacular)
   const mealIdeas = ref([])
   const mealIdeasLoading = ref(false)
   const mealIdeasError = ref('')
 
     const getMealImage = (meal) => {
-      // Prefer meal.image. If it's already a full URL, use it.
-      // Otherwise build the Spoonacular image host URL using the filename returned in `image`.
       if (!meal) return '/images/recipe-placeholder.png'
       if (meal.image) {
         if (/^https?:\/\//i.test(meal.image)) return meal.image
-        // Build URL: https://img.spoonacular.com/recipes/{image}
         return `https://img.spoonacular.com/recipes/${meal.image}`
       }
 
-      // Fallback to legacy pattern by id if no image filename provided
       const imageType = meal.imageType || 'jpg'
       if (meal.id) return `https://spoonacular.com/recipeImages/${meal.id}-312x231.${imageType}`
       return '/images/recipe-placeholder.png'
     }
 
     const capitalize = (s) => s ? (s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()) : s
-
-    // Deduplicate meal suggestions to avoid repeated items across days
     const dedupeMeals = (list) => {
       const seen = new Set()
       const unique = []
@@ -311,114 +296,16 @@ export default {
       fetchMealIdeas()
     })
     
-    // =============================================================================
-    // HARDCODED DATA FOR DEVELOPMENT/CSS STYLING
-    // =============================================================================
-    // TO SWITCH TO API CALLS:
-    // 1. Change this to: const recipes = ref([])
-    // 2. Uncomment the API code in searchRecipes() function below
-    // 3. Uncomment the API code in viewRecipeDetails() function below
-    
-    // API Call 
     const recipes = ref([])
     const selectedRecipe = ref(null)
 
-  // =============================================================================
-  // Sample data removed — using live API calls by default
-  // =============================================================================
     
     const error = ref('')
     
-    // Modal state
     const showModal = ref(false)
-    
-    // Hardcoded detailed recipe data for modal
-    // const selectedRecipe = ref({
-    //   id: 631807,
-    //   title: "Toasted Agnolotti (or Ravioli)",
-    //   image: "https://img.spoonacular.com/recipes/631807-556x370.jpg",
-    //   readyInMinutes: 45,
-    //   servings: 2,
-    //   healthScore: 61,
-    //   vegetarian: false,
-    //   vegan: false,
-    //   glutenFree: false,
-    //   dairyFree: true,
-    //   summary: "Toasted Agnolotti (or Ravioli) requires around <b>45 minutes</b> from start to finish. This recipe serves 2 and costs $1.95 per serving. This main course has <b>965 calories</b>, <b>41g of protein</b>, and <b>28g of fat</b> per serving.",
-    //   extendedIngredients: [
-    //     {
-    //       id: 93832,
-    //       name: "pre-made agnolotti/ravioli",
-    //       amount: 13.0,
-    //       unit: "oz"
-    //     },
-    //     {
-    //       id: 1123,
-    //       name: "egg",
-    //       amount: 1.0,
-    //       unit: ""
-    //     },
-    //     {
-    //       id: 18079,
-    //       name: "breadcrumbs",
-    //       amount: 1.5,
-    //       unit: "cup"
-    //     }
-    //   ],
-    //   analyzedInstructions: [
-    //     {
-    //       steps: [
-    //         {
-    //           number: 1,
-    //           step: "Preheat oven to 180 degrees Celsius (350 F) for a fan-forced oven or 200 degrees Celsius (392 F) for a convection oven."
-    //         },
-    //         {
-    //           number: 2,
-    //           step: "Line a baking tray with baking paper."
-    //         },
-    //         {
-    //           number: 3,
-    //           step: "Spray a thin layer of olive oil on the baking paper. Set aside."
-    //         },
-    //         {
-    //           number: 4,
-    //           step: "Crack and beat an egg on a plate. On a separate plate add breadcrumbs."
-    //         },
-    //         {
-    //           number: 5,
-    //           step: "Dip agnolotti in the beaten egg first, then coat it with breadcrumbs."
-    //         },
-    //         {
-    //           number: 6,
-    //           step: "Place the crumbed agnolotti onto a baking tray and spray another thin layer of oil over them."
-    //         },
-    //         {
-    //           number: 7,
-    //           step: "Bake the crumbed agnolotti for 25 minutes or until golden brown."
-    //         },
-    //         {
-    //           number: 8,
-    //           step: "Serve immediately with pasta sauce or ketchup."
-    //         }
-    //       ]
-    //     }
-    //   ],
-    //   nutrition: {
-    //     nutrients: [
-    //       { name: "Calories", amount: 965, unit: "kcal" },
-    //       { name: "Protein", amount: 41, unit: "g" },
-    //       { name: "Fat", amount: 28, unit: "g" },
-    //       { name: "Carbohydrates", amount: 142, unit: "g" },
-    //       { name: "Fiber", amount: 8, unit: "g" },
-    //       { name: "Sugar", amount: 12, unit: "g" }
-    //     ]
-    //   },
-    //   sourceUrl: "https://www.foodista.com/recipe/HR6QS422/toasted-agnolotti-or-ravioli"
-    // })
     
     const loadingRecipe = ref(false)
 
-    // Compute macro grams and calories for selected recipe (per serving)
     const macroTotals = computed(() => {
       const r = selectedRecipe.value
       if (!r || !r.nutrition || !Array.isArray(r.nutrition.nutrients)) return null
@@ -441,40 +328,27 @@ export default {
       }
     })
 
-    // Flatten all meals from mealIdeas into a single array for simplified display
     const mealIdeasList = computed(() => {
-      // mealIdeas is an array of { day, meals } (or suggestions)
       const flat = mealIdeas.value.flatMap(d => (d.meals && Array.isArray(d.meals)) ? d.meals : [])
       return dedupeMeals(flat)
     })
 
     const mealIdeasTotal = computed(() => mealIdeasList.value.length)
 
-    // Up to 4 cards for meal ideas — always use curated meal ideas, even after search
     const mealIdeaCards = computed(() => {
       return mealIdeasList.value.slice(0, 4)
     })
 
     const searchRecipes = async (ingredientList) => {
-      // =============================================================================
-      // NOTE: Recipe data is currently HARDCODED above for CSS styling/development
-      // The recipes.ref([...]) contains 6 sample recipes that display immediately
-      // =============================================================================
-      
-      // =============================================================================
-      // API CALL VERSION (uncomment this section to use real backend API)
-      // =============================================================================
       
       error.value = ''
       recipes.value = []
 
-      // Determine source of ingredients: parameter (from suggestAndSearch) or ingredients ref (from manual input)
       const ingredientSource = ingredientList || ingredients.value
       if (!ingredientSource || !ingredientSource.trim()) {
         error.value = 'Please enter at least one ingredient or use the "Suggest ingredients & Search" button.'
         return
       }
-      // set the canonical ingredients value for downstream enrichment
       ingredients.value = ingredientSource
 
       try {
@@ -483,7 +357,6 @@ export default {
           params: {
             ingredients: ingredients.value,
             number: number.value
-            // API key is handled by the backend via environment variable
           }
         })
         console.log('Frontend received response:', resp)
@@ -491,7 +364,6 @@ export default {
         console.log('Number of recipes:', resp.data?.length)
         recipes.value = resp.data
 
-        // Enrich search results with readyInMinutes via Spoonacular bulk info (if API key is configured)
         try {
           const apiKey = import.meta.env.VITE_SPOONACULAR_API_KEY
           const ids = (recipes.value || []).map(r => r.id).filter(Boolean)
@@ -506,7 +378,6 @@ export default {
             })
           }
         } catch (e) {
-          // Non-fatal: keep showing results without time if the enrichment fails
           console.warn('Could not enrich recipes with readyInMinutes:', e?.message || e)
         }
       } catch (err) {
@@ -517,16 +388,6 @@ export default {
     }
 
     const viewRecipeDetails = async (recipeId) => {
-      // =============================================================================
-      // HARDCODED DATA VERSION (for CSS styling/development)
-      // =============================================================================
-      // Using fake data - modal opens instantly with hardcoded recipe details
-      // (uncomment this) showModal.value = true
-      // selectedRecipe.value already contains hardcoded detailed recipe data from above
-      
-      // =============================================================================
-      // API CALL VERSION (uncomment this section to use real Spoonacular API)
-      // =============================================================================
       
       try {
         loadingRecipe.value = true
@@ -562,13 +423,11 @@ export default {
 
       geminiLoading.value = true
       try {
-        // Build a clear prompt for the LLM to return a short list of ingredients
         const promptText = `You are a helpful assistant. Given the user's request: "${userPrompt.value.trim()}". Reply with a short, comma-separated list of ingredients (no extra explanation). Example: "chickpeas, oats, almond milk".`
 
         const resp = await axios.post('http://18.139.200.231:3000/api/gemini/generate', { prompt: promptText })
         const resultText = resp?.data?.result || resp?.data || ''
 
-        // Try to parse the returned text into ingredients
         const parsed = parseIngredients(resultText)
         if (!parsed || parsed.length === 0) {
           geminiError.value = 'Could not parse ingredient suggestions. Please refine your prompt or enter ingredients manually.'
@@ -576,9 +435,7 @@ export default {
           return
         }
 
-        // Use parsed ingredients (comma separated)
         suggestedIngredients.value = parsed.join(', ')
-        // Trigger search with suggested ingredients
         await searchRecipes(suggestedIngredients.value)
       } catch (err) {
         console.error('Gemini error:', err)
@@ -590,23 +447,18 @@ export default {
 
     const parseIngredients = (text) => {
       if (!text) return []
-      // If it's JSON array, try parsing
       try {
         const maybe = JSON.parse(text)
         if (Array.isArray(maybe)) return maybe.map(i => String(i).trim()).filter(Boolean)
       } catch (e) {
-        // not JSON
       }
 
-      // Remove surrounding text and look for bracketed lists
       const listMatch = text.match(/\[([^\]]+)\]/)
       if (listMatch && listMatch[1]) {
         return listMatch[1].split(/,|\n/).map(s => s.trim()).filter(Boolean)
       }
 
-      // Otherwise split by commas or newlines. Also strip numbering and extra words.
       const parts = text.split(/,|\n|;| and /i).map(s => s.replace(/^[0-9]+\.|^[\-\*]\s*/,'').trim()).filter(Boolean)
-      // Clean tokens: remove any parenthetical notes
       const cleaned = parts.map(p => p.replace(/\(.*?\)/g, '').trim()).filter(Boolean)
       return cleaned
     }
@@ -668,7 +520,7 @@ export default {
 .meal-ideas {
   max-height: 850px;
   overflow-y: auto;
-  padding-right: 8px; /* avoid scrollbar overlapping content */
+  padding-right: 8px;
 }
 
 .meal-ideas .meal-card .card-body {
@@ -679,12 +531,10 @@ export default {
   min-height: 120px;
 }
 
-/* Prevent horizontal scroll originating from the Meal Ideas block */
 .meal-ideas {
-  overflow-x: hidden; /* disallow horizontal scroll */
+  overflow-x: hidden;
 }
 
-/* Ensure row/columns and cards don't force overflow */
 .meal-ideas .row {
   margin-left: 0;
   margin-right: 0;
@@ -693,7 +543,7 @@ export default {
 .meal-ideas .card,
 .meal-ideas .meal-card,
 .meal-ideas .placeholder-card {
-  min-width: 0; /* allow columns to shrink correctly in flex layout */
+  min-width: 0;
 }
 
 .meal-ideas img.card-img-top {
@@ -708,20 +558,17 @@ export default {
   overflow-wrap: break-word;
 }
 
-/* Ensure cards use the subtle surface background for consistency */
 .card.h-100,
 .meal-ideas .card,
 .meal-card {
   background-color: var(--surface-subtle) !important;
 }
 
-/* Placeholder styling (uses subtle background and dashed border) */
 .placeholder-card {
   background-color: var(--surface-subtle);
   border: 1px dashed var(--border-subtle);
 }
 
-/* Card pop-up on hover/focus for meal ideas and search result cards */
 .card.h-100,
 .meal-ideas .card,
 .meal-ideas .meal-card,
@@ -741,14 +588,12 @@ export default {
   }
 }
 
-/* Provide accessible focus outline when keyboard navigating */
 .card.h-100:focus-within,
 .meal-ideas .card:focus-within {
   outline: 3px solid rgba(100, 149, 237, 0.15);
   outline-offset: 4px;
 }
 
-/* Modal Styles */
 .modal.fade.show.d-block {
   z-index: 9999;
   position: fixed;
@@ -806,7 +651,6 @@ export default {
   height: 3rem;
 }
 
-/* Remove modal header and footer borders */
 .modal-header {
   border-bottom: none !important;
 }
@@ -815,7 +659,6 @@ export default {
   border-top: none !important;
 }
 
-/* Center button text properly */
 .u-btn {
   display: block;
 }
@@ -826,21 +669,18 @@ export default {
   width: 100%;
 }
 
-/* Make card action buttons stretch full width of the card body */
 .card .card-body .u-btn {
   display: block;
   width: 100%;
   text-align: center;
 }
 
-/* Ensure u-special-btn behaves the same and centers text */
 .card .card-body .u-special-btn {
   display: block;
   width: 100%;
   text-align: center;
 }
 
-/* Search form layout: keep controls on one row; shrink inputs if needed */
 .search-form {
   display: flex;
   flex-wrap: nowrap;
@@ -849,37 +689,35 @@ export default {
 }
 .search-input-wrap {
   flex: 1 1 auto;
-  min-width: 0; /* allow input to shrink on small screens */
+  min-width: 0;
 }
 .search-input-wrap .form-control {
   width: 100%;
 }
 .number-input-wrap {
-  flex: 0 0 60px; /* fixed width per request */
+  flex: 0 0 60px;
   max-width: 60px;
 }
 .number-input-wrap .form-control {
   width: 100%;
 }
 .search-button-wrap {
-  flex: 0 0 auto; /* button stays visible, no shrinking beyond content */
+  flex: 0 0 auto;
 }
 
-/* Dark-theme the number input spinner and ensure compact width */
 .search-form input[type="number"] {
-  color-scheme: dark; /* use dark UI controls (affects spinner) where supported */
+  color-scheme: dark;
 }
 .search-form input[type="number"]::-webkit-inner-spin-button,
 .search-form input[type="number"]::-webkit-outer-spin-button {
-  filter: brightness(0.7); /* darken spinner arrows in WebKit */
+  filter: brightness(0.7);
 }
 
-/* On small screens, avoid inner scrollbars for the cards section; let the page scroll instead */
 @media (max-width: 768px) {
   .meal-ideas {
     max-height: none;
     overflow-y: visible;
-    padding-right: 0; /* remove extra padding that accounted for scrollbar */
+    padding-right: 0;
   }
 }
 </style>

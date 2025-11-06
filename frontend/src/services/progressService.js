@@ -1,11 +1,10 @@
-// User Progress Tracking Service
+
 class ProgressService {
   constructor() {
     this.storageKey = 'fitu_workout_progress'
     this.initializeProgress()
   }
 
-  // Initialize progress data structure
   initializeProgress() {
     if (!this.getProgress()) {
       const initialProgress = {
@@ -24,7 +23,6 @@ class ProgressService {
     }
   }
 
-  // Get all progress data
   getProgress() {
     try {
       const progress = localStorage.getItem(this.storageKey)
@@ -35,7 +33,6 @@ class ProgressService {
     }
   }
 
-  // Save progress data
   saveProgress(progress) {
     try {
       localStorage.setItem(this.storageKey, JSON.stringify(progress))
@@ -44,7 +41,6 @@ class ProgressService {
     }
   }
 
-  // Mark workout as completed
   completeWorkout(workoutId, workoutData) {
     const progress = this.getProgress()
     if (!progress) return
@@ -59,18 +55,15 @@ class ProgressService {
       notes: workoutData.notes || ''
     }
 
-    // Update stats
     progress.stats.totalWorkoutsCompleted++
     progress.stats.lastWorkoutDate = new Date().toISOString()
     
-    // Update streak
     this.updateStreak(progress)
 
     this.saveProgress(progress)
     return workoutKey
   }
 
-  // Mark exercise as completed
   completeExercise(exerciseId, exerciseData) {
     const progress = this.getProgress()
     if (!progress) return
@@ -87,14 +80,12 @@ class ProgressService {
       notes: exerciseData.notes || ''
     }
 
-    // Update stats
     progress.stats.totalExercisesCompleted++
 
     this.saveProgress(progress)
     return exerciseKey
   }
 
-  // Update workout streak
   updateStreak(progress) {
     const today = new Date()
     const lastWorkoutDate = progress.stats.lastWorkoutDate ? new Date(progress.stats.lastWorkoutDate) : null
@@ -107,18 +98,14 @@ class ProgressService {
     const daysDiff = Math.floor((today - lastWorkoutDate) / (1000 * 60 * 60 * 24))
     
     if (daysDiff === 0) {
-      // Same day, don't change streak
       return
     } else if (daysDiff === 1) {
-      // Consecutive day, increment streak
       progress.stats.streak++
     } else {
-      // Streak broken, reset to 1
       progress.stats.streak = 1
     }
   }
 
-  // Get workout history
   getWorkoutHistory(limit = 10) {
     const progress = this.getProgress()
     if (!progress) return []
@@ -128,7 +115,6 @@ class ProgressService {
       .slice(0, limit)
   }
 
-  // Get exercise history
   getExerciseHistory(exerciseId, limit = 10) {
     const progress = this.getProgress()
     if (!progress) return []
@@ -139,13 +125,11 @@ class ProgressService {
       .slice(0, limit)
   }
 
-  // Get user stats
   getUserStats() {
     const progress = this.getProgress()
     return progress ? progress.stats : null
   }
 
-  // Add favorite workout
   addFavoriteWorkout(workoutId) {
     const progress = this.getProgress()
     if (!progress) return
@@ -156,7 +140,6 @@ class ProgressService {
     }
   }
 
-  // Remove favorite workout
   removeFavoriteWorkout(workoutId) {
     const progress = this.getProgress()
     if (!progress) return
@@ -165,13 +148,11 @@ class ProgressService {
     this.saveProgress(progress)
   }
 
-  // Check if workout is favorite
   isFavoriteWorkout(workoutId) {
     const progress = this.getProgress()
     return progress ? progress.stats.favoriteWorkouts.includes(workoutId) : false
   }
 
-  // Add achievement
   addAchievement(achievement) {
     const progress = this.getProgress()
     if (!progress) return
@@ -186,13 +167,11 @@ class ProgressService {
     return achievementKey
   }
 
-  // Get achievements
   getAchievements() {
     const progress = this.getProgress()
     return progress ? progress.stats.achievements : []
   }
 
-  // Check for new achievements
   checkAchievements() {
     const progress = this.getProgress()
     if (!progress) return []
@@ -200,7 +179,6 @@ class ProgressService {
     const newAchievements = []
     const stats = progress.stats
 
-    // First workout achievement
     if (stats.totalWorkoutsCompleted === 1 && !this.hasAchievement('first_workout')) {
       newAchievements.push({
         id: 'first_workout',
@@ -211,7 +189,6 @@ class ProgressService {
       })
     }
 
-    // 10 workouts achievement
     if (stats.totalWorkoutsCompleted === 10 && !this.hasAchievement('ten_workouts')) {
       newAchievements.push({
         id: 'ten_workouts',
@@ -222,7 +199,6 @@ class ProgressService {
       })
     }
 
-    // 7-day streak achievement
     if (stats.streak === 7 && !this.hasAchievement('week_streak')) {
       newAchievements.push({
         id: 'week_streak',
@@ -233,7 +209,6 @@ class ProgressService {
       })
     }
 
-    // 30-day streak achievement
     if (stats.streak === 30 && !this.hasAchievement('month_streak')) {
       newAchievements.push({
         id: 'month_streak',
@@ -244,7 +219,6 @@ class ProgressService {
       })
     }
 
-    // Add new achievements
     newAchievements.forEach(achievement => {
       this.addAchievement(achievement)
     })
@@ -252,19 +226,16 @@ class ProgressService {
     return newAchievements
   }
 
-  // Check if user has specific achievement
   hasAchievement(achievementId) {
     const achievements = this.getAchievements()
     return achievements.some(achievement => achievement.id === achievementId)
   }
 
-  // Clear all progress (for testing/reset)
   clearProgress() {
     localStorage.removeItem(this.storageKey)
     this.initializeProgress()
   }
 
-  // Export progress data
   exportProgress() {
     const progress = this.getProgress()
     const dataStr = JSON.stringify(progress, null, 2)
@@ -276,7 +247,6 @@ class ProgressService {
     link.click()
   }
 
-  // Import progress data
   importProgress(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader()

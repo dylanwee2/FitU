@@ -4,15 +4,12 @@
       <source src="/videos/UserLoginPageAnimation.mp4" type="video/mp4" />
     </video>
     <div class="auth-card">
-      <!-- Header -->
       <div class="auth-header">
         <h1 >Welcome Back</h1>
         <p class="u-muted">Sign in to your account</p>
       </div>
 
-      <!-- Form -->
       <form @submit.prevent="login" class="auth-form">
-        <!-- Email Input -->
         <div class="input-group">
           Email
           <input
@@ -25,7 +22,6 @@
           />
         </div>
 
-        <!-- Password Input -->
         <div class="input-group">
           Password
           <input
@@ -41,17 +37,14 @@
           </button>
         </div>
 
-        <!-- Sign In Button -->
         <button type="submit" class="u-special-btn" style="height: 50px; display: flex; justify-content: center;">
           Sign In
         </button>
 
-        <!-- Inline Error Message -->
         <p v-if="errorMessage" class="text-center" style="color: #dc3545; margin-top: 0.5rem;">
           {{ errorMessage }}
         </p>
 
-        <!-- Register Link -->
         <p class="u-muted text-center">
           Don't have an account? 
           <router-link to="/signup" style="color: var(--text); text-decoration: underline;">Sign up</router-link>
@@ -231,7 +224,6 @@ export default {
   text-decoration: underline;
 }
 
-/* Responsive Design */
 @media (max-width: 480px) {
   .auth-container {
     padding: 1rem;

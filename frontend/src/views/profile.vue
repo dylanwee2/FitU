@@ -3,7 +3,6 @@
     <div class="container py-4">
       <h1 class="page-title mb-4">My Profile</h1>
 
-      <!-- Success/Error Messages -->
       <div v-if="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
         {{ successMessage }}
         <button type="button" class="btn-close" @click="successMessage = ''"></button>
@@ -13,7 +12,6 @@
         <button type="button" class="btn-close" @click="errorMessage = ''"></button>
       </div>
 
-      <!-- Loading State -->
       <div v-if="isLoading" class="text-center py-5">
         <div class="spinner-border text-primary" role="status">
           <span class="visually-hidden">Loading...</span>
@@ -23,7 +21,6 @@
       <div v-else class="row">
         <div class="col-12">
           
-          <!-- View Toggle -->
           <div class="view-toggle-container mb-4">
             <div class="view-toggle">
               <div class="toggle-slider" :class="{ 'slider-right': currentView === 'profile' }"></div>
@@ -45,17 +42,14 @@
             </div>
           </div>
 
-          <!-- Profile Details View -->
           <div v-show="currentView === 'profile'">
           
-          <!-- Personal Information Card -->
           <div class="card mb-4">
             <div class="card-header text-white">
               <h1 class="mb-0">Personal Information</h1>
             </div>
             <div class="card-body">
               <form @submit.prevent="saveProfile">
-                <!-- Name and Email -->
                 <div class="row">
                   <div class="col-sm-12 col-md-6 mb-3">
                     <label for="fullName" class="form-label">Full Name *</label>
@@ -79,7 +73,6 @@
                   </div>
                 </div>
 
-                <!-- Personal Details -->
                 <div class="row">
                   <div class="col-sm-12 col-md-3 mb-3">
                     <label for="gender" class="form-label">Gender</label>
@@ -127,7 +120,6 @@
                   </div>
                 </div>
 
-                <!-- BMI Display -->
                 <div v-if="calculatedBMI" class="alert alert-info">
                   <strong>BMI:</strong> {{ calculatedBMI.value }} - {{ calculatedBMI.category }}
                 </div>
@@ -135,7 +127,6 @@
             </div>
           </div>
 
-          <!-- Health & Fitness Goals Card -->
           <div class="card mb-4">
             <div class="card-header text-white">
               <h1 class="mb-0">Health & Fitness Goals</h1>
@@ -222,7 +213,6 @@
             </div>
           </div>
 
-          <!-- Account Actions Card -->
           <div class="card mb-4">
             <div class="card-header text-white">
               <h1 class="mb-0">Account Actions</h1>
@@ -263,24 +253,19 @@
           </div>
 
           </div>
-          <!-- End Profile Details View -->
 
-          <!-- Progress Overview View -->
           <div v-show="currentView === 'progress'">
             
-            <!-- Progress Overview Card -->
             <div class="card mb-4">
               <div class="card-header text-white">
                 <h1 class="mb-0">Progress Overview</h1>
               </div>
               <div class="card-body">
-                <!-- Weekly Calorie Chart -->
                 <div class="chart-placeholder mb-3" style="min-height: 240px; height: 32vh; max-height: 380px;">
                   <CalorieChart :series="weeklyCalorieData" />
                   <p class="text-center input-label mt-2">Weekly Calorie Intake</p>
                 </div>
 
-                <!-- Workout Streak Display -->
                 <div class="stat-card-full mb-3">
                   <div class="stat-header">
                     <h6>Workout Streak</h6>
@@ -302,7 +287,6 @@
                   <small class="input-label">Goal: {{ goalsData.workoutStreakGoal || 0 }} days</small>
                 </div>
 
-                <!-- Calories Consumed Progress -->
                 <div class="stat-card-full">
                   <div class="stat-header">
                     <h6>Calories Consumed</h6>
@@ -333,7 +317,6 @@
               </div>
             </div>
 
-            <!-- Your Workouts Card -->
             <div class="card mb-4">
               <div class="card-header text-white d-flex justify-content-between align-items-center">
                 <h1 class="mb-0">Your Workouts</h1>
@@ -345,7 +328,6 @@
                 </button>
               </div>
               <div class="card-body">
-                <!-- Loading State -->
                 <div v-if="loadingWorkouts" class="text-center py-4">
                   <div class="spinner-border text-primary" role="status">
                     <span class="visually-hidden">Loading...</span>
@@ -353,7 +335,6 @@
                   <p class="mt-2 u-muted">Loading your workouts...</p>
                 </div>
 
-                <!-- Empty State -->
                 <div v-else-if="userWorkoutSets.length === 0" class="text-center py-5">
                   <i class="bi bi-dumbbell" style="font-size: 2.7rem; color: var(--muted);"></i>
                   <h5 class="mt-3">No Published Workouts Yet</h5>
@@ -363,7 +344,6 @@
                   </button>
                 </div>
 
-                <!-- Workout List - Simplified -->
                 <div v-else class="row g-3">
                   <div
                     v-for="workout in userWorkoutSets.slice(0, 2)"
@@ -371,7 +351,6 @@
                     class="col-12"
                   >
                     <div class="workout-card-simple">
-                      <!-- Delete Button -->
                       <button
                         class="delete-workout-btn btn-close"
                         @click.stop="confirmDeleteWorkout(workout)"
@@ -379,7 +358,6 @@
                         aria-label="Delete workout"
                       ></button>
 
-                      <!-- Workout Header -->
                       <div class="workout-card-header" @click="openEditModal(workout)">
                         <div class="workout-title-section">
                           <h6 class="workout-name mb-1">{{ workout.name || workout.title || 'Unnamed Workout' }}</h6>
@@ -389,7 +367,6 @@
                         </div>
                       </div>
 
-                      <!-- Workout Stats -->
                       <div class="workout-stats-simple" @click="openEditModal(workout)">
                         <div class="stat-item-simple">
                           <i class="bi bi-list-check me-1"></i>
@@ -401,7 +378,6 @@
                         </div>
                       </div>
 
-                      <!-- Exercise Types (First 3 exercises as tags) -->
                       <div v-if="workout.exercises && workout.exercises.length > 0" class="exercise-tags-simple" @click="openEditModal(workout)">
                         <span
                           v-for="exercise in workout.exercises.slice(0, 3)"
@@ -423,13 +399,11 @@
               </div>
             </div>
           </div>
-          <!-- End Progress Overview View -->
 
         </div>
       </div>
     </div>
 
-    <!-- Edit Workout Modal -->
     <div v-if="showEditModal" class="modal-overlay" @click.self="showEditModal = false">
       <div class="modal-content-large" style="background-color: var(--bg);">
         <div class="modal-header">
@@ -439,7 +413,6 @@
         
         <div class="modal-body">
           <div class="row">
-            <!-- Left Column - Basic Info -->
             <div class="col-sm-12 col-md-6">
               <div class="form-group">
                 <label for="editPlaylistName" class="form-label">Set Name</label>
@@ -463,7 +436,6 @@
                 ></textarea>
               </div>
 
-              <!-- Current Exercises -->
               <div class="form-group">
                 <label class="form-label">Current Exercises ({{ editingWorkout.exercises?.length || 0 }})</label>
                 <div v-if="editingWorkout.exercises && editingWorkout.exercises.length > 0" class="current-exercises">
@@ -491,7 +463,6 @@
               </div>
             </div>
 
-            <!-- Right Column - Exercise Search -->
             <div class="col-sm-12 col-md-6">
               <div class="form-group">
                 <label class="form-label">Add Exercises</label>
@@ -515,7 +486,6 @@
                   </div>
                 </div>
 
-                <!-- Search Results -->
                 <div v-if="searchLoading" class="search-loading text-center py-3">
                   <div class="spinner-border spinner-border-sm me-2"></div>
                   Searching exercises...
@@ -565,7 +535,6 @@
       </div>
     </div>
 
-    <!-- Delete Workout Confirmation Modal -->
     <div v-if="showDeleteWorkoutModal" class="modal-overlay" @click.self="showDeleteWorkoutModal = false">
       <div class="modal-content-small">
         <div class="modal-header-delete">
@@ -591,7 +560,6 @@
       </div>
     </div>
 
-    <!-- Delete Account Confirmation Modal -->
     <div v-if="showDeleteModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -660,18 +628,15 @@ const auth = getAuth();
 const db = getFirestore();
 const storage = getStorage();
 
-// Default avatar URL
 const defaultAvatar = ref('https://ui-avatars.com/api/?name=User&size=150&background=008280&color=fff');
 
-// State Management
 const isLoading = ref(true);
 const isSaving = ref(false);
 const successMessage = ref('');
 const errorMessage = ref('');
 const currentUser = ref(null);
-const currentView = ref('progress'); // 'profile' or 'progress'
+const currentView = ref('progress'); 
 
-// Delete account modal state
 const showDeleteModal = ref(false);
 const deletePassword = ref('');
 const deleteError = ref('');
@@ -697,44 +662,35 @@ const goalsData = ref({
 const workoutStreak = ref(4);
 const timeBalance = ref(65);
 
-// Calorie Goal Editor
 const goalInput = ref(2000)
 const calorieChartRef = ref(null);
 const chartInstance = ref(null);
 
-// Calorie data for weekly chart
 const weeklyCalorieData = ref([]);
 const todayConsumed = ref(0);
 
-// Progress bar animation states
 const workoutStreakWidth = ref(0);
 const caloriesConsumedWidth = ref(0);
 
-// User's workout sets
 const userWorkoutSets = ref([]);
 const loadingWorkouts = ref(false);
 const workoutUnsubscribe = ref(null);
 
-// Edit modal state
 const showEditModal = ref(false);
 const editingWorkout = ref({});
 
-// Delete workout modal state
 const showDeleteWorkoutModal = ref(false);
 const workoutToDelete = ref(null);
 
-// Exercise search state for edit modal
 const searchQuery = ref('');
 const searchedExercises = ref([]);
 const searchLoading = ref(false);
 const searchTimeout = ref(null);
 const searchError = ref('');
 
-// API Configuration
 const API_BASE_URL = 'https://www.exercisedb.dev/api/v1';
 const EXERCISES_PER_PAGE = 12;
 
-// Computed Properties
 const calculatedBMI = computed(() => {
   try {
     const height = profileData.value.height;
@@ -759,7 +715,6 @@ const calculatedBMI = computed(() => {
   }
 });
 
-// Computed properties for target progress bar widths
 const workoutStreakTargetWidth = computed(() => {
   return Math.min(((goalsData.value.workoutFrequency || 0) / (goalsData.value.workoutStreakGoal || 1) * 100), 100);
 });
@@ -768,13 +723,11 @@ const caloriesConsumedTargetWidth = computed(() => {
   return ((todayConsumed.value || 0) / (goalsData.value.dailyGoal || 2000) * 100);
 });
 
-// Lifecycle Hooks
 onMounted(() => {
   onAuthStateChanged(auth, async (user) => {
     if (user) {
       currentUser.value = user;
       await loadUserData(user.uid);
-      // Charts will be initialized after data is loaded in loadUserData
       setTimeout(() => {
         initializeCharts();
       }, 100);
@@ -782,19 +735,14 @@ onMounted(() => {
   });
 });
 
-/**
- * Animate progress bars on page load
- */
 function animateProgressBars() {
-  // Reset widths to 0 first
+ 
   workoutStreakWidth.value = 0;
   caloriesConsumedWidth.value = 0;
 
-  // Start animation after a small delay
   setTimeout(() => {
-    // Animate workout streak progress bar
     const workoutTarget = workoutStreakTargetWidth.value;
-    const workoutDuration = 1000; // 1 second
+    const workoutDuration = 1000; 
     const workoutSteps = 60;
     const workoutIncrement = workoutTarget / workoutSteps;
     let workoutStep = 0;
@@ -809,10 +757,9 @@ function animateProgressBars() {
       }
     }, workoutDuration / workoutSteps);
 
-    // Animate calories consumed progress bar with slight delay
     setTimeout(() => {
       const caloriesTarget = caloriesConsumedTargetWidth.value;
-      const caloriesDuration = 1000; // 1 second
+      const caloriesDuration = 1000; 
       const caloriesSteps = 60;
       const caloriesIncrement = caloriesTarget / caloriesSteps;
       let caloriesStep = 0;
@@ -826,7 +773,7 @@ function animateProgressBars() {
           caloriesConsumedWidth.value = caloriesTarget;
         }
       }, caloriesDuration / caloriesSteps);
-    }, 200); // 200ms delay for staggered effect
+    }, 200); 
   }, 100);
 }
 
@@ -840,7 +787,6 @@ async function loadUserData(uid) {
     if (userDoc.exists()) {
       const data = userDoc.data();
 
-      // Load profile data
       profileData.value = {
         fullName: data.fullName || currentUser.value.displayName || '',
         email: data.email || currentUser.value.email || '',
@@ -850,7 +796,6 @@ async function loadUserData(uid) {
         weight: data.weight || null
       };
 
-      // Load goals data
       goalsData.value = {
         goalType: data.goalType || '',
         dailyGoal: data.dailyGoal || 2000,
@@ -860,21 +805,17 @@ async function loadUserData(uid) {
         workoutStreakGoal: data.workoutStreakGoal || 3
       };
 
-      // Load calorie data from caloriesService
       try {
         const calorieData = await caloriesService.getUserCalories();
         if (calorieData) {
           if (calorieData.dailyGoal) {
             goalsData.value.dailyGoal = calorieData.dailyGoal;
           }
-          // Get weekly data for chart
           weeklyCalorieData.value = caloriesService.getWeekSeries(calorieData.entries || [], 7);
-          // Calculate today's consumed calories
           todayConsumed.value = caloriesService.getTodayConsumed(calorieData.entries || []);
         }
       } catch (error) {
         console.error('Error loading calorie data:', error);
-        // Set default values on error
         weeklyCalorieData.value = [];
         todayConsumed.value = 0;
 
@@ -890,14 +831,11 @@ async function loadUserData(uid) {
     errorMessage.value = 'Failed to load profile data. Please refresh the page.';
   } finally {
     isLoading.value = false;
-    // Animate progress bars after data is loaded
     animateProgressBars();
   }
 }
 
-/**
- * Create default user document in Firestore
- */
+
 async function createDefaultUserDocument(uid) {
   try {
     const userDocRef = doc(db, 'users', uid);
@@ -930,9 +868,6 @@ async function createDefaultUserDocument(uid) {
   }
 }
 
-/**
- * Save all profile data to Firestore
- */
 async function saveAllData() {
   try {
     isSaving.value = true;
@@ -944,7 +879,6 @@ async function saveAllData() {
       return;
     }
 
-    // Validate calorie goal
     const calorieGoal = Number(goalsData.value.dailyGoal);
     if (!Number.isFinite(calorieGoal) || calorieGoal < 800 || calorieGoal > 5000) {
       errorMessage.value = 'Daily calorie goal must be between 800 and 5000 kcal.';
@@ -962,24 +896,19 @@ async function saveAllData() {
       height: profileData.value.height || null,
       weight: profileData.value.weight || null,
 
-      // Goals data
       goalType: goalsData.value.goalType || '',
       dailyGoal: calorieGoal,
       dietaryPreference: goalsData.value.dietaryPreference || '',
       allergies: goalsData.value.allergies || '',
       workoutFrequency: goalsData.value.workoutFrequency || 3,
       
-      // Metadata
       updatedAt: serverTimestamp()
     };
 
-    // Save to users document
     await setDoc(userDocRef, dataToSave, { merge: true });
 
-    // IMPORTANT: Also update the calorie goal in the calories service
     await caloriesService.updateDailyGoal(calorieGoal);
 
-    // Update display name if changed
     if (currentUser.value.displayName !== profileData.value.fullName) {
       await updateProfile(currentUser.value, {
         displayName: profileData.value.fullName
@@ -1000,12 +929,8 @@ async function saveAllData() {
   }
 }
 
-/**
- * Handle user logout
- */
 async function handleLogout() {
   try {
-    // Clean up subscriptions before logging out
     try {
       caloriesService.unsubscribeAll();
     } catch (e) {
@@ -1029,27 +954,18 @@ async function handleLogout() {
   }
 }
 
-/**
- * Show delete account confirmation modal
- */
 function confirmDeleteAccount() {
   showDeleteModal.value = true;
   deletePassword.value = '';
   deleteError.value = '';
 }
 
-/**
- * Close delete account modal
- */
 function closeDeleteModal() {
   showDeleteModal.value = false;
   deletePassword.value = '';
   deleteError.value = '';
 }
 
-/**
- * Handle password submission for account deletion
- */
 function handlePasswordSubmit() {
   if (deletePassword.value.trim()) {
     deleteError.value = '';
@@ -1057,29 +973,22 @@ function handlePasswordSubmit() {
   }
 }
 
-/**
- * Delete user account with re-authentication
- */
 async function deleteAccount(uid, password) {
   try {
     isSaving.value = true;
     errorMessage.value = '';
     
-    // Step 1: Re-authenticate user before deletion
     console.log('Re-authenticating user...');
     const credential = EmailAuthProvider.credential(currentUser.value.email, password);
     await reauthenticateWithCredential(currentUser.value, credential);
     console.log('Re-authentication successful');
     
-    // Step 2: Delete user-related data from Firestore
     console.log('Deleting user data from Firestore...');
     
-    // Delete main user document
     const userDocRef = doc(db, 'users', uid);
     await deleteDoc(userDocRef);
     console.log('Main user document deleted');
     
-    // Delete user calories data
     try {
       const caloriesDocRef = doc(db, 'calories', uid);
       await deleteDoc(caloriesDocRef);
@@ -1088,7 +997,6 @@ async function deleteAccount(uid, password) {
       console.log('No calories data found or error deleting calories:', caloriesError.message);
     }
     
-    // Delete user profiles data (if exists)
     try {
       const userProfileDocRef = doc(db, 'userProfiles', uid);
       await deleteDoc(userProfileDocRef);
@@ -1097,7 +1005,6 @@ async function deleteAccount(uid, password) {
       console.log('No user profile data found or error deleting profile:', profileError.message);
     }
     
-    // Delete workout sets subcollection (users/{uid}/workoutSets)
     try {
       const workoutSetsRef = collection(db, 'users', uid, 'workoutSets');
       const workoutSetsSnapshot = await getDocs(workoutSetsRef);
@@ -1108,7 +1015,6 @@ async function deleteAccount(uid, password) {
       console.log('No workout sets subcollection found or error deleting workout sets:', workoutError.message);
     }
 
-    // Delete top-level workoutSets documents where userId == uid
     try {
       const q = query(collection(db, 'workoutSets'), where('userId', '==', uid));
       const snapshot = await getDocs(q);
@@ -1119,7 +1025,6 @@ async function deleteAccount(uid, password) {
       console.log('No top-level workoutSets found or error deleting them:', topWorkoutError.message);
     }
 
-    // Delete publishedWorkouts (top-level) where userId == uid
     try {
       const pubQ = query(collection(db, 'publishedWorkouts'), where('userId', '==', uid));
       const pubSnap = await getDocs(pubQ);
@@ -1130,7 +1035,6 @@ async function deleteAccount(uid, password) {
       console.log('No publishedWorkouts found or error deleting them:', pubErr.message);
     }
 
-    // Delete workout reviews authored by the user (top-level collection workoutReviews)
     try {
       const revQ = query(collection(db, 'workoutReviews'), where('userId', '==', uid));
       const revSnap = await getDocs(revQ);
@@ -1142,22 +1046,16 @@ async function deleteAccount(uid, password) {
     }
 
     
-    // Step 3: Delete user from Firebase Authentication
     console.log('Deleting user from Authentication...');
     await deleteUser(currentUser.value);
     console.log('User account deleted successfully');
     
-    // Step 4: Clear any local storage or session data
     localStorage.clear();
     sessionStorage.clear();
-    
-    // Close the modal
     closeDeleteModal();
     
-    // Redirect to home/login page
     successMessage.value = 'Your account has been successfully deleted. You will now be redirected to the home page.';
     
-    // Wait a moment for the user to see the success message
     setTimeout(() => {
       router.push('/');
     }, 2000);
@@ -1189,9 +1087,6 @@ async function deleteAccount(uid, password) {
   }
 }
 
-/**
- * Initialize Chart.js
- */
 function initializeCharts() {
   if (!calorieChartRef.value) return
   const ctx = calorieChartRef.value.getContext('2d')
@@ -1241,7 +1136,6 @@ async function setupWorkoutListener(uid) {
   try {
     loadingWorkouts.value = true;
     
-    // Get workout sets from workoutSets collection (not publishedWorkouts)
     const workouts = await workoutVaultService.getUserWorkouts(uid);
     console.log('✅ Workouts loaded:', workouts);
     console.log('✅ Count:', workouts?.length || 0);
@@ -1256,9 +1150,6 @@ async function setupWorkoutListener(uid) {
   }
 }
 
-/**
- * Navigate to workout vault page
- */
 function viewAllWorkouts() {
   try {
     router.push('/workout-sets');
@@ -1268,17 +1159,11 @@ function viewAllWorkouts() {
   }
 }
 
-/**
- * Show delete workout confirmation modal
- */
 function confirmDeleteWorkout(workout) {
   workoutToDelete.value = workout;
   showDeleteWorkoutModal.value = true;
 }
 
-/**
- * Delete workout from Firestore
- */
 async function deleteWorkout() {
   if (!workoutToDelete.value) return;
 
@@ -1286,11 +1171,9 @@ async function deleteWorkout() {
     isSaving.value = true;
     errorMessage.value = '';
 
-    // Delete from Firestore
     const workoutRef = doc(db, 'workoutSets', workoutToDelete.value.id);
     await deleteDoc(workoutRef);
 
-    // Remove from local array
     const index = userWorkoutSets.value.findIndex(w => w.id === workoutToDelete.value.id);
     if (index !== -1) {
       userWorkoutSets.value.splice(index, 1);
@@ -1312,18 +1195,12 @@ async function deleteWorkout() {
   }
 }
 
-/**
- * Truncate text to specified length
- */
 function truncateText(text, maxLength) {
   if (!text) return 'No description available';
   if (text.length <= maxLength) return text;
   return text.substring(0, maxLength) + '...';
 }
 
-/**
- * Format workout rating for display
- */
 function formatWorkoutRating(workout) {
   if (!workout.avgRating || workout.avgRating === 0) {
     return 'No ratings yet';
@@ -1333,9 +1210,6 @@ function formatWorkoutRating(workout) {
   return `${rating} (${count})`;
 }
 
-/**
- * Open edit modal for a workout
- */
 function openEditModal(workout) {
   try {
     editingWorkout.value = { 
@@ -1343,7 +1217,7 @@ function openEditModal(workout) {
       exercises: [...(workout.exercises || [])] 
     };
     clearSearch();
-    fetchExercises(); // Preload exercises
+    fetchExercises(); 
     showEditModal.value = true;
   } catch (error) {
     console.error('Error opening edit modal:', error);
@@ -1351,9 +1225,6 @@ function openEditModal(workout) {
   }
 }
 
-/**
- * Fetch exercises from API
- */
 async function fetchExercises(query = '') {
   if (searchLoading.value) return;
   
@@ -1379,7 +1250,6 @@ async function fetchExercises(query = '') {
     
     const data = await response.json();
     
-    // Handle ExerciseDB API response structure
     if (data.success && data.data) {
       const mappedExercises = data.data.map(exercise => ({
         id: exercise.exerciseId,
@@ -1414,9 +1284,6 @@ async function fetchExercises(query = '') {
   }
 }
 
-/**
- * Handle search input with debounce
- */
 function handleSearch() {
   clearTimeout(searchTimeout.value);
   
@@ -1429,18 +1296,12 @@ function handleSearch() {
   }, 500);
 }
 
-/**
- * Clear search state
- */
 function clearSearch() {
   searchQuery.value = '';
   searchedExercises.value = [];
   searchError.value = '';
 }
 
-/**
- * Format exercise name
- */
 function formatExerciseName(name) {
   if (!name) return 'Exercise';
   return name
@@ -1450,9 +1311,6 @@ function formatExerciseName(name) {
     .join(' ');
 }
 
-/**
- * Format target muscles
- */
 function formatTarget(target) {
   if (!target) return 'Full Body';
   if (Array.isArray(target)) {
@@ -1461,9 +1319,6 @@ function formatTarget(target) {
   return target.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', ');
 }
 
-/**
- * Format body part
- */
 function formatBodyPart(bodyPart) {
   if (!bodyPart) return 'General';
   if (Array.isArray(bodyPart)) {
@@ -1472,9 +1327,6 @@ function formatBodyPart(bodyPart) {
   return bodyPart.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', ');
 }
 
-/**
- * Format equipment
- */
 function formatEquipment(equipment) {
   if (!equipment) return 'Bodyweight';
   if (Array.isArray(equipment)) {
@@ -1483,16 +1335,12 @@ function formatEquipment(equipment) {
   return equipment.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', ');
 }
 
-/**
- * Add exercise to workout
- */
 function addExerciseToWorkout(exercise) {
   try {
     if (!editingWorkout.value.exercises) {
       editingWorkout.value.exercises = [];
     }
     
-    // Check if exercise is already in workout
     const exists = editingWorkout.value.exercises.some(ex => ex.id === exercise.id);
     if (!exists) {
       editingWorkout.value.exercises.push({
@@ -1512,9 +1360,6 @@ function addExerciseToWorkout(exercise) {
   }
 }
 
-/**
- * Remove exercise from workout
- */
 function removeExerciseFromWorkout(index) {
   try {
     if (editingWorkout.value.exercises && index >= 0 && index < editingWorkout.value.exercises.length) {
@@ -1528,16 +1373,10 @@ function removeExerciseFromWorkout(index) {
 
 
 
-/**
- * Check if exercise is in workout
- */
 function isExerciseInWorkout(exerciseId) {
   return editingWorkout.value.exercises?.some(ex => ex.id === exerciseId) || false;
 }
 
-/**
- * Save workout edits
- */
 async function saveWorkoutEdit() {
   try {
     isSaving.value = true;
@@ -1549,7 +1388,6 @@ async function saveWorkoutEdit() {
       return;
     }
 
-    // Update workout in Firebase Firestore directly
     const workoutRef = doc(db, 'workoutSets', editingWorkout.value.id);
     await setDoc(workoutRef, {
       name: editingWorkout.value.name,
@@ -1558,7 +1396,6 @@ async function saveWorkoutEdit() {
       updatedAt: serverTimestamp()
     }, { merge: true });
 
-    // Manually update the local userWorkoutSets array to reflect changes immediately
     const index = userWorkoutSets.value.findIndex(w => w.id === editingWorkout.value.id);
     if (index !== -1) {
       userWorkoutSets.value[index] = {
@@ -1589,14 +1426,12 @@ async function saveWorkoutEdit() {
 </script>
 
 <style scoped>
-/* Container */
 .profile-container {
   min-height: 100vh;
   background-color: var(--bg);
   padding: 20px 0;
 }
 
-/* View Toggle */
 .view-toggle-container {
   display: flex;
   justify-content: center;
@@ -1614,7 +1449,6 @@ async function saveWorkoutEdit() {
   width: fit-content;
 }
 
-/* Sliding background element */
 .toggle-slider {
   position: absolute;
   top: 4px;
@@ -1683,14 +1517,12 @@ async function saveWorkoutEdit() {
   }
 }
 
-/* Title */
 .page-title {
   color: var(--text);
   font-weight: 600;
   text-align: center;
 }
 
-/* Cards */
 .card {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
@@ -1729,7 +1561,6 @@ async function saveWorkoutEdit() {
   padding: 2.75rem;
 }
 
-/* Profile Picture */
 .profile-picture-wrapper {
   display: flex;
   flex-direction: column;
@@ -1771,7 +1602,6 @@ async function saveWorkoutEdit() {
   transform: translateY(1px);
 }
 
-/* Forms */
 .form-label {
   font-weight: 500;
   color: #CAC4D0 !important;
@@ -1829,7 +1659,6 @@ async function saveWorkoutEdit() {
   color: var(--primary);
 }
 
-/* Chart Placeholder */
 .chart-placeholder {
   border-radius: 10px;
   padding: 0;
@@ -1840,7 +1669,6 @@ async function saveWorkoutEdit() {
   transition: all 0.3s ease;
 }
 
-/* Full Width Stat Cards */
 .stat-card-full {
   background-color: var(--surface);
   color: var(--text);
@@ -1949,7 +1777,6 @@ async function saveWorkoutEdit() {
   color: var(--muted);
 }
 
-/* Buttons */
 .account-action-btn {
   min-width: 200px;
   padding: 0.75rem 1.25rem;
@@ -2058,7 +1885,6 @@ async function saveWorkoutEdit() {
   transform: none !important;
 }
 
-/* Alerts */
 .alert {
   border-radius: 12px;
   border: none;
@@ -2130,7 +1956,6 @@ async function saveWorkoutEdit() {
   transform: scale(1.2) rotate(90deg);
 }
 
-/* Loading Spinner */
 .spinner-border {
   width: 3rem;
   height: 3rem;
@@ -2147,7 +1972,6 @@ async function saveWorkoutEdit() {
   color: var(--primary) !important;
 }
 
-/* BMI Alert */
 .alert-info strong {
   animation: bounce 1s ease-in-out infinite;
 }
@@ -2161,7 +1985,6 @@ async function saveWorkoutEdit() {
   }
 }
 
-/* Icons */
 .bi {
   color: var(--text);
   transition: all 0.3s ease;
@@ -2175,7 +1998,6 @@ async function saveWorkoutEdit() {
   transform: scale(1.2) rotate(10deg);
 }
 
-/* Form Controls - Consistent Sizing */
 .card-body .form-control,
 .card-body .form-select {
   width: 100%;
@@ -2209,7 +2031,6 @@ async function saveWorkoutEdit() {
   padding: 0.55rem 0.75rem;
 }
 
-/* Input focus */
 .form-control:focus,
 .form-select:focus {
   animation: inputGlow 0.6s ease-out;
@@ -2226,7 +2047,6 @@ async function saveWorkoutEdit() {
   }
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .profile-picture {
     width: 120px;
@@ -2261,7 +2081,6 @@ html {
 
 @import url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css');
 
-/* Workout Mini Cards */
 .workout-mini-card {
   background: var(--surface);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -2346,7 +2165,6 @@ html {
   font-weight: 600;
 }
 
-/* Button styling for View All */
 .btn-outline-light {
   color: white;
   border-color: rgba(255, 255, 255, 0.5);
@@ -2368,7 +2186,6 @@ html {
   }
 }
 
-/* Edit Modal Styles */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -2403,7 +2220,6 @@ html {
   border: none;
 }
 
-/* Small Modal for Delete Confirmation */
 .modal-content-small {
   background: var(--bg);
   border-radius: 12px;
@@ -2452,7 +2268,6 @@ html {
   border-radius: 0 0 20px 20px;
 }
 
-/* Small Modal for Delete Confirmation */
 .modal-content-small {
   background: var(--bg);
   border-radius: 20px;
@@ -2804,7 +2619,6 @@ textarea.form-control {
   }
 }
 
-/* Delete Modal Specific Styles */
 .modal.fade.show.d-block {
   z-index: 9999 !important;
   position: fixed !important;
@@ -2828,7 +2642,6 @@ textarea.form-control {
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
 }
 
-/* Simplified Workout Card */
 .workout-card-simple {
   background: var(--surface);
   border-radius: 8px;
@@ -2845,7 +2658,6 @@ textarea.form-control {
   border-color: var(--primary);
 }
 
-/* Delete Button on Workout Card */
 .delete-workout-btn {
   position: absolute;
   top: 0.5rem;
@@ -2886,7 +2698,6 @@ textarea.form-control {
   line-height: 1.4;
 }
 
-/* Workout Stats - Simplified */
 .workout-stats-simple {
   display: flex;
   gap: 1rem;
@@ -2905,7 +2716,6 @@ textarea.form-control {
   color: var(--primary);
 }
 
-/* Exercise Tags - Simplified */
 .exercise-tags-simple {
   display: flex;
   flex-wrap: wrap;
@@ -2926,7 +2736,6 @@ textarea.form-control {
   color: white;
 }
 
-/* Responsive Design for Simplified Workout Cards */
 @media (max-width: 768px) {
   .workout-card-simple {
     padding: 0.875rem;

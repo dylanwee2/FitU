@@ -1,6 +1,5 @@
 <template>
   <div class="workout-playlists-component">
-    <!-- Not Authenticated State -->
     <div v-if="!isAuthenticated" class="empty-state text-center py-5">
       <div class="empty-state-icon mb-3">
         <i class="fas fa-sign-in-alt text-muted" style="font-size: 4rem;"></i>
@@ -19,7 +18,6 @@
       </div>
     </div>
 
-    <!-- Empty State (Authenticated but no sets) -->
     <div v-else-if="savedPlaylists.length === 0" class="empty-state text-center py-5">
       <div class="empty-state-icon mb-3">
         <i class="fas fa-dumbbell text-muted" style="font-size: 4rem;"></i>
@@ -33,7 +31,6 @@
       </router-link>
     </div>
 
-    <!-- Playlists Grid -->
     <div v-else class="playlists-section">
       <div class="row g-4">
         <div 
@@ -47,13 +44,11 @@
             @dragstart="handleDragStart($event, playlist)"
             @dragend="handleDragEnd"
           >
-            <!-- Hidden transfer data element -->
             <div 
               data-transfer 
               :data-transfer="JSON.stringify({ type: 'workout', workout: playlist })" 
               style="display: none;"
             ></div>
-            <!-- Playlist Header -->
             <div class="playlist-header">
               <div class="playlist-title-section">
                 <div class="title-with-drag">
@@ -127,7 +122,6 @@
               </div>
             </div>
 
-            <!-- Playlist Content -->
             <div class="playlist-content">
               <div class="playlist-description">
                 <p class="playlist-desc-text">{{ playlist.description || 'No description' }}</p>
@@ -168,7 +162,6 @@
               </div>
             </div>
 
-            <!-- Playlist Footer -->
             <div class="playlist-footer">
               <div class="playlist-buttons">
                 <button 
@@ -207,8 +200,6 @@
       </div>
     </div>
 
-    <!-- All the modals from the original component would go here -->
-    <!-- Edit Playlist Modal -->
     <div v-if="showEditModal" class="modal-overlay" @click.self="showEditModal = false">
       <div class="modal-content" style="background-color: var(--bg);">
         <div class="modal-header">
@@ -219,7 +210,6 @@
         
         <div class="modal-body">
           <div class="row">
-            <!-- Left Column - Basic Info -->
             <div class="col-md-6">
               <div class="form-group">
                 <label for="editPlaylistName" class="form-label">Set Name</label>
@@ -243,7 +233,6 @@
                 ></textarea>
               </div>
 
-              <!-- Current Exercises -->
               <div class="form-group">
                 <label class="form-label">Current Exercises ({{ editingPlaylist.exercises?.length || 0 }})</label>
                 <div v-if="editingPlaylist.exercises && editingPlaylist.exercises.length > 0" class="current-exercises">
@@ -548,7 +537,6 @@ import { auth } from '@/firebase.js'
 import { onAuthStateChanged } from 'firebase/auth'
 import { formatDuration as formatWorkoutDuration } from '@/types/workout.js'
 
-// Props
 const props = defineProps({
   title: {
     type: String,
@@ -568,26 +556,22 @@ const props = defineProps({
   }
 })
 
-// Emits
 const emit = defineEmits(['playlist-selected', 'playlist-edited', 'playlist-published', 'playlist-unpublished', 'workout-scheduled'])
 
 const router = useRouter()
 const cartStore = useWorkoutCartStore()
-// Local UI state for per-item actions menu
 const openMenuForId = ref(null)
 const toggleActions = (playlist) => {
   openMenuForId.value = openMenuForId.value === playlist.id ? null : playlist.id
 }
 const closeActions = () => { openMenuForId.value = null }
 
-// Close actions menu when clicking outside
 onMounted(() => {
   const onBodyClick = () => closeActions()
   document.addEventListener('click', onBodyClick)
   onUnmounted(() => document.removeEventListener('click', onBodyClick))
 })
 
-// Duplicate handler
 const handleDuplicate = async (playlistId) => {
   try {
     await cartStore.duplicatePlaylist(playlistId)
@@ -598,7 +582,6 @@ const handleDuplicate = async (playlistId) => {
 }
 
 
-// Local state
 const showEditModal = ref(false)
 const showPublishModal = ref(false)
 const showUnpublishModal = ref(false)
@@ -621,24 +604,20 @@ const schedulingInProgress = ref(false)
 const isAuthenticated = ref(!!auth.currentUser)
 const authUnsubscribe = ref(null)
 
-// Exercise search state for edit modal
 const searchQuery = ref('')
 const searchedExercises = ref([])
 const searchLoading = ref(false)
 const searchTimeout = ref(null)
 const searchError = ref('')
 
-// API Configuration
 const API_BASE_URL = 'https://www.exercisedb.dev/api/v1'
 const EXERCISES_PER_PAGE = 12
 
-// Computed properties
 const savedPlaylists = computed(() => {
   const playlists = cartStore.savedPlaylists || []
   return props.maxItems ? playlists.slice(0, props.maxItems) : playlists
 })
 
-// Authentication check method
 const checkPublishedStatus = async () => {
   if (!auth.currentUser) {
     console.log('No current user, skipping published status check')
@@ -648,15 +627,8 @@ const checkPublishedStatus = async () => {
   // console.log('Checking published status for user:', auth.currentUser.uid)
 
   try {
-    // Get user's workout sets from 'workoutSets' collection
     const userWorkouts = await workoutVaultService.getUserWorkouts(auth.currentUser.uid)
-    // console.log('User workouts from workoutSets:', userWorkouts)
-    
-    // Get user's published workouts from 'publishedWorkouts' collection
     const publishedWorkouts = await workoutVaultService.getPublishedWorkoutsByUser(auth.currentUser.uid)
-    // console.log('Published workouts from publishedWorkouts:', publishedWorkouts)
-    
-    // Create a map of originalId -> publishedWorkout for quick lookup
     const publishedMap = new Map()
     publishedWorkouts.forEach(published => {
       if (published.originalId) {
@@ -664,24 +636,13 @@ const checkPublishedStatus = async () => {
       }
     })
     
-    // Update local playlist status based on Firebase data
     for (const userWorkout of userWorkouts) {
       const localPlaylist = savedPlaylists.value.find(p => p.id === userWorkout.id)
       if (localPlaylist) {
-        // Check if this workout is published by looking for it in publishedWorkouts
         const isActuallyPublished = publishedMap.has(userWorkout.id)
         const publishedWorkout = publishedMap.get(userWorkout.id)
         
-        // console.log(`Checking workout ${userWorkout.id}:`, {
-        //   localPublished: localPlaylist.isPublished,
-        //   firebaseUserWorkoutPublished: userWorkout.isPublished,
-        //   actuallyPublished: isActuallyPublished,
-        //   publishedWorkout: publishedWorkout
-        // })
-        
-        // Update the status based on whether it's actually in the publishedWorkouts collection
         if (localPlaylist.isPublished !== isActuallyPublished) {
-          // console.log(`Updating playlist ${userWorkout.id} published status to ${isActuallyPublished}`)
           await cartStore.updatePlaylist(userWorkout.id, {
             isPublished: isActuallyPublished,
             publishedId: publishedWorkout?.id || null,
@@ -695,7 +656,6 @@ const checkPublishedStatus = async () => {
   }
 }
 
-// Watch for both auth state and saved playlists to check published status
 watch([() => auth.currentUser, savedPlaylists], async ([user, playlists]) => {
   if (user && playlists.length > 0) {
     await checkPublishedStatus()
@@ -703,16 +663,13 @@ watch([() => auth.currentUser, savedPlaylists], async ([user, playlists]) => {
   }
 }, { immediate: true })
 
-// Update workout durations for existing workouts
 const updateWorkoutDurations = async (playlists) => {
   for (const playlist of playlists) {
     if (playlist.exercises && playlist.exercises.length > 0) {
       const currentDuration = playlist.totalDuration || 0
       const calculatedDuration = calculateWorkoutDuration(playlist.exercises)
       
-      // Update if duration is significantly different (accounting for old calculation method)
       if (Math.abs(currentDuration - calculatedDuration) > 5) {
-        // console.log(`Updating duration for ${playlist.name}: ${currentDuration} -> ${calculatedDuration}`)
         try {
           await cartStore.updatePlaylist(playlist.id, {
             totalDuration: calculatedDuration
@@ -727,21 +684,16 @@ const updateWorkoutDurations = async (playlists) => {
 
 const formatPlaylistDuration = (playlist) => {
   let totalMinutes = 0;
-  
-  // Calculate duration from exercises using 5 minutes per set rule
   if (playlist.exercises && playlist.exercises.length > 0) {
     totalMinutes = playlist.exercises.reduce((total, exercise) => {
-      const sets = exercise.sets || 3; // Default to 3 sets
-      return total + (sets * 5); // 5 minutes per set
+      const sets = exercise.sets || 3; 
+      return total + (sets * 5); 
     }, 0);
   } else if (playlist.totalDuration) {
-    // Use stored totalDuration as fallback
     totalMinutes = playlist.totalDuration;
   }
   
-  // If we still have 0 and there are exercises, use a basic fallback
   if (totalMinutes === 0 && playlist.exercises && playlist.exercises.length > 0) {
-    // Each exercise gets 3 sets by default = 15 minutes per exercise
     totalMinutes = playlist.exercises.length * 3 * 5;
   }
   
@@ -757,14 +709,12 @@ const formatWorkoutDays = (days) => {
 
 const calculateWorkoutDuration = (exercises) => {
   if (!exercises || exercises.length === 0) return 0
-  // Use 5 minutes per set rule (same as everywhere else)
   return exercises.reduce((total, exercise) => {
-    const sets = exercise.sets || 3; // Default to 3 sets
-    return total + (sets * 5); // 5 minutes per set
+    const sets = exercise.sets || 3; 
+    return total + (sets * 5); 
   }, 0);
 }
 
-// Exercise search functions for edit modal
 const fetchExercises = async (query = '') => {
   if (searchLoading.value) return
   
@@ -789,8 +739,6 @@ const fetchExercises = async (query = '') => {
     }
     
     const data = await response.json()
-    
-    // Handle ExerciseDB API response structure
     if (data.success && data.data) {
       const mappedExercises = data.data.map(exercise => ({
         id: exercise.exerciseId,
@@ -843,7 +791,6 @@ const clearSearch = () => {
   searchError.value = ''
 }
 
-// Format functions for exercise data
 const formatExerciseName = (name) => {
   if (!name) return 'Exercise'
   return name
@@ -877,13 +824,11 @@ const formatEquipment = (equipment) => {
   return equipment.toString().replace(/[\[\]"]/g, '').replace(/,/g, ', ')
 }
 
-// Exercise management functions for edit modal
 const addExerciseToPlaylist = (exercise) => {
   if (!editingPlaylist.value.exercises) {
     editingPlaylist.value.exercises = []
   }
   
-  // Check if exercise is already in playlist
   const exists = editingPlaylist.value.exercises.some(ex => ex.id === exercise.id)
   if (!exists) {
     editingPlaylist.value.exercises.push({
@@ -909,11 +854,10 @@ const isExerciseInPlaylist = (exerciseId) => {
   return editingPlaylist.value.exercises?.some(ex => ex.id === exerciseId) || false
 }
 
-// CRUD operations
 const editPlaylist = (playlist) => {
   editingPlaylist.value = { ...playlist, exercises: [...(playlist.exercises || [])] }
-  clearSearch() // Clear any previous search state
-  fetchExercises() // Preload popular exercises
+  clearSearch() 
+  fetchExercises() 
   showEditModal.value = true
 }
 
@@ -931,7 +875,6 @@ const toggleWorkoutDay = (day) => {
 
 const savePlaylistEdit = async () => {
   try {
-    // Calculate updated duration based on exercises
     const updatedDuration = calculateWorkoutDuration(editingPlaylist.value.exercises || [])
     
     await cartStore.updatePlaylist(editingPlaylist.value.id, {
@@ -941,7 +884,7 @@ const savePlaylistEdit = async () => {
       totalDuration: updatedDuration
     })
     showEditModal.value = false
-    clearSearch() // Clear search state
+    clearSearch() 
     editingPlaylist.value = {}
     emit('playlist-edited', editingPlaylist.value)
   } catch (error) {
@@ -954,8 +897,6 @@ const viewPlaylist = (playlist) => {
   router.push(`/workout-sets`)
   emit('playlist-selected', playlist)
 }
-
-// duplicate functionality removed per request
 
 const showDeleteConfirmation = (playlist) => {
   deletingPlaylist.value = { ...playlist }
@@ -973,7 +914,6 @@ const confirmDeletePlaylist = async () => {
   }
 }
 
-// Publish/Unpublish operations
 const publishToVault = async (playlist) => {
   if (!auth.currentUser) {
     alert('You must be logged in to publish workouts')
@@ -991,7 +931,6 @@ const confirmPublishToVault = async () => {
   publishingInProgress.value = true
 
   try {
-    // Get the user's display name from Firebase Auth
     const userDisplayName = auth.currentUser?.displayName || 'Anonymous'
     
     const result = await workoutVaultService.publishWorkout(
@@ -1000,7 +939,6 @@ const confirmPublishToVault = async () => {
       userDisplayName
     )
     
-    // Update the local playlist to reflect published status
     await cartStore.updatePlaylist(publishingPlaylist.value.id, {
       isPublished: true,
       publishedId: result.id,
@@ -1035,12 +973,10 @@ const confirmUnpublishFromVault = async () => {
   unpublishingInProgress.value = true
 
   try {
-    // We need the published workout ID, which should be stored in the playlist
     if (unpublishingPlaylist.value.publishedId) {
       await workoutVaultService.unpublishWorkout(unpublishingPlaylist.value.publishedId, auth.currentUser.uid)
     }
     
-    // Update the local playlist to reflect unpublished status
     await cartStore.updatePlaylist(unpublishingPlaylist.value.id, {
       isPublished: false,
       publishedAt: null,
@@ -1058,7 +994,6 @@ const confirmUnpublishFromVault = async () => {
   }
 }
 
-// Drag and Drop Methods
 const handleDragStart = (event, playlist) => {
   const workoutData = {
     type: 'workout',
@@ -1068,29 +1003,22 @@ const handleDragStart = (event, playlist) => {
   event.dataTransfer.setData('text/plain', JSON.stringify(workoutData))
   event.dataTransfer.effectAllowed = 'copy'
   
-  // Store the workout data as an attribute on the dragged element
   event.target.setAttribute('data-workout', JSON.stringify(playlist))
   
-  // Add visual feedback
   event.target.classList.add('dragging')
 }
 
 const handleDragEnd = (event) => {
-  // Reset visual feedback
   event.target.classList.remove('dragging')
   
-  // Remove the data attribute
   event.target.removeAttribute('data-workout')
 }
 
-// Modal for scheduling workout
 const openScheduleModal = (workout, date = null, time = null) => {
   schedulingWorkout.value = workout
   
-  // Calculate workout duration in minutes
   const durationMinutes = calculateWorkoutDuration(workout.exercises)
   
-  // Set default values
   const now = new Date()
   const defaultDate = date || now.toISOString().split('T')[0]
   const defaultTime = time || `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
@@ -1149,18 +1077,15 @@ const scheduleWorkout = async () => {
   schedulingInProgress.value = true
   
   try {
-    // Create start and end datetime strings
     const startDateTime = `${date}T${startTime}`
     const startDate = new Date(startDateTime)
     
-    // Validate the date
     if (isNaN(startDate.getTime())) {
       throw new Error('Invalid date or time')
     }
     
-    const endDate = new Date(startDate.getTime() + (duration * 60 * 1000)) // duration in milliseconds
+    const endDate = new Date(startDate.getTime() + (duration * 60 * 1000)) 
     
-    // Emit event to parent component (home.vue) to add to calendar
     emit('workout-scheduled', {
       workout: schedulingWorkout.value,
       event: {
@@ -1185,21 +1110,17 @@ const scheduleWorkout = async () => {
   }
 }
 
-// Initialize
 onMounted(() => {
   cartStore.initializeStore()
   
-  // Listen for authentication state changes
   authUnsubscribe.value = onAuthStateChanged(auth, (user) => {
     isAuthenticated.value = !!user
     if (user) {
-      // User is signed in, check published status
       checkPublishedStatus()
     }
   })
 })
 
-// Cleanup on unmount
 onUnmounted(() => {
   if (authUnsubscribe.value) {
     authUnsubscribe.value()
@@ -1212,7 +1133,6 @@ onUnmounted(() => {
   min-height: 400px;
 }
 
-/* Header */
 .header-section {
   text-align: center;
   padding: 1rem 0;
@@ -1231,7 +1151,6 @@ onUnmounted(() => {
   margin-bottom: 0;
 }
 
-/* Empty State */
 .empty-state {
   min-height: 300px;
   display: flex;
@@ -1251,7 +1170,6 @@ onUnmounted(() => {
   max-width: 500px;
 }
 
-/* Playlist Cards */
 .playlist-card {
   background: var(--surface-subtle);
   border-radius: 12px;
@@ -1401,7 +1319,6 @@ onUnmounted(() => {
   text-align: center;
 }
 
-/* Modals */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -1529,7 +1446,7 @@ onUnmounted(() => {
   cursor: pointer;
 }
 
-/* Exercise Search Styles */
+
 .exercise-item {
   display: flex;
   justify-content: space-between;
@@ -1626,7 +1543,6 @@ onUnmounted(() => {
   padding: 0.5rem;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .playlist-buttons {
     flex-direction: column;
@@ -1657,7 +1573,6 @@ onUnmounted(() => {
   }
 }
 
-/* Drag and Drop Styling */
 .playlist-card[draggable="true"] {
   cursor: grab;
   transition: transform 0.2s ease, opacity 0.2s ease;
@@ -1672,13 +1587,11 @@ onUnmounted(() => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Drag feedback */
 .playlist-card.dragging {
   opacity: 0.6;
   transform: scale(0.98);
 }
 
-/* Info box in schedule modal */
 .info-box {
   background: var(--surface-subtle);
   border: 1px solid var(--border-subtle);
@@ -1692,7 +1605,6 @@ onUnmounted(() => {
   font-weight: 500;
 }
 
-/* Drag handle styling */
 .title-with-drag {
   display: flex;
   align-items: center;

@@ -4,15 +4,12 @@
       <source src="/videos/UserLoginPageAnimation.mp4" type="video/mp4" />
     </video>
     <div class="auth-card">
-      <!-- Header -->
       <div class="auth-header">
         <h1>Create Account</h1>
         <p class="u-muted">Sign up to get started</p>
       </div>
 
-      <!-- Form -->
       <form @submit.prevent="signup" class="auth-form">
-        <!-- Name Input -->
         <div class="input-group">
           Full Name
           <input
@@ -25,7 +22,6 @@
           />
         </div>
 
-        <!-- Email Input -->
         <div class="input-group">
           Email
           <input
@@ -38,7 +34,6 @@
           />
         </div>
 
-        <!-- Password Input -->
         <div class="input-group">
           Password
           <input
@@ -54,22 +49,18 @@
           </button>
         </div>
 
-        <!-- Sign Up Button -->
         <button type="submit" class="u-special-btn" style="height: 50px; display: flex; justify-content: center;">
           Create Account
         </button>
 
-        <!-- Inline Success Message -->
         <p v-if="successMessage" class="text-center" style="color: #28a745; margin-top: 0.5rem;">
           {{ successMessage }}
         </p>
 
-        <!-- Inline Error Message -->
         <p v-if="errorMessage" class="text-center" style="color: #dc3545; margin-top: 0.5rem;">
           {{ errorMessage }}
         </p>
 
-        <!-- Login Link -->
         <p class="u-muted text-center">
           Already have an account? 
           <router-link to="/login" class="register-text" style="color:var(--text); text-decoration: underline;">Sign in</router-link>
@@ -99,47 +90,37 @@ export default {
 
     const signup = async () => {
       try {
-        // Create user in Firebase Authentication
         const userCredential = await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
         const user = userCredential.user;
         
-        // Update the user's display name in Firebase Auth
         await updateProfile(user, { displayName: nameInput.value });
 
-        // Create user document in Firestore using the user's UID as the document ID
-        // This ensures the document ID matches the auth UID
         const userDocRef = doc(db, "users", user.uid);
         await setDoc(userDocRef, {
           fullName: nameInput.value,
           email: emailInput.value,
           photoURL: user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(nameInput.value)}&size=150&background=e63946&color=fff`,
           
-          // Default profile fields
           gender: '',
           age: null,
           height: null,
           weight: null,
           
-          // Default goals - CHANGED: Use dailyCalorieGoal to match home page
           goalType: '',
           dailyGoal: 2000,
           dietaryPreference: '',
           allergies: '',
           workoutFrequency: 3,
           
-          // Default preferences
           spotifyConnected: false,
           aiSuggestionsEnabled: true,
           remindersEnabled: true,
           darkMode: false,
           
-          // Timestamps
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
         });
 
-        // Show success modal
-        // Redirect to login page after successful signup
         successMessage.value = 'Account created successfully! Redirecting to login...';
         setTimeout(() => {
           router.push('/login');
@@ -147,7 +128,6 @@ export default {
       } catch (error) {
         console.error(error.code, error.message);
         
-        // Provide more specific error messages
         if (error.code === 'auth/email-already-in-use') {
           errorMessage.value = 'This email is already registered. Please login instead.';
         } else if (error.code === 'auth/weak-password') {
@@ -158,7 +138,6 @@ export default {
           errorMessage.value = 'Sign Up failed. Please try again.';
         }
         
-        // Display error message inline (no modal)
         console.error('Signup error:', errorMessage.value);
       }
     }
@@ -305,7 +284,6 @@ input {
   border-bottom-right-radius: 2 !important;
 }
 
-/* Responsive Design */
 @media (max-width: 480px) {
   .auth-container {
     padding: 1rem;

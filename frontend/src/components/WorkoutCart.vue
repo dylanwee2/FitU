@@ -1,6 +1,5 @@
 <template>
   <div class="workout-cart">
-    <!-- Cart Toggle Button -->
     <button 
       @click="toggleCart" 
       class="cart-toggle-btn"
@@ -9,11 +8,8 @@
       <img src="../assets/logo.png" width="100%">
       <span v-if="cartItemCount > 0" class="cart-badge">{{ cartItemCount }}</span>
     </button>
-
-    <!-- Cart Sidebar -->
     <div v-if="isOpen" class="cart-sidebar" @click.self="closeCart">
       <div class="cart-content">
-        <!-- Cart Header -->
         <div class="cart-header">
           <h5 class="cart-title">
             Workout Cart
@@ -22,7 +18,6 @@
           </button>
         </div>
 
-        <!-- Cart Items -->
         <div class="cart-items">
           <div v-if="cartItemCount === 0" class="empty-cart">
             <div class="empty-cart-icon">
@@ -38,7 +33,6 @@
               :key="item.id"
               class="cart-item"
             >
-              <!-- Exercise Image -->
               <div class="cart-item-image">
                 <img 
                   :src="item.gifUrl || '/images/exercise-placeholder.png'" 
@@ -47,19 +41,16 @@
                 >
               </div>
 
-              <!-- Exercise Info -->
               <div class="cart-item-info">
                 <h6 class="cart-item-name">{{ capitalizeFirstLetter(item.name) }}</h6>
               </div>
 
-              <!-- Badges: span under image -->
               <div class="cart-item-badges">
                 <span class="badge target-muscle-badge">{{ capitalizeFirstLetter(item.target) }}</span>
                 <span class="badge body-part-badge">{{ capitalizeFirstLetter(item.bodyPart) }}</span>
                 <span class="badge equipment-badge">{{ capitalizeFirstLetter(item.equipment) }}</span>
               </div>
 
-              <!-- Exercise Controls -->
               <div class="cart-item-controls">
                 <div class="sets-reps-control">
                   <label class="control-label">Sets</label>
@@ -97,7 +88,6 @@
                 </div>
               </div>
 
-              <!-- Remove Button -->
               <button 
                 @click="removeFromCart(item.id)"
                 class="btn-remove"
@@ -109,7 +99,6 @@
           </div>
         </div>
 
-        <!-- Cart Summary -->
         <div v-if="cartItemCount > 0" class="cart-summary">
           <div class="summary-stats">
             <div class="stat">
@@ -136,9 +125,7 @@
             </span>
           </div>
 
-          <!-- Equipment Icons Bar -->
           <div v-if="cartEquipment.length > 0" class="equipment-section-container">
-            <!-- Pull-up Tab -->
             <div class="equipment-pull-tab u-btn u-btn--secondary" @click="toggleEquipmentSection">
               <div class="pull-tab-content">
                 <i class="fas fa-dumbbell pull-tab-icon"></i>
@@ -150,7 +137,6 @@
               </div>
             </div>
             
-            <!-- Collapsible Equipment Content -->
             <div 
               class="equipment-icons-section" 
               :class="{ 'equipment-expanded': showEquipmentSection }"
@@ -175,7 +161,6 @@
           </div>
         </div>
 
-        <!-- Cart Actions -->
         <div class="cart-actions">
           <button 
             v-if="cartItemCount > 0"
@@ -205,7 +190,6 @@
       </div>
     </div>
 
-    <!-- Clear Cart Confirmation Modal -->
     <div v-if="showClearCartConfirm" class="modal-overlay" @click.self="cancelClearCart">
       <div class="modal-content">
         <div class="modal-header">
@@ -225,8 +209,6 @@
           </p>
         </div>
         
-          <!-- AI Add/Remove Modal overlay (shows when user clicks Add/Remove suggestion) -->
-
         <div class="modal-footer">
           <button 
             @click="cancelClearCart"
@@ -244,7 +226,6 @@
       </div>
     </div>
 
-    <!-- Save Workout Modal -->
     <div v-if="showSavePlaylistModal" class="modal-overlay" @click.self="showSavePlaylistModal = false">
       <div class="modal-content">
         <div class="modal-header">
@@ -280,7 +261,6 @@
             </div>
 
             <div class="row">
-              <!-- Left: current workout preview and editable list -->
               <div class="col-sm-12 col-md-12 col-lg-6 col-xl-6">
                 <div class="playlist-preview">
                   <div class="form-group">
@@ -301,7 +281,7 @@
                 </div>
               </div>
 
-              <!-- Right: AI advice and actionable suggestions -->
+              
               <div class="col-sm-12 col-md-12 col-lg-6 col-xl-6 modal-right-col">
                 <h6>AI Coach Advice</h6>
                 <div v-if="aiLoading" class="ai-loading-wrap" aria-hidden="true">
@@ -344,7 +324,6 @@
     </div>
   </div>
 
-  <!-- AI Add/Remove Modal overlay (shows when user clicks Add/Remove suggestion) -->
   <div v-if="showAIModal" class="modal-overlay" @click.self="closeAIModal">
     <div class="modal-content" style="max-width:800px;">
       <div class="modal-header">
@@ -394,8 +373,6 @@ import { doc, getDoc } from 'firebase/firestore'
 import { caloriesService } from '@/services/caloriesService.js'
 
 const cartStore = useWorkoutCartStore()
-
-// Local state
 const isOpen = ref(false)
 const showSavePlaylistModal = ref(false)
 const showClearCartConfirm = ref(false)
@@ -405,15 +382,12 @@ const showEquipmentSection = ref(false)
 const aiAdvice = ref('')
 const aiLoading = ref(false)
 const aiError = ref('')
-
-// Computed properties from store
 const cartItems = computed(() => cartStore.cartItems)
 const cartItemCount = computed(() => cartStore.cartItemCount)
 const cartTotalDuration = computed(() => cartStore.cartTotalDuration)
 const cartMuscleGroups = computed(() => cartStore.cartMuscleGroups)
 const isAuthenticated = computed(() => cartStore.isAuthenticated)
 
-// Get unique equipment from cart items
 const cartEquipment = computed(() => {
   const equipmentSet = new Set()
   cartItems.value.forEach(item => {
@@ -430,8 +404,6 @@ const cartEquipment = computed(() => {
   })
   return Array.from(equipmentSet)
 })
-
-// Methods
 const toggleCart = () => {
   isOpen.value = !isOpen.value
   logCurrentUserData()
@@ -468,8 +440,6 @@ const savePlaylist = async () => {
 
   try {
     await cartStore.savePlaylist(newPlaylistName.value.trim(), newPlaylistDescription.value.trim())
-    
-    // Reset form and close modal
     newPlaylistName.value = ''
     newPlaylistDescription.value = ''
     showSavePlaylistModal.value = false
@@ -487,7 +457,6 @@ const savePlaylist = async () => {
 }
 
 const getAICoachAdvice = async () => {
-  // Reset
   aiAdvice.value = ''
   aiError.value = ''
 
@@ -504,7 +473,6 @@ const getAICoachAdvice = async () => {
   aiLoading.value = true
 
   try {
-    // Build a prompt summarizing the workout
     const lines = []
     lines.push(`Workout Name: ${newPlaylistName.value.trim()}`)
     if (newPlaylistDescription.value && newPlaylistDescription.value.trim()) {
@@ -522,7 +490,6 @@ const getAICoachAdvice = async () => {
       lines.push(parts.join(' | '))
     })
 
-    // Try to include the user's goals/profile data in the prompt so the AI can suggest meals
     try {
       const user = cartStore.currentUser
       if (user && user.uid) {
@@ -548,7 +515,6 @@ const getAICoachAdvice = async () => {
           }
 
           lines.push('\nUser profile and goals:')
-          // Add a compact JSON block the model can read
           lines.push(JSON.stringify({ profileData, goalsData }, null, 2))
         }
       }
@@ -556,8 +522,6 @@ const getAICoachAdvice = async () => {
       console.warn('Failed to include user goals in AI prompt:', userErr)
     }
 
-  // Strict output requirements: return a single top-level <ul> only, and use
-  // specific HTML structure for suggestions so the frontend can parse it.
   lines.push('\nIMPORTANT: DO NOT suggest any exercises that are already listed in the workout above. Only suggest NEW exercises that complement the existing ones.')
   lines.push('\nIMPORTANT: Only recommend common, well-known exercises that are available in the ExerciseDB API database. Use standard exercise names (e.g., "Barbell Bench Press", "Lat Pulldown", "Dumbbell Row", "Cable Face Pull"). Avoid obscure or specialized exercise variations that may not exist in the database. Eg: Face Pull')
   lines.push('\nRETURN ONLY a single TOP-LEVEL HTML unordered list (<ul>) that follows these exact rules:')
@@ -602,7 +566,6 @@ const getAICoachAdvice = async () => {
 
   const resp = await axios.post('http://18.139.200.231:3000/api/gemini/generate', { prompt })
   aiAdvice.value = resp?.data?.result || 'No advice returned.'
-  // Parse suggestions and attach handlers
   await processAIAdvice(aiAdvice.value)
   } catch (err) {
     console.error('Error fetching AI advice:', err)
@@ -623,18 +586,14 @@ const handleImageError = (event) => {
 }
 
 const capitalizeFirstLetter = (text) => {
-  // Defensive: accept strings, numbers, arrays, and simple objects.
   if (text === null || text === undefined) return ''
-  // If an array, join with comma + space
   if (Array.isArray(text)) {
     text = text.join(', ')
   }
-  // If object with a name field, use that
   if (typeof text === 'object') {
     if (text.name) text = String(text.name)
     else text = JSON.stringify(text)
   }
-  // Ensure we have a string now
   text = String(text)
   if (!text) return ''
   return text
@@ -644,149 +603,111 @@ const capitalizeFirstLetter = (text) => {
     .join(' ')
 }
 
-// Equipment icon mapping
 const getEquipmentIcon = (equipment) => {
   if (!equipment) return '/images/equipment/default.svg'
   
-  // Normalize equipment name: lowercase, trim, and handle variations
   let normalized = equipment.toLowerCase().trim()
   
-  // Handle variations and synonyms - check compound names first
-  // "ez barbell", "ez bar", "ez-bar", "ez barbell" -> "ez-bar"
   if ((normalized.includes('ez') && (normalized.includes('bar') || normalized.includes('barbell'))) || normalized === 'ez-bar') {
     normalized = 'ez-bar'
   }
-  // "trap bar" or "trap-bar" -> "trap-bar"
   else if (normalized.includes('trap') && normalized.includes('bar')) {
     normalized = 'trap-bar'
   }
-  // "resistance band" or "resistance-band" -> "resistance-band"
   else if (normalized.includes('resistance') && normalized.includes('band')) {
     normalized = 'resistance-band'
   }
-  // "exercise band" -> "exercise-band"
   else if (normalized.includes('exercise') && normalized.includes('band')) {
     normalized = 'exercise-band'
   }
-  // "mini band" -> "mini-band"
   else if ((normalized.includes('mini') && normalized.includes('band')) || normalized === 'mini-band') {
     normalized = 'mini-band'
   }
-  // "pull-up bar", "pull up bar", or "pullup-bar" -> "pullup-bar"
   else if ((normalized.includes('pull') && normalized.includes('up') && normalized.includes('bar')) || 
            (normalized.includes('pullup') && normalized.includes('bar'))) {
     normalized = 'pullup-bar'
   }
-  // "medicine ball" or "medicine-ball" -> "medicine-ball"
   else if (normalized.includes('medicine') && normalized.includes('ball')) {
     normalized = 'medicine-ball'
   }
-  // "yoga mat" or "yoga-mat" -> "yoga-mat"
   else if (normalized.includes('yoga') && normalized.includes('mat')) {
     normalized = 'yoga-mat'
   }
-  // "stability ball" or "stability-ball" -> "stability-ball"
   else if (normalized.includes('stability') && normalized.includes('ball')) {
     normalized = 'stability-ball'
   }
-  // "foam roller" or "foam-roller" -> "foam-roller"
   else if (normalized.includes('foam') && normalized.includes('roller')) {
     normalized = 'foam-roller'
   }
-  // "weight plate" or "weight-plate" -> "weight-plate"
   else if (normalized.includes('weight') && normalized.includes('plate')) {
     normalized = 'weight-plate'
   }
-  // "weighted vest" -> "weighted-vest"
   else if (normalized.includes('weighted') && normalized.includes('vest')) {
     normalized = 'weighted-vest'
   }
-  // "weighted ball" -> "weighted-ball" (different from medicine ball)
   else if (normalized.includes('weighted') && normalized.includes('ball')) {
     normalized = 'weighted-ball'
   }
-  // "weighted dumbbell" -> "weighted-dumbbell"
   else if (normalized.includes('weighted') && normalized.includes('dumbbell')) {
     normalized = 'weighted-dumbbell'
   }
-  // "weighted bar" or "weighted barbell" -> "weighted-bar"
   else if (normalized.includes('weighted') && (normalized.includes('bar') || normalized.includes('barbell'))) {
     normalized = 'weighted-bar'
   }
-  // "suspension trainer" or "suspension-trainer" -> "suspension-trainer"
   else if (normalized.includes('suspension') && normalized.includes('trainer')) {
     normalized = 'suspension-trainer'
   }
-  // "body weight", "bodyweight", or "body-weight" -> "bodyweight"
   else if ((normalized.includes('body') && normalized.includes('weight')) || normalized === 'bodyweight') {
     normalized = 'bodyweight'
   }
-  // Machine-specific mappings
-  // "smith machine" or "smith" -> "smith-machine"
   else if (normalized.includes('smith')) {
     normalized = 'smith-machine'
   }
-  // "leg press" or "leg press machine" -> "leg-press-machine"
   else if (normalized.includes('leg') && normalized.includes('press')) {
     normalized = 'leg-press-machine'
   }
-  // "treadmill" -> "treadmill"
   else if (normalized.includes('treadmill')) {
     normalized = 'treadmill'
   }
-  // "stationary bike" or "bike" -> "stationary-bike"
   else if (normalized.includes('stationary') && normalized.includes('bike')) {
     normalized = 'stationary-bike'
   }
   else if (normalized === 'bike') {
     normalized = 'stationary-bike'
   }
-  // "lat pulldown" or "lat pulldown machine" -> "lat-pulldown"
   else if (normalized.includes('lat') && normalized.includes('pulldown')) {
     normalized = 'lat-pulldown'
   }
-  // "chest press" or "chest press machine" -> "chest-press"
   else if (normalized.includes('chest') && normalized.includes('press')) {
     normalized = 'chest-press'
   }
-  // "seated row" or "seated row machine" -> "seated-row"
   else if (normalized.includes('seated') && normalized.includes('row')) {
     normalized = 'seated-row'
   }
-  // "cable cross" or "cable crossover" -> "cable-cross"
   else if (normalized.includes('cable') && (normalized.includes('cross') || normalized.includes('crossover'))) {
     normalized = 'cable-cross'
   }
-  // "hack squat" or "hack squat machine" -> "hack-squat"
   else if (normalized.includes('hack') && normalized.includes('squat')) {
     normalized = 'hack-squat'
   }
-  // "leg curl" or "leg curl machine" -> "leg-curl"
   else if (normalized.includes('leg') && normalized.includes('curl')) {
     normalized = 'leg-curl'
   }
-  // "leg extension" or "leg extension machine" -> "leg-extension"
   else if (normalized.includes('leg') && normalized.includes('extension')) {
     normalized = 'leg-extension'
   }
-  // "preacher curl" or "preacher curl machine" -> "preacher-curl"
   else if (normalized.includes('preacher') && normalized.includes('curl')) {
     normalized = 'preacher-curl'
   }
-  // "shoulder press" or "shoulder press machine" -> "shoulder-press"
   else if (normalized.includes('shoulder') && normalized.includes('press')) {
     normalized = 'shoulder-press'
   }
-  // "leverage machine" or "leverage" -> "leverage-machine"
   else if (normalized.includes('leverage')) {
     normalized = 'leverage-machine'
   }
-  // Replace remaining spaces with hyphens for consistency
   else {
     normalized = normalized.replace(/\s+/g, '-').replace(/-+/g, '-')
   }
-  
-  // Map normalized names to icon files
   const equipmentIcons = {
     'bodyweight': '/images/equipment/bodyweight.svg',
     'body-weight': '/images/equipment/bodyweight.svg',
@@ -843,7 +764,6 @@ const toggleEquipmentSection = () => {
   showEquipmentSection.value = !showEquipmentSection.value
 }
 
-// Debug helper: load and log the same user data as profile.vue's loadUserData
 const logCurrentUserData = async () => {
   try {
     const user = cartStore.currentUser
@@ -877,7 +797,6 @@ const logCurrentUserData = async () => {
         workoutStreakGoal: data.workoutStreakGoal || 3
       }
 
-      // Attempt to load calorie-related data (same as profile.vue)
       try {
         const calorieData = await caloriesService.getUserCalories(uid)
         const weeklyCalorieData = caloriesService.getWeekSeries(calorieData.entries || [], 7)
@@ -906,7 +825,7 @@ const logCurrentUserData = async () => {
   }
 }
 
-// ------------------ AI suggestion parsing & modal logic ------------------
+
 import { nextTick } from 'vue'
 const aiSuggestions = ref([])
 const showAIModal = ref(false)
@@ -927,19 +846,16 @@ const parseAISuggestions = (htmlString) => {
       const btnAdd = li.querySelector('[data-action="add"]') || li.querySelector('.add-btn')
       const btnRemove = li.querySelector('[data-action="remove"]') || li.querySelector('.remove-btn')
       if (btnAdd || btnRemove) {
-        // Extract name text without button text and optional (search: ...) token
         const clone = li.cloneNode(true)
         const btns = clone.querySelectorAll('button')
         btns.forEach(b => b.remove())
         let text = (clone.textContent || '').trim()
-        // Look for (search: keyword) pattern and extract it
         let searchTerm = ''
         const m = text.match(/\(search:\s*([^\)]+)\)/i)
         if (m) {
           searchTerm = (m[1] || '').trim()
           text = text.replace(/\(search:\s*([^\)]+)\)/i, '').trim()
         }
-        // Remove labels like 'Add' or 'Remove' if present at start/end
         let name = text.replace(/^(Add|Remove)\s*/i, '').replace(/[-:\s]+$/,'').trim()
         const mode = btnAdd ? 'add' : 'remove'
         const key = `${mode}::${name.toLowerCase()}::${(searchTerm||'').toLowerCase()}`
@@ -963,7 +879,6 @@ const openAIModal = async (mode, name = '') => {
   if (mode === 'add' && name) {
     await searchExercises(name)
   } else if (mode === 'remove') {
-    // Prefill removal candidates from cart
     const matches = cartItems.value.filter(it => (it.name || '').toLowerCase().includes((name || '').toLowerCase()))
     aiModalResults.value = matches.map(m => ({ ...m }))
   }
@@ -1044,20 +959,15 @@ const removeMatchingFromCart = (idOrName) => {
   aiModalResults.value = matches.map(m => ({ ...m }))
 }
 
-// Helper to parse suggestions and attach handlers after AI advice is set
 const processAIAdvice = async (html) => {
   try {
     aiSuggestions.value = parseAISuggestions(html || '')
     
-    // Clean up the HTML to remove (search: ...) text before displaying
-    // Create a temporary DOM to manipulate the HTML
     const tempDiv = document.createElement('div')
     tempDiv.innerHTML = html || ''
     
-    // Find all li elements and remove (search: ...) pattern from text nodes
     const allLis = tempDiv.querySelectorAll('li')
     allLis.forEach(li => {
-      // Get all text nodes within this li
       const walker = document.createTreeWalker(li, NodeFilter.SHOW_TEXT, null, false)
       const textNodes = []
       let node
@@ -1065,20 +975,16 @@ const processAIAdvice = async (html) => {
         textNodes.push(node)
       }
       
-      // Replace (search: ...) pattern in each text node
       textNodes.forEach(textNode => {
         textNode.textContent = textNode.textContent.replace(/\s*\(search:\s*[^\)]+\)\s*/gi, ' ')
       })
     })
     
-    // Update the displayed HTML with cleaned version
     aiAdvice.value = tempDiv.innerHTML
     
     await nextTick()
-    // Attach event listeners for any buttons the AI included (fallback)
     const container = document.querySelector('.ai-advice-box')
     if (container) {
-      // Support both data-action attribute and old class-based selectors
       const addBtns = container.querySelectorAll('[data-action="add"], .add-btn')
       addBtns.forEach(b => {
         if (b._aiHandlerAttached) return
@@ -1103,7 +1009,6 @@ const processAIAdvice = async (html) => {
   }
 }
 
-// Small helper used by processAIAdvice
 const extractNameFromButton = (buttonEl) => {
   try {
     const li = buttonEl.closest('li')
@@ -1119,7 +1024,6 @@ const extractNameFromButton = (buttonEl) => {
   }
 }
 
-// Returns an object { name, searchTerm } by inspecting the closest li to the button
 const extractSuggestionDataFromButton = (buttonEl) => {
   try {
     const li = buttonEl.closest('li')
@@ -1128,7 +1032,6 @@ const extractSuggestionDataFromButton = (buttonEl) => {
     const btns = clone.querySelectorAll('button')
     btns.forEach(b => b.remove())
     let txt = (clone.textContent || '').trim()
-    // Look for (search: keyword) pattern and extract it
     let searchTerm = ''
     const m = txt.match(/\(search:\s*([^\)]+)\)/i)
     if (m) {
@@ -1153,7 +1056,6 @@ const formatExerciseName = (s) => {
   position: relative;
 }
 
-/* Cart Toggle Button */
 .cart-toggle-btn {
   position: fixed;
   bottom: 2rem;
@@ -1207,7 +1109,6 @@ const formatExerciseName = (s) => {
   100% { transform: scale(1); }
 }
 
-/* Cart Sidebar */
 .cart-sidebar {
   position: fixed;
   top: 0;
@@ -1230,7 +1131,6 @@ const formatExerciseName = (s) => {
   flex-direction: column;
 }
 
-/* Cart Header */
 .cart-header {
   padding: 1.5rem;
   border-bottom: 1px solid var(--border-subtle);
@@ -1245,7 +1145,6 @@ const formatExerciseName = (s) => {
   font-weight: 600;
 }
 
-/* Cart Items */
 .cart-items {
   flex: 1;
   overflow-y: auto;
@@ -1337,14 +1236,14 @@ const formatExerciseName = (s) => {
   display: flex;
   gap: 0.25rem;
   flex-wrap: wrap;
-  grid-column: 1 / 3; /* span under image and name */
+  grid-column: 1 / 3; 
   grid-row: 2;
 }
 
 .cart-item-badges .badge {
   font-size: 0.7rem;
   padding: 0.25rem 0.5rem 0.25rem 0.9rem;
-  width: 120px; /* fixed width for standardised look */
+  width: 120px; 
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1401,7 +1300,6 @@ const formatExerciseName = (s) => {
   opacity: 1;
 }
 
-/* Cart Summary */
 .cart-summary {
   padding: 1rem;
   border-top: 1px solid var(--border-subtle);
@@ -1447,7 +1345,6 @@ const formatExerciseName = (s) => {
   font-weight: 500;
 }
 
-/* Cart Actions */
 .cart-actions {
   padding: 1rem;
   display: flex;
@@ -1459,7 +1356,6 @@ const formatExerciseName = (s) => {
   justify-content: center;
 }
 
-/* Modal */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -1478,7 +1374,6 @@ const formatExerciseName = (s) => {
   background: var(--bg);
   border-radius: 8px;
   width: 100%;
-  /* wider modal to comfortably host an expanded layout */
   max-width: 1200px;
   max-height: 90vh;
   overflow-y: auto;
@@ -1538,7 +1433,6 @@ const formatExerciseName = (s) => {
   justify-content: flex-end;
 }
 
-/* Two-column modal body layout */
 .modal-right-col {
   max-height: 60vh;
   overflow-y: auto;
@@ -1562,30 +1456,25 @@ const formatExerciseName = (s) => {
   align-items: center;
 }
 
-/* Float buttons to the right in AI suggestions */
 .ai-advice-content .float-end {
   float: right;
   margin-left: auto;
 }
 
-/* Hide the AI-generated "Suggestions" section since we render it separately with Vue */
 .ai-advice-content > ul > li:last-child {
   display: none;
 }
 
-/* Hide (search: ...) text in AI suggestions by targeting text nodes containing parentheses */
 .ai-advice-content li {
   position: relative;
 }
 
-/* Style buttons with data-action attribute and legacy class-based buttons */
 .ai-advice-content [data-action],
 .ai-advice-content .add-btn,
 .ai-advice-content .remove-btn {
   margin-left: 0.5rem;
 }
 
-/* Dark theme styling for list-group in modal */
 .list-group {
   list-style: none;
   padding: 0;
@@ -1613,18 +1502,16 @@ const formatExerciseName = (s) => {
   color: #a0a0a0 !important;
 }
 
-/* Loader placeholder provided by user (monospace gradient text) */
 .ai-loading-wrap {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 90px; /* makes the loader appear in the middle vertically */
+  min-height: 90px; 
   padding: 0.5rem 0;
   background: rgba(255,255,255,0.02);
   border-radius: 6px;
 }
 
-/* HTML: <div class="loader"></div> */
 .loader {
   width: fit-content;
   font-weight: bold;
@@ -1651,7 +1538,6 @@ const formatExerciseName = (s) => {
   100%{background-position: left}
 }
 
-/* Clear Cart Confirmation Modal Styles */
 .clear-cart-icon {
   text-align: center;
   margin-bottom: 1rem;
@@ -1683,13 +1569,11 @@ const formatExerciseName = (s) => {
   margin-bottom: 0;
 }
 
-/* Responsive - Tablet and below (770px and below) */
 @media (max-width: 770px) {
   .cart-content {
     width: 100%;
   }
 
-  /* Fix modal scrolling on small screens */
   .modal-content {
     max-height: 95vh;
     display: flex;
@@ -1699,17 +1583,15 @@ const formatExerciseName = (s) => {
   .modal-body {
     overflow-y: auto;
     flex: 1;
-    max-height: calc(95vh - 140px); /* Account for header and footer */
+    max-height: calc(95vh - 140px); 
   }
 
-  /* Remove border on small screens */
   .modal-right-col {
     border-left: none;
     padding-left: 0;
     margin-top: 1rem;
   }
   
-  /* Switch from grid to flexbox to prevent overlap */
   .cart-item {
     display: flex !important;
     flex-direction: column;
@@ -1718,7 +1600,6 @@ const formatExerciseName = (s) => {
     grid-template-rows: none !important;
   }
   
-  /* Reset grid positioning when using flexbox */
   .cart-item-image {
     grid-column: auto !important;
     grid-row: auto !important;
@@ -1802,7 +1683,6 @@ const formatExerciseName = (s) => {
   }
 }
 
-/* Extra small devices (phones in portrait, less than 576px) */
 @media (max-width: 575px) {
   .cart-content {
     width: 100%;
@@ -1899,7 +1779,6 @@ const formatExerciseName = (s) => {
     font-size: 0.95rem;
   }
   
-  /* Modal adjustments for extra small */
   .modal-content {
     max-width: 100vw;
     margin: 0;
@@ -1931,7 +1810,6 @@ const formatExerciseName = (s) => {
   }
 }
 
-/* Nuanced charcoal pill theme with color-coded indicator dots */
 .cart-item-badges .badge {
   position: relative;
   background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
@@ -1961,7 +1839,6 @@ const formatExerciseName = (s) => {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.28);
 }
 
-/* Subtle top highlight */
 .cart-item-badges .badge::after {
   content: '';
   position: absolute;
@@ -1975,13 +1852,11 @@ const formatExerciseName = (s) => {
 .body-part-badge::before { background: #3498db; box-shadow: 0 0 2px rgba(52, 152, 219, 0.28); }
 .equipment-badge::before { background: #27ae60; box-shadow: 0 0 2px rgba(39, 174, 96, 0.28); }
 
-/* Equipment Section Container */
 .equipment-section-container {
   margin-top: 1rem;
   border-top: 1px solid var(--border-subtle);
 }
 
-/* Pull-up Tab - Override button styles for tab appearance */
 .equipment-pull-tab {
   width: 100%;
   border-radius: 8px 8px 0 0 !important;
@@ -2031,7 +1906,6 @@ const formatExerciseName = (s) => {
   transition: transform 0.3s ease;
 }
 
-/* Equipment Icons Section */
 .equipment-icons-section {
   max-height: 0;
   overflow: hidden;

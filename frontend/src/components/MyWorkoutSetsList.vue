@@ -1,7 +1,6 @@
 <template>
   <div class="my-workout-sets">
     <div class="container mt-4">
-      <!-- Header -->
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h2>My Workout Sets</h2>
@@ -12,13 +11,11 @@
         </button>
       </div>
 
-      <!-- Loading State -->
       <div v-if="loading" class="text-center py-5">
         <div class="spinner-border text-primary mb-3"></div>
         <p>Loading your workout sets...</p>
       </div>
 
-      <!-- Error State -->
       <div v-else-if="error" class="text-center py-5">
         <i class="fas fa-exclamation-triangle text-warning mb-3" style="font-size: 3rem;"></i>
         <h4>Unable to Load Workout Sets</h4>
@@ -26,7 +23,6 @@
         <button @click="loadWorkoutSets" class="btn btn-primary">Try Again</button>
       </div>
 
-      <!-- Empty State -->
       <div v-else-if="workoutSets.length === 0" class="text-center py-5">
         <i class="fas fa-dumbbell text-muted mb-3" style="font-size: 4rem;"></i>
         <h4>No workout sets yet</h4>
@@ -36,11 +32,9 @@
         </button>
       </div>
 
-      <!-- Workout Sets List -->
       <div v-else class="row g-3">
         <div v-for="set in workoutSets" :key="set.id" class="col-sm-6 col-lg-4">
           <div class="card h-100">
-            <!-- Card Header with badges -->
             <div class="card-header d-flex justify-content-between align-items-start">
               <div>
                 <span v-if="set.origin === 'created'" class="badge bg-primary me-1">
@@ -54,7 +48,6 @@
                 </span>
               </div>
               
-              <!-- Actions dropdown -->
               <div class="dropdown">
                 <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-label="Workout actions">
                   
@@ -74,7 +67,6 @@
               </div>
             </div>
 
-            <!-- Card Body -->
             <div class="card-body">
               <h5 class="card-title">{{ set.title }}</h5>
               <p class="card-text text-muted">{{ truncateText(set.description, 80) }}</p>
@@ -85,7 +77,6 @@
               </div>
             </div>
 
-            <!-- Card Footer -->
             <div class="card-footer d-flex justify-content-between">
               <div>
                 <button v-if="canPublish(set, currentUser?.uid || '')" @click="publishWorkoutSet(set)" 
@@ -108,7 +99,6 @@
       </div>
     </div>
 
-    <!-- Create Modal -->
     <div v-if="showCreateModal" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -156,7 +146,6 @@ import { canPublish, formatDuration, calculateWorkoutDuration } from '@/types/wo
 
 const router = useRouter()
 
-// Reactive state
 const workoutSets = ref([])
 const loading = ref(false)
 const error = ref('')
@@ -165,35 +154,26 @@ const creating = ref(false)
 const publishingIds = ref(new Set())
 const newSet = ref({ title: '', description: '' })
 
-// Real-time subscription
 let unsubscribe = null
 
-// Computed properties
 const currentUser = computed(() => auth.currentUser)
 
-// Utility functions
 const formatWorkoutDuration = (set) => {
   let totalMinutes = 0;
-  
-  // Always calculate from exercises to ensure 5min/set consistency
   if (set.exercises && set.exercises.length > 0) {
-    // Force recalculation using 5min per set rule
     totalMinutes = set.exercises.reduce((total, exercise) => {
-      const sets = exercise.sets || 3; // Default to 3 sets
-      return total + (sets * 5); // 5 minutes per set
+      const sets = exercise.sets || 3; 
+      return total + (sets * 5); 
     }, 0);
   }
   
-  // If we still have 0 and there are exercises, use a basic fallback
   if (totalMinutes === 0 && set.exercises && set.exercises.length > 0) {
-    // Each exercise gets 3 sets by default = 15 minutes per exercise
     totalMinutes = set.exercises.length * 3 * 5;
   }
   
   return formatDuration(totalMinutes);
 }
 
-// Methods
 const loadWorkoutSets = async () => {
   if (!currentUser.value) return
   loading.value = true
@@ -288,7 +268,6 @@ const deleteWorkoutSet = async (set) => {
   }
 }
 
-// Utility functions
 const truncateText = (text, maxLength) => {
   if (!text) return ''
   if (text.length <= maxLength) return text
@@ -307,7 +286,6 @@ const formatDate = (dateString) => {
   return date.toLocaleDateString()
 }
 
-// Lifecycle
 onMounted(() => {
   if (currentUser.value) {
     setupRealtimeListener()

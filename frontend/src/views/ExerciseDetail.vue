@@ -6,7 +6,6 @@
       <div v-if="loading">Loading...</div>
       <div v-else-if="error">Error: {{ error }}</div>
       <div v-else>
-        <!-- Exercise Header -->
         <div class="exercise-header mb-4">
           <h1>{{ exercise.name }}</h1>
           <div class="exercise-badges mb-4 d-flex justify-content-between align-items-center">
@@ -28,9 +27,7 @@
           </div>
         </div>
 
-        <!-- Top Section: Image Left, Info Right -->
         <div class="row mb-4">
-          <!-- Left: Exercise Image -->
           <div class="col-lg-6 col-md-12 mb-3 mb-lg-0">
             <div class="exercise-image-container">
               <img
@@ -43,9 +40,7 @@
             </div>
           </div>
 
-          <!-- Right: Exercise Information -->
           <div class="col-lg-6 col-md-12">
-            <!-- Exercise Information Card -->
             <div class="exercise-details u-card">
               <h5>Exercise Information</h5>
               <ul class="list-unstyled">
@@ -59,8 +54,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Bottom Section: Instructions/Description -->
         <div class="row">
           <div class="col-12">
             <div v-if="exercise.instructions && exercise.instructions.length" class="instructions-section u-card">
@@ -92,7 +85,6 @@ const exercise = ref({})
 const loading = ref(false)
 const error = ref('')
 
-// Cart computed properties
 const isInCart = computed(() => {
   return cartStore.cartItems.some(item => item.id === exercise.value.id)
 })
@@ -111,7 +103,6 @@ const loadExercise = async () => {
     
     const data = await response.json()
     
-    // Handle ExerciseDB API response structure
     if (data.success && data.data) {
       const exerciseData = data.data
       exercise.value = {
@@ -125,7 +116,6 @@ const loadExercise = async () => {
         secondaryMuscles: Array.isArray(exerciseData.secondaryMuscles) ? exerciseData.secondaryMuscles : []
       }
     } else {
-      // Fallback mapping for direct response
       exercise.value = data
     }
   } catch (err) {
@@ -138,18 +128,15 @@ const loadExercise = async () => {
 const addToCart = () => {
   const success = cartStore.addToCart(exercise.value)
   if (success) {
-    // You could add a toast notification here
     console.log('Added to cart:', exercise.value.name)
   }
 }
 
 const toggleCartDetail = () => {
   if (isInCart.value) {
-    // Remove from cart
     cartStore.removeFromCart(exercise.value.id)
     console.log('Removed from cart:', exercise.value.name)
   } else {
-    // Add to cart
     const success = cartStore.addToCart(exercise.value)
     if (success) {
       console.log('Added to cart:', exercise.value.name)
@@ -157,7 +144,6 @@ const toggleCartDetail = () => {
   }
 }
 
-// Format functions to clean up and capitalize text
 const formatTarget = (target) => {
   if (!target) return 'Full Body'
   if (Array.isArray(target)) {
@@ -196,13 +182,12 @@ onMounted(() => {
     loadExercise()
   }
 })
-// Subtle parallax for media to move with scroll while staying aligned
 const mediaRef = ref(null)
 const parallaxY = ref(0)
 const onScroll = () => {
   if (!mediaRef.value) return
   const rect = mediaRef.value.getBoundingClientRect()
-  const viewportAnchor = 100 // pixels from top after sticky
+  const viewportAnchor = 100 
   const elementAnchor = rect.top
   const delta = elementAnchor - viewportAnchor
   parallaxY.value = Math.max(-18, Math.min(18, delta * 0.08))
@@ -255,7 +240,6 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
   background-color: #495057 !important;
 }
 
-/* Nuanced charcoal pill theme for badges with color-coded dots */
 .exercise-badges .badge {
   position: relative;
   background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
@@ -264,11 +248,11 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
   border-radius: 12px;
   font-weight: 600;
   letter-spacing: 0.01em;
-  padding: 0.25rem 0.6rem 0.25rem 1.2rem; /* extra space between dot and text */
-  width: auto; /* let content decide */
+  padding: 0.25rem 0.6rem 0.25rem 1.2rem; 
+  width: auto;  
   max-width: 100%;
-  justify-self: start; /* prevent grid stretch */
-  white-space: nowrap; /* single line */
+  justify-self: start; 
+  white-space: nowrap; 
   overflow: hidden;
   text-overflow: ellipsis;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.25);
@@ -366,7 +350,6 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
   padding: 2rem;
 }
 
-/* Image Container Styling */
 .exercise-image-container {
   position: relative;
   height: 100%;
@@ -386,7 +369,6 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
   transition: transform 0.1s ease-out;
 }
 
-/* Sticky media + subtle parallax */
 .media-sticky { 
   position: sticky; 
   top: 100px; 
@@ -430,7 +412,6 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
-/* Responsive Design */
 @media (max-width: 992px) {
   .exercise-image-container {
     min-height: 250px;

@@ -1,13 +1,11 @@
 <template>
   <div class="workout-playlists">
     <div class="container mt-4">
-      <!-- Header -->
       <div class="header-section mb-4">
         <h1 class="">My Workout Sets</h1>
         <p class="u-muted">Manage your saved workout collections</p>
       </div>
 
-      <!-- Not Authenticated State -->
       <div v-if="!isAuthenticated" class="empty-state text-center py-5">
         <div class="empty-state-icon mb-3">
           <i class="fas fa-sign-in-alt text-muted" style="font-size: 4rem;"></i>
@@ -26,7 +24,6 @@
         </div>
       </div>
 
-      <!-- Empty State (Authenticated but no sets) -->
       <div v-else-if="savedPlaylists.length === 0" class="empty-state text-center py-5">
         <div class="empty-state-icon mb-3">
           <i class="fas fa-dumbbell text-muted" style="font-size: 4rem;"></i>
@@ -40,7 +37,6 @@
         </router-link>
       </div>
 
-      <!-- Playlists Grid -->
       <div v-else class="playlists-section">
         <div class="row g-4">
           <div 
@@ -49,7 +45,6 @@
             class="col-md-6 col-lg-4"
           >
             <div class="playlist-card u-card">
-              <!-- Playlist Header -->
               <div class="playlist-header">
                 <div class="playlist-title-section">
                   <h5 class="playlist-name">{{ playlist.name }}</h5>
@@ -108,7 +103,6 @@
                 </div>
               </div>
 
-              <!-- Playlist Content -->
               <div class="playlist-content">
                 <div class="playlist-description">
                   <p class="playlist-desc-text">{{ playlist.description || 'No description' }}</p>
@@ -155,7 +149,6 @@
                 </div>
               </div>
 
-              <!-- Playlist Footer -->
               <div class="playlist-footer">
                 <div class="playlist-buttons">
                   <button 
@@ -188,7 +181,6 @@
       </div>
     </div>
 
-    <!-- Edit Playlist Modal -->
     <div v-if="showEditModal" class="modal-overlay" @click.self="showEditModal = false">
       <div class="modal-content large-modal" style="background-color: var(--bg);">
         <div class="modal-header">
@@ -199,7 +191,6 @@
         
         <div class="modal-body">
           <div class="row">
-            <!-- Left Column - Basic Info -->
             <div class="col-md-6">
               <div class="form-group">
                 <label for="editPlaylistName" class="form-label">Set Name</label>
@@ -223,7 +214,6 @@
                 ></textarea>
               </div>
 
-              <!-- Current Exercises -->
               <div class="form-group">
                 <label class="form-label">Current Exercises ({{ editingPlaylist.exercises?.length || 0 }})</label>
                 <div v-if="editingPlaylist.exercises && editingPlaylist.exercises.length > 0" class="current-exercises">
@@ -251,7 +241,6 @@
               </div>
             </div>
 
-            <!-- Right Column - Exercise Search -->
             <div class="col-md-6">
               <div class="form-group">
                 <label class="form-label">Add Exercises</label>
@@ -275,7 +264,6 @@
                   </div>
                 </div>
 
-                <!-- Search Results -->
                 <div v-if="searchLoading" class="search-loading text-center py-3">
                   <div class="spinner-border spinner-border-sm me-2"></div>
                   Searching exercises...
@@ -359,7 +347,6 @@
       </div>
     </div>
 
-    <!-- View Playlist Modal -->
     <div v-if="showViewModal" class="modal-overlay" @click.self="showViewModal = false">
       <div class="modal-content large" style="background-color: var(--bg);">
         <div class="modal-header">
@@ -457,7 +444,6 @@
       </div>
     </div>
 
-    <!-- Publish to Vault Modal -->
     <div v-if="showPublishModal" class="modal-overlay" @click.self="showPublishModal = false">
       <div class="modal-content" style="background-color: var(--bg);">
         <div class="modal-header">
@@ -541,7 +527,6 @@
       </div>
     </div>
 
-    <!-- Unpublish Confirmation Modal -->
     <div v-if="showUnpublishModal" class="modal-overlay" @click.self="showUnpublishModal = false">
       <div class="modal-content" style="background-color: var(--bg);">
         <div class="modal-header">
@@ -593,7 +578,6 @@
       </div>
     </div>
 
-    <!-- Edit Exercises Modal -->
     <div v-if="showEditExercisesModal" class="modal-overlay" @click.self="showEditExercisesModal = false">
       <div class="modal-content large" style="background-color: var(--bg);">
         <div class="modal-header">
@@ -607,7 +591,6 @@
         
         <div class="modal-body">
           <div class="exercise-editor">
-            <!-- Current Exercises -->
             <div class="current-exercises-section mb-4">
               <h6><i class="fas fa-list me-2"></i>Current Exercises</h6>
               <div v-if="editingExercises.length === 0" class="text-muted text-center py-3">
@@ -682,7 +665,6 @@
               </div>
             </div>
 
-            <!-- Add New Exercises -->
             <div class="add-exercises-section">
               <h6><i class="fas fa-plus me-2"></i>Add New Exercises</h6>
               <div class="exercise-search">
@@ -764,7 +746,6 @@
       </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
     <div v-if="showDeleteModal" class="modal-overlay" @click.self="showDeleteModal = false">
       <div class="modal-content" style="background-color: var(--bg);">
         <div class="modal-header">
@@ -805,7 +786,6 @@ const router = useRouter()
 const route = useRoute()
 const cartStore = useWorkoutCartStore()
 
-// Local state
 const showEditModal = ref(false)
 const showViewModal = ref(false)
 const showPublishModal = ref(false)
@@ -826,22 +806,18 @@ const publishingInProgress = ref(false)
 const unpublishingInProgress = ref(false)
 const savingChanges = ref(false)
 
-// New exercise search state for edit modal
 const searchQuery = ref('')
 const searchedExercises = ref([])
 const searchLoading = ref(false)
 const searchTimeout = ref(null)
 const searchError = ref('')
 
-// API Configuration
 const API_BASE_URL = 'https://www.exercisedb.dev/api/v1'
 const EXERCISES_PER_PAGE = 12
 
-// Computed properties from store
 const savedPlaylists = computed(() => cartStore.savedPlaylists)
 const isAuthenticated = computed(() => cartStore.isAuthenticated)
 
-// Methods
 const formatDuration = (minutes) => {
   if (!minutes || minutes === 0) return '0 min'
   if (minutes < 60) return `${minutes} min`
@@ -852,21 +828,16 @@ const formatDuration = (minutes) => {
 
 const formatWorkoutDuration = (playlist) => {
   let totalMinutes = 0;
-  
-  // Calculate duration from exercises using 5 minutes per set rule
   if (playlist.exercises && playlist.exercises.length > 0) {
     totalMinutes = playlist.exercises.reduce((total, exercise) => {
-      const sets = exercise.sets || 3; // Default to 3 sets
-      return total + (sets * 5); // 5 minutes per set
+      const sets = exercise.sets || 3; 
+      return total + (sets * 5); 
     }, 0);
   } else if (playlist.totalDuration) {
-    // Use stored totalDuration as fallback
     totalMinutes = playlist.totalDuration;
   }
   
-  // If we still have 0 and there are exercises, use a basic fallback
   if (totalMinutes === 0 && playlist.exercises && playlist.exercises.length > 0) {
-    // Each exercise gets 3 sets by default = 15 minutes per exercise
     totalMinutes = playlist.exercises.length * 3 * 5;
   }
   
@@ -887,8 +858,8 @@ const viewPlaylist = (playlist) => {
 
 const editPlaylist = (playlist) => {
   editingPlaylist.value = { ...playlist, exercises: [...(playlist.exercises || [])] }
-  clearSearch() // Clear any previous search state
-  fetchExercises() // Preload popular exercises
+  clearSearch() 
+  fetchExercises() 
   showEditModal.value = true
 }
 
@@ -896,7 +867,6 @@ const savePlaylistChanges = async () => {
   if (!editingPlaylist.value.name.trim()) return
 
   try {
-    // Calculate updated duration based on exercises
     const updatedDuration = calculateWorkoutDuration(editingPlaylist.value.exercises || [])
     
     await cartStore.updatePlaylist(editingPlaylist.value.id, {
@@ -906,7 +876,7 @@ const savePlaylistChanges = async () => {
       totalDuration: updatedDuration
     })
     showEditModal.value = false
-    clearSearch() // Clear search state
+    clearSearch() 
     editingPlaylist.value = {}
   } catch (error) {
     console.error('Error updating playlist:', error)
@@ -914,7 +884,6 @@ const savePlaylistChanges = async () => {
   }
 }
 
-// New exercise search functions for edit modal
 const fetchExercises = async (query = '') => {
   if (searchLoading.value) return
   
@@ -940,7 +909,6 @@ const fetchExercises = async (query = '') => {
     
     const data = await response.json()
     
-    // Handle ExerciseDB API response structure
     if (data.success && data.data) {
       const mappedExercises = data.data.map(exercise => ({
         id: exercise.exerciseId,
@@ -993,16 +961,13 @@ const clearSearch = () => {
   searchError.value = ''
 }
 
-// Exercise management functions for edit modal
 const addExerciseToPlaylist = (exercise) => {
   if (!editingPlaylist.value.exercises) {
     editingPlaylist.value.exercises = []
   }
   
-  // Check if exercise is already in playlist
   const exists = editingPlaylist.value.exercises.some(ex => ex.id === exercise.id)
   if (!exists) {
-    // Process arrays to clean string format before storing
     const processedExercise = {
       id: exercise.id,
       name: exercise.name,
@@ -1027,7 +992,6 @@ const isExerciseInPlaylist = (exerciseId) => {
   return editingPlaylist.value.exercises?.some(ex => ex.id === exerciseId) || false
 }
 
-// Format functions for exercise data
 const formatExerciseName = (name) => {
   if (!name) return 'Exercise'
   return name
@@ -1037,16 +1001,14 @@ const formatExerciseName = (name) => {
     .join(' ')
 }
 
-// Format functions to clean up and capitalize text
 const formatTarget = (target) => {
   if (!target) return 'Full Body'
   if (Array.isArray(target)) {
     return target.map(item => capitalizeFirstLetter(item)).join(', ')
   }
-  // Clean up string representation of arrays and other formatting
   const cleanTarget = target.toString()
-    .replace(/[\[\]"]/g, '') // Remove array brackets and quotes
-    .replace(/,/g, ', ') // Add space after commas
+    .replace(/[\[\]"]/g, '') 
+    .replace(/,/g, ', ') 
     .trim()
   return capitalizeFirstLetter(cleanTarget)
 }
@@ -1056,10 +1018,9 @@ const formatBodyPart = (bodyPart) => {
   if (Array.isArray(bodyPart)) {
     return bodyPart.map(item => capitalizeFirstLetter(item)).join(', ')
   }
-  // Clean up string representation of arrays and other formatting
   const cleanBodyPart = bodyPart.toString()
-    .replace(/[\[\]"]/g, '') // Remove array brackets and quotes
-    .replace(/,/g, ', ') // Add space after commas
+    .replace(/[\[\]"]/g, '') 
+    .replace(/,/g, ', ') 
     .trim()
   return capitalizeFirstLetter(cleanBodyPart)
 }
@@ -1069,10 +1030,9 @@ const formatEquipment = (equipment) => {
   if (Array.isArray(equipment)) {
     return equipment.map(item => capitalizeFirstLetter(item)).join(', ')
   }
-  // Clean up string representation of arrays and other formatting
   const cleanEquipment = equipment.toString()
-    .replace(/[\[\]"]/g, '') // Remove array brackets and quotes
-    .replace(/,/g, ', ') // Add space after commas
+    .replace(/[\[\]"]/g, '') 
+    .replace(/,/g, ', ') 
     .trim()
   return capitalizeFirstLetter(cleanEquipment)
 }
@@ -1087,7 +1047,6 @@ const formatMuscleGroup = (muscleGroup) => {
 
 const capitalizeFirstLetter = (text) => {
   if (!text) return ''
-  // Convert to string first to handle any unexpected data types
   const textStr = text.toString()
   return textStr
     .toLowerCase()
@@ -1141,7 +1100,6 @@ const confirmPublishToVault = async () => {
   publishingInProgress.value = true
 
   try {
-    // Get the user's display name from Firebase Auth
     const userDisplayName = auth.currentUser?.displayName || 'Anonymous'
     
     const result = await workoutVaultService.publishWorkout(
@@ -1150,7 +1108,6 @@ const confirmPublishToVault = async () => {
       userDisplayName
     )
     
-    // Update the local playlist to reflect published status
     await cartStore.updatePlaylist(publishingPlaylist.value.id, {
       isPublished: true,
       publishedId: result.id,
@@ -1184,12 +1141,10 @@ const confirmUnpublishFromVault = async () => {
   unpublishingInProgress.value = true
 
   try {
-    // We need the published workout ID, which should be stored in the playlist
     if (unpublishingPlaylist.value.publishedId) {
       await workoutVaultService.unpublishWorkout(unpublishingPlaylist.value.publishedId, auth.currentUser.uid)
     }
     
-    // Update the local playlist to reflect unpublished status
     await cartStore.updatePlaylist(unpublishingPlaylist.value.id, {
       isPublished: false,
       publishedAt: null,
@@ -1258,13 +1213,12 @@ const clearExerciseSearch = () => {
   exerciseSearchResults.value = []
 }
 
-// Calculate total duration based on sets (5 minutes per set)
 const calculateWorkoutDuration = (exercises) => {
   if (!exercises || exercises.length === 0) return 0
   
   return exercises.reduce((total, exercise) => {
-    const sets = exercise.sets || 3 // Default to 3 sets if not specified
-    return total + (sets * 5) // 5 minutes per set
+    const sets = exercise.sets || 3
+    return total + (sets * 5)
   }, 0)
 }
 
@@ -1274,7 +1228,6 @@ const saveExerciseChanges = async () => {
   savingChanges.value = true
 
   try {
-    // Calculate updated workout stats
     const muscleGroups = [...new Set(editingExercises.value.map(ex => ex.target))].filter(Boolean)
     const totalDuration = calculateWorkoutDuration(editingExercises.value)
 
@@ -1306,19 +1259,15 @@ const handleImageError = (event) => {
 }
 
 onMounted(async () => {
-  // Initialize store to load saved playlists
   cartStore.initializeStore()
   
-  // Check if we need to auto-edit a workout from the vault
   if (route.query.edit) {
     await autoEditWorkout(route.query.edit)
   }
 })
 
-// Function to automatically load and edit a workout from the vault
 const autoEditWorkout = async (workoutId) => {
   try {
-    // Check if user is authenticated
     if (!auth.currentUser) {
       alert('Please log in to edit workouts')
       router.push('/login')
@@ -1327,23 +1276,19 @@ const autoEditWorkout = async (workoutId) => {
     
     console.log('Loading workout for editing:', workoutId)
     
-    // Get the workout data from Firebase vault
     const workoutData = await workoutVaultService.getWorkoutById(workoutId)
     console.log('Vault workout data:', workoutData)
     
     if (workoutData) {
-      // Check if the current user owns this workout
       if (workoutData.userId !== auth.currentUser.uid) {
         alert('You can only edit your own workouts')
         router.replace('/vault')
         return
       }
       
-      // Try to get the original workout ID from the vault workout
       let originalWorkoutId = workoutData.originalId
       let originalWorkout = null
       
-      // If we have an original ID, try to get the original workout
       if (originalWorkoutId) {
         try {
           console.log('Loading original workout:', originalWorkoutId)
@@ -1355,12 +1300,9 @@ const autoEditWorkout = async (workoutId) => {
         }
       }
       
-      // If we couldn't find the original workout, we'll edit the vault data directly
-      // This can happen if the original was deleted or if there's an ID mismatch
       if (!originalWorkout) {
         console.log('Original workout not found, using vault data directly')
         
-        // Create a new workout entry in the user's collection based on vault data
         const workoutForEdit = {
           name: workoutData.name || workoutData.title || 'Unnamed Workout',
           description: workoutData.description || '',
@@ -1369,13 +1311,11 @@ const autoEditWorkout = async (workoutId) => {
           estimatedDuration: workoutData.estimatedDuration || workoutData.totalDuration || 30,
           isPublished: true,
           publishedId: workoutData.id,
-          // Don't set an ID yet - it will be created when saved
         }
         
         console.log('Workout prepared for editing (from vault):', workoutForEdit)
         editPlaylist(workoutForEdit)
       } else {
-        // Use the original workout but with updated data from vault
         const workoutForEdit = {
           ...originalWorkout,
           id: originalWorkoutId,
@@ -1390,7 +1330,6 @@ const autoEditWorkout = async (workoutId) => {
         editPlaylist(workoutForEdit)
       }
       
-      // Clear the query parameters from the URL
       router.replace({ path: '/workout-sets' })
     } else {
       alert('Workout not found')
@@ -1403,25 +1342,17 @@ const autoEditWorkout = async (workoutId) => {
   }
 }
 
-// Add method to check published status from Firebase
 const checkPublishedStatus = async () => {
   if (!auth.currentUser) {
     console.log('No current user, skipping published status check')
     return
   }
 
-  // console.log('Checking published status for user:', auth.currentUser.uid)
 
   try {
-    // Get user's workout sets from 'workoutSets' collection
     const userWorkouts = await workoutVaultService.getUserWorkouts(auth.currentUser.uid)
-    // console.log('User workouts from workoutSets:', userWorkouts)
     
-    // Get user's published workouts from 'publishedWorkouts' collection
     const publishedWorkouts = await workoutVaultService.getPublishedWorkoutsByUser(auth.currentUser.uid)
-    // console.log('Published workouts from publishedWorkouts:', publishedWorkouts)
-    
-    // Create a map of originalId -> publishedWorkout for quick lookup
     const publishedMap = new Map()
     publishedWorkouts.forEach(published => {
       if (published.originalId) {
@@ -1429,17 +1360,13 @@ const checkPublishedStatus = async () => {
       }
     })
     
-    // Update local playlist status based on Firebase data
     for (const userWorkout of userWorkouts) {
       const localPlaylist = savedPlaylists.value.find(p => p.id === userWorkout.id)
       if (localPlaylist) {
-        // Check if this workout is published by looking for it in publishedWorkouts
         const isActuallyPublished = publishedMap.has(userWorkout.id)
         const publishedWorkout = publishedMap.get(userWorkout.id)
          
-        // Update the status based on whether it's actually in the publishedWorkouts collection
         if (localPlaylist.isPublished !== isActuallyPublished) {
-          // console.log(`Updating playlist ${userWorkout.id} published status to ${isActuallyPublished}`)
           await cartStore.updatePlaylist(userWorkout.id, {
             isPublished: isActuallyPublished,
             publishedId: publishedWorkout?.id || null,
@@ -1453,7 +1380,6 @@ const checkPublishedStatus = async () => {
   }
 }
 
-// Watch for both auth state and saved playlists to check published status
 watch([() => auth.currentUser, savedPlaylists], async ([user, playlists]) => {
   if (user && playlists.length > 0) {
     await checkPublishedStatus()
@@ -1461,16 +1387,13 @@ watch([() => auth.currentUser, savedPlaylists], async ([user, playlists]) => {
   }
 }, { immediate: true })
 
-// Update workout durations for existing workouts
 const updateWorkoutDurations = async (playlists) => {
   for (const playlist of playlists) {
     if (playlist.exercises && playlist.exercises.length > 0) {
       const currentDuration = playlist.totalDuration || 0
       const calculatedDuration = calculateWorkoutDuration(playlist.exercises)
       
-      // Update if duration is significantly different (accounting for old calculation method)
       if (Math.abs(currentDuration - calculatedDuration) > 5) {
-        // console.log(`Updating duration for ${playlist.name}: ${currentDuration} -> ${calculatedDuration}`)
         try {
           await cartStore.updatePlaylist(playlist.id, {
             totalDuration: calculatedDuration
@@ -1497,14 +1420,12 @@ const updateWorkoutDurations = async (playlists) => {
   max-width: 1200px;
 }
 
-/* Header */
 .header-section {
   text-align: center;
   padding: 2rem 0;
 }
 
 
-/* Empty State */
 .empty-state {
   min-height: 400px;
   display: flex;
@@ -1524,7 +1445,6 @@ const updateWorkoutDurations = async (playlists) => {
   max-width: 500px;
 }
 
-/* Playlist Cards */
 .playlist-card {
   border-radius: 12px;
   padding: 1.5rem;
@@ -1580,7 +1500,6 @@ const updateWorkoutDurations = async (playlists) => {
   line-height: 1.4;
 }
 
-/* Stats */
 .playlist-stats {
   display: flex;
   justify-content: space-between;
@@ -1601,7 +1520,6 @@ const updateWorkoutDurations = async (playlists) => {
   color: #007bff;
 }
 
-/* Muscle Groups */
 .muscle-groups {
   margin-bottom: 1rem;
 }
@@ -1623,7 +1541,6 @@ const updateWorkoutDurations = async (playlists) => {
   color: #6c757d;
 }
 
-/* Exercise Preview */
 .exercise-preview {
   flex: 1;
   margin-bottom: 1rem;
@@ -1676,7 +1593,6 @@ const updateWorkoutDurations = async (playlists) => {
   font-size: 0.8rem;
 }
 
-/* Footer */
 .playlist-footer {
   margin-top: auto;
   padding-top: 1rem;
@@ -1703,7 +1619,6 @@ const updateWorkoutDurations = async (playlists) => {
   text-align: center;
 }
 
-/* Modal */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -1744,7 +1659,6 @@ const updateWorkoutDurations = async (playlists) => {
   padding: 2rem;
 }
 
-/* Exercise Search Styles for Edit Modal */
 .current-exercises {
   max-height: 400px;
   overflow-y: auto;
@@ -1863,7 +1777,6 @@ const updateWorkoutDurations = async (playlists) => {
   justify-content: flex-end;
 }
 
-/* View Modal Specific */
 .stat-item {
   text-align: center;
 }
@@ -1965,7 +1878,6 @@ const updateWorkoutDurations = async (playlists) => {
   font-weight: 500;
 }
 
-/* Publish/Unpublish Modal Styles */
 .publish-preview {
   margin-bottom: 1.5rem;
 }
@@ -2048,7 +1960,6 @@ const updateWorkoutDurations = async (playlists) => {
   color: var(--muted);
 }
 
-/* Exercise Editing Modal Styles */
 .exercise-editor {
   max-height: 70vh;
   overflow-y: auto;
@@ -2237,14 +2148,13 @@ const updateWorkoutDurations = async (playlists) => {
 .align-checkbox {
   display: flex;
   align-items: center;
-  gap: 0.5rem; /* Adjust spacing between checkbox and label */
+  gap: 0.5rem;
 }
 
 .align-checkbox .form-check-input {
-  margin-top: 0; /* Remove default margin */
+  margin-top: 0;
 }
 
-/* Exercise Badge Styling - Matching Exercise Detail */
 .exercise-badges {
   margin-bottom: 1rem;
 }
@@ -2273,7 +2183,6 @@ const updateWorkoutDurations = async (playlists) => {
   background-color: #495057 !important;
 }
 
-/* Nuanced charcoal pill theme for badges with color-coded dots */
 .exercise-badges .badge {
   position: relative;
   background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
@@ -2282,11 +2191,11 @@ const updateWorkoutDurations = async (playlists) => {
   border-radius: 12px;
   font-weight: 600;
   letter-spacing: 0.01em;
-  padding: 0.25rem 0.6rem 0.25rem 1.2rem; /* extra space between dot and text */
-  width: auto; /* let content decide */
+  padding: 0.25rem 0.6rem 0.25rem 1.2rem;
+  width: auto;
   max-width: 100%;
-  justify-self: start; /* prevent grid stretch */
-  white-space: nowrap; /* single line */
+  justify-self: start;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.25);

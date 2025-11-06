@@ -16,25 +16,18 @@ import { db } from '../firebase.js'
 const POSTS_COLLECTION = 'discussion_posts'
 const COMMENTS_COLLECTION = 'discussion_comments'
 
-/**
- * Firebase Forum API Service
- */
+
 export class FirebaseForumService {
   
-  /**
-   * Fetch all posts for a specific exercise
-   */
   async fetchPosts(exerciseId) {
     try {
       console.log('=== FETCH POSTS DEBUG ===')
       console.log('Raw exerciseId received:', exerciseId)
       console.log('exerciseId type:', typeof exerciseId)
       
-      // Ensure exerciseId is treated as string for consistent querying
       const exerciseIdStr = exerciseId.toString()
       console.log('Converted exerciseId to string:', exerciseIdStr)
       
-      // First, let's see ALL posts in the collection
       console.log('🔍 Checking ALL posts in collection first...')
       const allPostsSnapshot = await getDocs(collection(db, POSTS_COLLECTION))
       console.log(`📊 Total posts in database: ${allPostsSnapshot.size}`)
@@ -44,7 +37,6 @@ export class FirebaseForumService {
         console.log(`📝 Post ID: ${doc.id}, exerciseId: "${data.exerciseId}" (type: ${typeof data.exerciseId}), content: "${data.content.substring(0, 50)}..."`)
       })
       
-      // Query posts for this specific exercise
       console.log(`🎯 Now querying for exerciseId: "${exerciseIdStr}"`)
       const postsQuery = query(
         collection(db, POSTS_COLLECTION),
@@ -60,7 +52,6 @@ export class FirebaseForumService {
         const postData = postDoc.data()
         console.log(`✅ Processing post: ${postDoc.id}`, postData)
         
-        // Fetch comments for this post
         const comments = await this.fetchComments(postDoc.id)
         
         const post = {
@@ -68,14 +59,13 @@ export class FirebaseForumService {
           content: postData.content,
           author: postData.author,
           createdAt: postData.createdAt?.toDate() || new Date(),
-          exerciseId: postData.exerciseId, // Keep original exerciseId from database
+          exerciseId: postData.exerciseId, 
           comments: comments
         }
         
         posts.push(post)
       }
       
-      // Sort posts by creation date in JavaScript (newest first)
       posts.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       
       console.log(`✅ Final result: ${posts.length} posts for exercise ${exerciseIdStr}`)
@@ -88,16 +78,12 @@ export class FirebaseForumService {
     }
   }
 
-  /**
-   * Fetch all comments for a specific exercise (across all posts)
-   */
   async fetchCommentsByExercise(exerciseId) {
     try {
       console.log('Fetching all comments for exercise:', exerciseId)
       
       const exerciseIdStr = exerciseId.toString()
       
-      // First get all posts for this exercise
       const postsQuery = query(
         collection(db, POSTS_COLLECTION),
         where('exerciseId', '==', exerciseIdStr)
@@ -106,11 +92,9 @@ export class FirebaseForumService {
       const postsSnapshot = await getDocs(postsQuery)
       const allComments = []
       
-      // For each post, get its comments
       for (const postDoc of postsSnapshot.docs) {
         const comments = await this.fetchComments(postDoc.id)
         
-        // Add exerciseId to each comment for easier filtering
         const commentsWithExercise = comments.map(comment => ({
           ...comment,
           exerciseId: exerciseIdStr,
@@ -120,7 +104,6 @@ export class FirebaseForumService {
         allComments.push(...commentsWithExercise)
       }
       
-      // Sort all comments by creation date (newest first)
       allComments.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       
       console.log(`Fetched ${allComments.length} total comments for exercise ${exerciseIdStr}`)
@@ -137,9 +120,6 @@ export class FirebaseForumService {
     }
   }
 
-  /**
-   * Fetch comments for a specific post
-   */
   async fetchComments(postId) {
     try {
       const commentsQuery = query(
@@ -161,7 +141,6 @@ export class FirebaseForumService {
         })
       })
       
-      // Sort comments by creation date in JavaScript (oldest first)
       comments.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
       
       return comments
@@ -172,9 +151,6 @@ export class FirebaseForumService {
     }
   }
 
-  /**
-   * Create a new post
-   */
   async createPost(exerciseId, content, author) {
     try {
       console.log('=== FIREBASE CREATE POST DEBUG ===')
@@ -200,7 +176,6 @@ export class FirebaseForumService {
       const docRef = await addDoc(collection(db, POSTS_COLLECTION), postData)
       console.log('✅ Firebase document created with ID:', docRef.id)
       
-      // Let's verify the document was actually saved
       console.log('🔍 Verifying document was saved...')
       const savedDoc = await getDocs(query(
         collection(db, POSTS_COLLECTION),
@@ -231,9 +206,6 @@ export class FirebaseForumService {
     }
   }
 
-  /**
-   * Update an existing post
-   */
   async updatePost(postId, content) {
     try {
       console.log('Updating post:', postId)
@@ -252,14 +224,10 @@ export class FirebaseForumService {
     }
   }
 
-  /**
-   * Delete a post and all its comments
-   */
   async deletePost(postId) {
     try {
       console.log('Deleting post:', postId)
       
-      // First delete all comments for this post
       const commentsQuery = query(
         collection(db, COMMENTS_COLLECTION),
         where('postId', '==', postId)
@@ -272,7 +240,6 @@ export class FirebaseForumService {
       
       await Promise.all(deletePromises)
       
-      // Then delete the post
       await deleteDoc(doc(db, POSTS_COLLECTION, postId))
       
       console.log('Post and comments deleted successfully')
@@ -283,9 +250,6 @@ export class FirebaseForumService {
     }
   }
 
-  /**
-   * Create a new comment
-   */
   async createComment(postId, content, author) {
     try {
       console.log('Creating comment for post:', postId)
@@ -316,9 +280,6 @@ export class FirebaseForumService {
     }
   }
 
-  /**
-   * Delete a comment
-   */
   async deleteComment(commentId) {
     try {
       console.log('Deleting comment:', commentId)
@@ -333,18 +294,14 @@ export class FirebaseForumService {
     }
   }
 
-  /**
-   * Get all comments from all exercises with enhanced metadata
-   */
+
   async getAllComments() {
     try {
       console.log('Fetching ALL comments from database...')
       
-      // Get all posts first
       const postsSnapshot = await getDocs(collection(db, POSTS_COLLECTION))
       const allComments = []
       
-      // Exercise names mapping for better context
       const exerciseNames = {
         '1': 'Push-ups',
         '2': 'Squats', 
@@ -358,19 +315,16 @@ export class FirebaseForumService {
         'bent-over-row': 'Bent Over Row'
       }
       
-      // For each post, get its comments and enhance with metadata
       for (const postDoc of postsSnapshot.docs) {
         const postData = postDoc.data()
         const comments = await this.fetchComments(postDoc.id)
         
-        // Add enhanced metadata to each comment
         const enhancedComments = comments.map(comment => ({
           id: comment.id,
           content: comment.content,
           author: comment.author,
           createdAt: comment.createdAt,
           postId: comment.postId,
-          // Enhanced attributes
           exerciseId: postData.exerciseId,
           exerciseName: exerciseNames[postData.exerciseId] || `Exercise ${postData.exerciseId}`,
           postContent: postData.content.substring(0, 100) + (postData.content.length > 100 ? '...' : ''),
@@ -380,7 +334,6 @@ export class FirebaseForumService {
         allComments.push(...enhancedComments)
       }
       
-      // Sort all comments by creation date (newest first)
       allComments.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       
       console.log(`✅ Retrieved ${allComments.length} total comments from database`)
@@ -398,9 +351,6 @@ export class FirebaseForumService {
     }
   }
 
-  /**
-   * Group comments by exercise for easier analysis
-   */
   groupCommentsByExercise(comments) {
     const grouped = {}
     
@@ -419,9 +369,6 @@ export class FirebaseForumService {
     return grouped
   }
 
-  /**
-   * Get comment statistics across all exercises
-   */
   async getCommentStats() {
     try {
       const allCommentsData = await this.getAllComments()
@@ -429,10 +376,9 @@ export class FirebaseForumService {
         totalComments: allCommentsData.total,
         commentsByExercise: {},
         topAuthors: {},
-        recentActivity: allCommentsData.items.slice(0, 10) // Last 10 comments
+        recentActivity: allCommentsData.items.slice(0, 10) 
       }
       
-      // Count comments per exercise
       Object.values(allCommentsData.byExercise).forEach(exercise => {
         stats.commentsByExercise[exercise.exerciseId] = {
           exerciseName: exercise.exerciseName,
@@ -440,7 +386,6 @@ export class FirebaseForumService {
         }
       })
       
-      // Count comments per author
       allCommentsData.items.forEach(comment => {
         const authorName = comment.author.name || comment.author
         stats.topAuthors[authorName] = (stats.topAuthors[authorName] || 0) + 1
@@ -455,5 +400,4 @@ export class FirebaseForumService {
   }
 }
 
-// Export singleton instance
 export const firebaseForumService = new FirebaseForumService()

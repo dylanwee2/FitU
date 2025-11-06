@@ -1,6 +1,5 @@
 <template>
   <div class="calendar-component">
-    <!-- Calendar Controls -->
     <div class="calendar-controls mb-3" v-if="showControls">
       <div class="row align-items-center">
         <div class="col-6 mb-2 mb-md-0" v-if="showFileUpload">
@@ -38,12 +37,12 @@
       </div>
     </div>
 
-    <!-- Event Form Modal -->
+
     <div 
       v-if="showEventForm" 
       class="modal-backdrop"
       @click.self="closeEventForm" 
-    > <!--click.self part basically closes the form when you click outside the modal-->
+    > 
       <div class="event-form-modal">
         <div class="modal-header">
           <h5 class="modal-title">{{ editingEvent ? 'Edit Event' : 'Add Event' }}</h5>
@@ -118,7 +117,7 @@
       </div>
     </div>
     
-    <!-- Import Success Modal -->
+
     <div 
       v-if="showImportSuccess"
       class="modal-backdrop"
@@ -138,13 +137,13 @@
         </div>
     </div>
     
-    <!-- Calendar Container -->
+
     <div class="calendar-container">
       <div ref="calendarRef" class="calendar-element"></div>
     </div>
   </div>
 
-  <!-- Delete Confirmation Modal -->
+
   <div v-if="showDeleteConfirm" class="modal-backdrop" @click.self="showDeleteConfirm = false">
     <div class="event-form-modal">
       <div class="modal-header">
@@ -161,7 +160,6 @@
     </div>
   </div>
   
-  <!-- Clear Calendar Confirmation Modal -->
   <div v-if="showClearConfirm" class="modal-backdrop" @click.self="showClearConfirm = false">
     <div class="event-form-modal">
       <div class="modal-header">
@@ -182,7 +180,7 @@
 <script setup>
 import { ref, onMounted, nextTick, onUnmounted, watch, computed } from 'vue'
 
-// Tooltip state for ICS input
+
 const showTooltip = ref(false)
 import { Calendar } from '@fullcalendar/core'
 import dayGridPlugin from '@fullcalendar/daygrid'
@@ -194,9 +192,8 @@ import { db } from '../firebase.js'
 import { collection, query, where, onSnapshot, getDocs, updateDoc, doc as firestoreDoc, serverTimestamp, deleteField, getDoc, setDoc, deleteDoc } from 'firebase/firestore'
 import { useAuth } from '../composables/useAuth.js'
 
-// Props
+
 const props = defineProps({
-  // Calendar configuration
   initialView: {
     type: String,
     default: 'dayGridMonth'
@@ -270,15 +267,12 @@ const newEvent = ref({
 
 })
 
-// Delete confirmation modal state
+
 const showDeleteConfirm = ref(false)
 
-
-// Track whether the current user already has an imported ICS in Firestore
 const hasImportedIcs = ref(false)
 const importedDocId = ref(null)
 
-// Import success popup state
 const showImportSuccess = ref(false)
 const importSuccessMsg = ref('')
 const importSuccessTitle = ref('Import Successful')
@@ -309,16 +303,14 @@ let calendarUnsubscribe = null
 // Auth
 const { currentUser, isLoading } = useAuth()
 
-// Subscribe to Firestore 'calendar' collection for the logged-in user
+
 const subscribeToCalendar = () => {
-  // unsubscribe previous listener if any
   if (calendarUnsubscribe) {
     try { calendarUnsubscribe() } catch (e) { /* ignore */ }
     calendarUnsubscribe = null
   }
 
   if (!currentUser.value || !currentUser.value.uid) {
-    // No user: clear calendar
     if (calendarInstance) calendarInstance.removeAllEvents()
     console.debug('[Calendar] No currentUser - cleared calendar')
     return
@@ -333,18 +325,14 @@ const subscribeToCalendar = () => {
   calendarUnsubscribe = onSnapshot(q, (snapshot) => {
     try {
       console.debug('[Calendar] snapshot received, docs:', snapshot.size)
-      // Reset ICS tracking; we'll set if we find a doc with `ics` field
       hasImportedIcs.value = false
       importedDocId.value = null
 
-      // Build events array by iterating documents. Some docs store the raw ICS string in `ics`.
       const events = []
       snapshot.docs.forEach(doc => {
         const d = doc.data()
 
-        // If the document stores raw ICS content, parse it and extract VEVENTs
         if (d.ics && typeof d.ics === 'string') {
-          // mark that this user has an imported ICS doc
           if (!hasImportedIcs.value) {
             hasImportedIcs.value = true
             importedDocId.value = doc.id
@@ -378,7 +366,6 @@ const subscribeToCalendar = () => {
           return
         }
 
-        // Robust date parsing helper for non-ICS docs
         const parseDateValue = (val) => {
           if (!val && val !== 0) return undefined
           if (val && typeof val.toDate === 'function') return val.toDate()
@@ -426,7 +413,6 @@ const subscribeToCalendar = () => {
 
       if (calendarInstance) {
         calendarInstance.removeAllEvents()
-        // add a visible color for debugging in case CSS makes events invisible
         const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#1976d2'
         const debugEvents = events.map(ev => ({
           ...ev,
@@ -437,12 +423,10 @@ const subscribeToCalendar = () => {
 
         calendarInstance.addEventSource(debugEvents)
         console.debug('[Calendar] events added to FullCalendar')
-        // Log the events FullCalendar currently has
         try {
           const fcEvents = calendarInstance.getEvents().map(e => ({ id: e.id, title: e.title, start: e.start, end: e.end, allDay: e.allDay }))
           console.debug('[Calendar] FullCalendar internal events:', fcEvents)
           if (fcEvents.length && fcEvents[0].start) {
-            // jump to first event date to ensure it's in view for debugging
             calendarInstance.gotoDate(fcEvents[0].start)
             console.debug('[Calendar] moved calendar to first event date')
           }
@@ -460,18 +444,15 @@ const subscribeToCalendar = () => {
   })
 }
 
-// watch for user changes and (re)subscribe
 watch(currentUser, (val) => {
   if (val && val.uid) {
     subscribeToCalendar()
   } else {
-    // clear events if user signed out
     if (calendarInstance) calendarInstance.removeAllEvents()
     if (calendarUnsubscribe) { try { calendarUnsubscribe() } catch(e){}; calendarUnsubscribe = null }
   }
 }, { immediate: true })
 
-// Calendar instance management
 const initializeCalendar = async () => {
   await nextTick()
   
@@ -492,15 +473,13 @@ const initializeCalendar = async () => {
     droppable: true,
     nowIndicator: true,
     events: props.events,
-    // Ensure times display full meridiem (am/pm) instead of just a/p
     eventTimeFormat: {
       hour: 'numeric',
       minute: '2-digit',
-      meridiem: 'lowercase', // 'am' / 'pm'
+      meridiem: 'lowercase', 
       hour12: true,
-      omitZeroMinute: true   // show 12am instead of 12:00am
+      omitZeroMinute: true   
     },
-    // Also fix slot labels for time grid views
     slotLabelFormat: {
       hour: 'numeric',
       minute: '2-digit',
@@ -510,12 +489,7 @@ const initializeCalendar = async () => {
     },
     eventColor: getComputedStyle(document.documentElement).getPropertyValue('--muted').trim(),
 
-    //eventColor: getComputedStyle(document.documentElement).getPropertyValue('--primary').trim(),
-    // eventContent: function(arg) {
-    //   // Only show the event title, not the time
-    //   return { domNodes: [document.createTextNode(arg.event.title)] };
-    // },
-    // Event handlers
+
     eventClick: (info) => {
       handleEventClick(info)
     },
@@ -536,12 +510,10 @@ const initializeCalendar = async () => {
   calendarInstance.render()
 }
 
-// Event handlers
 const handleEventClick = (info) => {
   const event = info.event
   editingEvent.value = event
   
-  // Populate form with event data
   newEvent.value = {
     title: event.title,
     start: formatDateForInput(event.start),
@@ -556,18 +528,12 @@ const handleEventClick = (info) => {
 }
 
 const handleDateSelect = (info) => {
-  // Pre-fill form with selected date
-  // If end is provided, set it to 23:59 of the previous day (if time is 00:00)
   let endDate = info.end ? new Date(info.end) : null;
-  // if (endDate && endDate.getHours() === 0 && endDate.getMinutes() === 0) {
-  //   endDate.setMinutes(endDate.getMinutes() - 1); // Go to 23:59 of previous day
-  // }
   newEvent.value = {
     title: '',
     start: formatDateForInput(info.start),
     end: endDate ? formatDateForInput(endDate) : '',
     allDay: info.allDay, 
-    //allDay: false,
     description: '',
 
   }
@@ -585,7 +551,6 @@ const handleEventUpdate = async (info) => {
     allDay: event.allDay,
   })
 
-  // Also update the ICS content so drags/resizes persist
   try {
     const outgoing = {
       title: event.title,
@@ -602,16 +567,13 @@ const handleEventUpdate = async (info) => {
 }
 
 const handleDrop = (info) => {
-  // Check if this is an external drop (from workout cards)
   if (info.draggedEl && info.draggedEl.classList.contains('playlist-card')) {
     try {
-      // Get workout data from the data attribute set during drag start
       const transferElement = info.draggedEl.querySelector('[data-transfer]')
       if (transferElement) {
         const data = JSON.parse(transferElement.getAttribute('data-transfer'))
         
         if (data.type === 'workout' && data.workout) {
-          // Emit the drop event to parent component
           emit('workout-dropped', {
             workout: data.workout,
             date: info.date,
@@ -625,7 +587,6 @@ const handleDrop = (info) => {
   }
 }
 
-// Validation: start time must be before end time (only when both provided)
 const timeError = computed(() => {
   const s = newEvent.value?.start
   const e = newEvent.value?.end
@@ -636,7 +597,6 @@ const timeError = computed(() => {
   return sd > ed
 })
 
-// File upload handling
 const handleIcsUpload = async (event) => {
   const file = event.target.files[0]
   if (!file) return
@@ -661,38 +621,32 @@ const handleIcsUpload = async (event) => {
       }
     })
     
-    // Add imported events to calendar (don't remove existing ones)
     if (calendarInstance) {
       calendarInstance.addEventSource(events)
       emit('events-imported', events)
     }
 
-    // Merge imported ICS with existing ICS content in Firestore
     try {
       if (currentUser.value && currentUser.value.uid) {
         const q = query(collection(db, 'calendar'), where('userId', '==', currentUser.value.uid))
         const snap = await getDocs(q)
         
-        let mergedIcs = text // Start with the imported ICS
+        let mergedIcs = text 
         let duplicateCount = 0
         
         if (!snap.empty) {
-          // Existing ICS found - merge with imported ICS
           const existing = snap.docs[0]
           const existingData = existing.data()
           const existingIcs = existingData.ics || ''
           
           if (existingIcs) {
-            // Extract VEVENTs from existing ICS
             try {
               const existingJcal = ICAL.parse(existingIcs)
               const existingComp = new ICAL.Component(existingJcal)
               const existingVevents = existingComp.getAllSubcomponents('vevent')
               
-              // Extract VEVENTs from imported ICS
               const importedVevents = vevents
               
-              // Simple duplicate detection based on UID, or title+start time
               const existingEventKeys = new Set()
               existingVevents.forEach(vevent => {
                 try {
@@ -701,11 +655,9 @@ const handleIcsUpload = async (event) => {
                   const key = uid || `${event.summary}-${event.startDate.toJSDate().getTime()}`
                   existingEventKeys.add(key)
                 } catch (e) {
-                  // Ignore parsing errors for individual events
                 }
               })
               
-              // Filter out duplicates from imported events
               const uniqueImportedVevents = importedVevents.filter(vevent => {
                 try {
                   const event = new ICAL.Event(vevent)
@@ -715,19 +667,17 @@ const handleIcsUpload = async (event) => {
                   if (isDuplicate) duplicateCount++
                   return !isDuplicate
                 } catch (e) {
-                  return true // Include events that can't be parsed
+                  return true 
                 }
               })
               
-              // Combine all VEVENTs
               const allVevents = [...existingVevents, ...uniqueImportedVevents]
               
-              // Create a new VCALENDAR with all events
               const mergedComp = new ICAL.Component(['vcalendar', [], []])
               mergedComp.updatePropertyWithValue('version', '2.0')
               mergedComp.updatePropertyWithValue('prodid', '-//FitU//EN')
               
-              // Add all VEVENTs to the merged calendar
+
               allVevents.forEach(vevent => {
                 mergedComp.addSubcomponent(vevent)
               })
@@ -736,19 +686,15 @@ const handleIcsUpload = async (event) => {
               
             } catch (parseErr) {
               console.warn('[Calendar] Error parsing existing ICS for merge, will append:', parseErr)
-              // Fallback: string concatenation approach (no duplicate detection)
               if (/END:VCALENDAR/i.test(existingIcs)) {
-                // Extract events from imported ICS and insert before END:VCALENDAR
                 const importedEventsText = text.replace(/BEGIN:VCALENDAR.*?\n/i, '').replace(/END:VCALENDAR.*$/i, '').trim()
                 mergedIcs = existingIcs.replace(/\r?\n?END:VCALENDAR\s*$/i, '\r\n' + importedEventsText + '\r\nEND:VCALENDAR')
               } else {
-                // Just append
                 mergedIcs = existingIcs + '\r\n' + text
               }
             }
           }
           
-          // Update the existing doc with merged ICS
           await updateDoc(firestoreDoc(db, 'calendar', existing.id), {
             ics: mergedIcs,
             updatedAt: serverTimestamp()
@@ -756,7 +702,6 @@ const handleIcsUpload = async (event) => {
           console.debug('[Calendar] merged and updated ICS for doc', existing.id)
           
         } else {
-          // No existing ICS - create new document with imported ICS
           const userDocRef = firestoreDoc(db, 'calendar', currentUser.value.uid)
           await setDoc(userDocRef, {
             userId: currentUser.value.uid,
@@ -766,7 +711,6 @@ const handleIcsUpload = async (event) => {
           console.debug('[Calendar] created new calendar doc with imported ICS', currentUser.value.uid)
         }
         
-        // Show success message with duplicate info
         const newEventsCount = events.length - duplicateCount
         let successMessage = `${newEventsCount} new event${newEventsCount === 1 ? '' : 's'} imported and merged`
         if (duplicateCount > 0) {
@@ -783,7 +727,6 @@ const handleIcsUpload = async (event) => {
       openImportSuccess(`${events.length} event${events.length === 1 ? '' : 's'} imported, but merge failed`)
     }
     
-    // Clear the file input
     if (fileInput.value) {
       fileInput.value.value = ''
     }
@@ -793,7 +736,6 @@ const handleIcsUpload = async (event) => {
   }
 }
 
-// Event form management
 const openEventForm = () => {
   editingEvent.value = null
   newEvent.value = {
@@ -828,8 +770,7 @@ const submitEvent = async () => {
     title: newEvent.value.title,
     start: newEvent.value.start,
     end: newEvent.value.end || undefined,
-    //allDay: false,
-    allDay: newEvent.value.allDay,//disabled this, only allowing non full day inputs
+    allDay: newEvent.value.allDay,
     description: newEvent.value.description,
     extendedProps: {
 
@@ -838,7 +779,6 @@ const submitEvent = async () => {
   }
 
   if (editingEvent.value) {
-    // Update existing event
     editingEvent.value.setProp('title', eventData.title)
     editingEvent.value.setStart(eventData.start)
     editingEvent.value.setEnd(eventData.end)
@@ -850,23 +790,19 @@ const submitEvent = async () => {
       id: editingEvent.value.id,
       ...eventData
     })
-    // Update the VEVENT inside stored ICS (do not create duplicate)
     try {
-      // include existing extendedProps (such as uid) so updater can match the VEVENT
       const outgoing = { ...eventData, extendedProps: editingEvent.value.extendedProps || {} }
       await updateEventInIcs(editingEvent.value.id, outgoing)
     } catch (err) {
       console.error('[Calendar] updateEventInIcs error:', err)
     }
   } else {
-    // Add new event
     if (calendarInstance) {
       const event = calendarInstance.addEvent(eventData)
       emit('event-added', {
         id: event.id,
         ...eventData
       })
-      // Persist to ICS in Firestore (append VEVENT)
       try {
         appendEventToIcs(eventData).catch(err => console.error('[Calendar] appendEventToIcs error:', err))
       } catch (e) {
@@ -879,13 +815,11 @@ const submitEvent = async () => {
 }
 
 const deleteEvent = () => {
-  // Open confirmation modal instead of immediate deletion
   if (editingEvent.value) {
     showDeleteConfirm.value = true
   }
 }
 
-// Called when user confirms deletion
 const confirmDelete = async () => {
   showDeleteConfirm.value = false
   if (!editingEvent.value) return
@@ -893,20 +827,17 @@ const confirmDelete = async () => {
   const event = editingEvent.value
   const eventId = event.id
 
-  // Remove from UI
   try {
     event.remove()
   } catch (e) {
     console.warn('[Calendar] event remove failed (already removed?)', e)
   }
 
-  // Try delete from ICS or structured doc
+
   try {
-    // If the event appears to be from an ICS (docId_index or importedDocId present), remove VEVENT
     await deleteEventInIcs(eventId, event)
   } catch (err) {
     console.error('[Calendar] deleteEventInIcs error:', err)
-    // Fallback: if eventId looks like a document id, attempt to delete the document
     try {
       if (typeof eventId === 'string' && !eventId.includes('_')) {
         await deleteDoc(firestoreDoc(db, 'calendar', eventId))
@@ -922,11 +853,9 @@ const confirmDelete = async () => {
   try { openImportSuccess('Event deleted', 'Delete successful') } catch(e){}
 }
 
-// Remove VEVENT from user's stored ICS content
 const deleteEventInIcs = async (editingEventId, eventObj) => {
   if (!currentUser.value || !currentUser.value.uid) return
 
-  // try to parse editingEventId for docId_index
   let docId = null
   let idx = null
   const m = String(editingEventId).match(/^(.+?)_(\d+)$/)
@@ -946,13 +875,10 @@ const deleteEventInIcs = async (editingEventId, eventObj) => {
     const matches = currentIcs.match(veventRegex) || []
     if (matches.length === 0) return false
 
-    // If index provided, remove that one
     if (typeof idx === 'number' && idx >= 0 && idx < matches.length) {
       const original = matches[idx]
       let newIcs = currentIcs.replace(original, '')
-      // Cleanup consecutive blank lines
       newIcs = newIcs.replace(/\r?\n{2,}/g, '\r\n')
-      // If no VEVENT left, delete the ics field
       const remaining = newIcs.match(veventRegex) || []
       if (remaining.length === 0) {
         await updateDoc(docRef, { ics: deleteField(), updatedAt: serverTimestamp() })
@@ -964,7 +890,6 @@ const deleteEventInIcs = async (editingEventId, eventObj) => {
       return true
     }
 
-    // Try match by UID if available on eventObj.extendedProps.uid
     const uid = eventObj?.extendedProps?.uid || null
     if (uid) {
       const uidRegex = new RegExp(`BEGIN:VEVENT[\\s\\S]*?UID:${uid}[\\s\\S]*?END:VEVENT`, 'i')
@@ -984,7 +909,6 @@ const deleteEventInIcs = async (editingEventId, eventObj) => {
       }
     }
 
-    // Fallback: match by DTSTART and SUMMARY
     const dtstart = eventObj.allDay ? toIcsDate(eventObj.start) : toIcsDateTime(eventObj.start)
     const summary = (eventObj.title || '').replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')
     const dtRegex = eventObj.allDay ? new RegExp(`BEGIN:VEVENT[\\s\\S]*?DTSTART;VALUE=DATE:${dtstart}[\\s\\S]*?SUMMARY:${summary}[\\s\\S]*?END:VEVENT`, 'i') : new RegExp(`BEGIN:VEVENT[\\s\\S]*?DTSTART:${dtstart}[\\s\\S]*?SUMMARY:${summary}[\\s\\S]*?END:VEVENT`, 'i')
@@ -1006,7 +930,6 @@ const deleteEventInIcs = async (editingEventId, eventObj) => {
     return false
   }
 
-  // If docId was embedded, try that specific doc
   if (docId) {
     try {
       const docRef = firestoreDoc(db, 'calendar', docId)
@@ -1017,7 +940,6 @@ const deleteEventInIcs = async (editingEventId, eventObj) => {
     }
   }
 
-  // Otherwise, try the importedDocId if set (most common case)
   if (importedDocId.value) {
     try {
       const docRef = firestoreDoc(db, 'calendar', importedDocId.value)
@@ -1028,7 +950,6 @@ const deleteEventInIcs = async (editingEventId, eventObj) => {
     }
   }
 
-  // As a last resort, try to find any calendar doc for this user and remove from the first that contains ics
   try {
     const q = query(collection(db, 'calendar'), where('userId', '==', currentUser.value.uid))
     const snap = await getDocs(q)
@@ -1042,10 +963,8 @@ const deleteEventInIcs = async (editingEventId, eventObj) => {
   }
 }
 
-// Show a confirmation before clearing the imported ICS from Firestore (or clearing UI)
 const showClearConfirm = ref(false)
 
-// Perform the actual clear operation (moved from previous clearCalendar implementation)
 const performClearCalendar = async () => {
   showClearConfirm.value = false
   if (importedDocId.value && currentUser.value && currentUser.value.uid) {
@@ -1056,7 +975,6 @@ const performClearCalendar = async () => {
       })
       console.debug('[Calendar] cleared ICS field from doc', importedDocId.value)
       openImportSuccess('Calendar cleared', 'Reset successful')
-      // local state will update when snapshot triggers
       return
     } catch (err) {
       console.error('[Calendar] error clearing ICS:', err)
@@ -1065,7 +983,6 @@ const performClearCalendar = async () => {
     }
   }
 
-  // If no Firestore doc, just clear the displayed events
   if (calendarInstance) {
     calendarInstance.removeAllEvents()
   }
@@ -1074,15 +991,12 @@ const performClearCalendar = async () => {
   openImportSuccess('Calendar cleared', 'Reset successful')
 }
 
-// New clearCalendar opens the confirmation modal
 const clearCalendar = () => {
   showClearConfirm.value = true
 }
 
-// Helpers to build VEVENT strings for appending to ICS
 const pad = (n) => n.toString().padStart(2, '0')
 const toIcsDateTime = (d) => {
-  // return UTC YYYYMMDDTHHMMSSZ
   const dt = new Date(d)
   return dt.getUTCFullYear().toString()
     + pad(dt.getUTCMonth() + 1)
@@ -1100,7 +1014,6 @@ const toIcsDate = (d) => {
 }
 
 const buildVEventString = (ev, uidOverride) => {
-  // ev: { title, start, end, allDay, description }
   const uid = uidOverride || `fitu-${Date.now()}@local`
   const dtstamp = toIcsDateTime(new Date())
   let dtstart = ''
@@ -1113,7 +1026,6 @@ const buildVEventString = (ev, uidOverride) => {
     if (ev.end) dtend = `DTEND:${toIcsDateTime(ev.end)}`
   }
 
-  // Escape simple characters in SUMMARY/DESCRIPTION
   const esc = (s = '') => String(s).replace(/\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;')
 
   const lines = [
@@ -1136,12 +1048,9 @@ const wrapWithVCalendar = (veventString) => {
   return `${header}\r\n${veventString}\r\n${footer}`
 }
 
-// Append created event to user's ICS content in Firestore
 const appendEventToIcs = async (ev) => {
-  // only proceed for signed-in users
   if (!currentUser.value || !currentUser.value.uid) return
 
-  // normalize event object
   const evt = {
     title: ev.title || 'Untitled',
     start: ev.start,
@@ -1160,10 +1069,8 @@ const appendEventToIcs = async (ev) => {
       const currentIcs = data.ics || ''
       let newIcs = ''
       if (currentIcs && /END:VCALENDAR/i.test(currentIcs)) {
-        // insert before END:VCALENDAR
         newIcs = currentIcs.replace(/\r?\n?END:VCALENDAR\s*$/i, '\r\n' + veventString + '\r\nEND:VCALENDAR')
       } else if (currentIcs) {
-        // no END:VCALENDAR, just append
         newIcs = currentIcs + '\r\n' + veventString
       } else {
         newIcs = wrapWithVCalendar(veventString)
@@ -1175,9 +1082,7 @@ const appendEventToIcs = async (ev) => {
     }
   }
 
-  // No existing doc: create one
   const newIcs = wrapWithVCalendar(veventString)
-  // Write into the calendar document whose id == user uid (merge so pre-existing fields are preserved)
   const userDocRef = firestoreDoc(db, 'calendar', currentUser.value.uid)
   await setDoc(userDocRef, {
     userId: currentUser.value.uid,
@@ -1189,11 +1094,9 @@ const appendEventToIcs = async (ev) => {
   console.debug('[Calendar] created/merged calendar doc with id (uid) while appending VEVENT', currentUser.value.uid)
 }
 
-// Update an existing VEVENT inside the user's stored ICS content
 const updateEventInIcs = async (editingEventId, ev) => {
   if (!currentUser.value || !currentUser.value.uid) return
 
-  // Try parse editingEventId for docId and index (docId_idx)
   let docId = null
   let idx = null
   const m = String(editingEventId).match(/^(.+?)_(\d+)$/)
@@ -1204,7 +1107,6 @@ const updateEventInIcs = async (editingEventId, ev) => {
 
   const buildAndReplace = async (docRef, currentIcs, targetIndex, existingUid) => {
     const veventString = buildVEventString(ev, existingUid)
-    // find all VEVENT blocks
     const veventRegex = /BEGIN:VEVENT[\s\S]*?END:VEVENT/gi
     const matches = currentIcs.match(veventRegex) || []
     if (typeof targetIndex === 'number' && targetIndex >= 0 && targetIndex < matches.length) {
@@ -1226,7 +1128,6 @@ const updateEventInIcs = async (editingEventId, ev) => {
       const currentIcs = data.ics || ''
       if (!currentIcs) return
 
-      // attempt to preserve existing UID if present in matched VEVENT
       const veventRegex = /BEGIN:VEVENT[\s\S]*?END:VEVENT/gi
       const matches = currentIcs.match(veventRegex) || []
       if (idx !== null && idx < matches.length) {
@@ -1240,7 +1141,6 @@ const updateEventInIcs = async (editingEventId, ev) => {
         }
       }
 
-      // fallback: try to match by UID if ev.extendedProps.uid provided
       const uid = ev.extendedProps?.uid || ev.uid || null
       if (uid) {
         const uidRegex = new RegExp(`BEGIN:VEVENT[\\s\\S]*?UID:${uid}[\\s\\S]*?END:VEVENT`, 'i')
@@ -1253,8 +1153,7 @@ const updateEventInIcs = async (editingEventId, ev) => {
           return
         }
       }
-
-      // fallback: try to match by DTSTART and SUMMARY
+    
       const dtstart = ev.allDay ? toIcsDate(ev.start) : toIcsDateTime(ev.start)
       const summary = ev.title || ''
       const summaryEsc = summary.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')
@@ -1275,7 +1174,6 @@ const updateEventInIcs = async (editingEventId, ev) => {
       console.error('[Calendar] updateEventInIcs error:', err)
     }
   } else if (importedDocId.value) {
-    // No index info but we have importedDocId: try by UID or DTSTART+SUMMARY similarly
     try {
       const docRef = firestoreDoc(db, 'calendar', importedDocId.value)
       const snap = await getDoc(docRef)
@@ -1295,7 +1193,6 @@ const updateEventInIcs = async (editingEventId, ev) => {
           return
         }
       }
-      // fallback by DTSTART+SUMMARY
       const dtstart = ev.allDay ? toIcsDate(ev.start) : toIcsDateTime(ev.start)
       const summary = ev.title || ''
       const summaryEsc = summary.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')
@@ -1317,8 +1214,6 @@ const updateEventInIcs = async (editingEventId, ev) => {
   }
 }
 
-// Utility functions
-// Format date for datetime-local input in local time (not UTC)
 const formatDateForInput = (date) => {
   if (!date) return ''
   const d = new Date(date)
@@ -1331,12 +1226,10 @@ const formatDateForInput = (date) => {
   return `${year}-${month}-${day}T${hours}:${minutes}`
 }
 
-// Public methods (exposed via defineExpose)
 const addEvent = async (eventData) => {
   if (calendarInstance) {
     const event = calendarInstance.addEvent(eventData)
     
-    // Also persist to Firebase
     try {
       await appendEventToIcs(eventData)
       console.debug('[Calendar] Event added and persisted to Firebase:', eventData.title)
@@ -1411,14 +1304,12 @@ onUnmounted(() => {
     try { calendarUnsubscribe() } catch (e) { /* ignore */ }
     calendarUnsubscribe = null
   }
-  // clear any import success timeout
   if (importSuccessTimeout) {
     try { clearTimeout(importSuccessTimeout) } catch(e){}
     importSuccessTimeout = null
   }
 })
 
-// Expose methods for parent components
 defineExpose({
   addEvent,
   removeEvent,
@@ -1476,7 +1367,6 @@ defineExpose({
   pointer-events: none;
 }
 
-/* Global FullCalendar styles */
 
 .fc a, 
 .fc-daygrid-day-number, 
@@ -1485,7 +1375,7 @@ defineExpose({
   color: white !important;
 }
 
-.fc-toolbar-title { /*Month Year color*/
+.fc-toolbar-title { 
   color: white;
 }
 
@@ -1534,12 +1424,11 @@ defineExpose({
   padding: 10px;
 }
 
-/* Dark themed scrollbars (Chrome-like) for scrollable widgets within calendar */
 .calendar-component .calendar-container,
 .calendar-component .event-form-modal,
 .calendar-component .fc-scroller {
-  scrollbar-color: #555 var(--surface-subtle); /* Firefox */
-  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #555 var(--surface-subtle); 
+  scrollbar-width: thin; 
 }
 
 .calendar-component .calendar-container::-webkit-scrollbar,
@@ -1573,7 +1462,6 @@ defineExpose({
 
 }
 
-/* FullCalendar list view: make date headings use subtle surface background */
 .calendar-component .fc .fc-list-day-cushion {
   background-color: var(--surface-subtle) !important;
 }
@@ -1581,12 +1469,10 @@ defineExpose({
   background-color: var(--surface-subtle) !important;
 }
 
-/* FullCalendar list view: event row hover uses subtle surface background */
 .calendar-component .fc .fc-list-event:hover td {
   background-color: black !important;
 }
 
-/* Modal Styles */
 .modal-backdrop {
   position: fixed;
   top: 0;
@@ -1597,7 +1483,7 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(0, 0, 0, 0.6) !important; /* Set a translucent black background */
+  background-color: rgba(0, 0, 0, 0.6) !important; 
 }
 
 .event-form-modal {
@@ -1647,7 +1533,6 @@ defineExpose({
   margin-left: 0.5rem;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   
   .event-form-modal {
@@ -1659,7 +1544,6 @@ defineExpose({
   }
 }
 
-/* Responsive: smaller button text for mobile */
 
 
 @media (max-width: 648px) {
@@ -1690,26 +1574,22 @@ defineExpose({
 }
 
 
-/* Responsive: shrink FullCalendar toolbar and buttons on small screens */
 @media (max-width: 720px) {
   .calendar-element {
     padding: 6px;
     min-height: 280px;
   }
 
-  /* Toolbar container spacing */
   .fc .fc-toolbar {
     padding: 6px 8px !important;
     gap: 6px !important;
   }
 
-  /* Title smaller */
   .fc .fc-toolbar .fc-toolbar-title {
     font-size: 14px !important;
     line-height: 1 !important;
   }
 
-  /* Buttons: smaller text and reduced padding */
   .fc .fc-button,
   .fc .fc-button:where(:not(.fc-button-active)) {
     font-size: 12px !important;
@@ -1717,20 +1597,17 @@ defineExpose({
     min-width: 36px !important;
   }
 
-  /* Compact grouping */
   .fc .fc-toolbar-chunk {
     padding: 0 !important;
     margin: 0 !important;
   }
 
-  /* Reduce day number / header click target sizes slightly */
   .fc .fc-daygrid-day-number,
   .fc-col-header-cell-cushion {
     font-size: 12px !important;
   }
 }
 
-/* Extra-small screens: tighten further under 530px */
 @media (max-width: 530px) {
   .calendar-element {
     padding: 4px;
@@ -1763,23 +1640,19 @@ defineExpose({
     font-size: 11px !important;
   }
 
-  /* Slightly reduce spacing on modal footers for tiny screens */
   .event-form-modal {
     padding: 12px !important;
     max-width: 95% !important;
   }
 }
 
-/* Very small screens: stack toolbar into rows with title on top */
 @media (max-width: 470px) {
-  /* Make the toolbar vertical */
   .fc .fc-toolbar {
     flex-direction: column !important;
     align-items: stretch !important;
     gap: 6px !important;
   }
 
-  /* Ensure the title is on its own row and centered */
   .fc .fc-toolbar .fc-toolbar-title {
     display: block !important;
     text-align: center !important;
@@ -1788,7 +1661,6 @@ defineExpose({
     margin: 6px 0 !important;
   }
 
-  /* Make each chunk take the full width and center its contents */
   .fc .fc-toolbar .fc-toolbar-chunk {
     display: flex !important;
     justify-content: center !important;
@@ -1798,14 +1670,12 @@ defineExpose({
     flex-wrap: wrap !important;
   }
 
-  /* Slightly reduce button size for ultra small screens */
   .fc .fc-button {
     font-size: 11px !important;
     padding: 3px 6px !important;
   }
 }
 
-/* Extra-extra-small screens: make Clear calendar and Add Event buttons smaller (<=432px) */
 @media (max-width: 432px) {
   .calendar-controls ,
   .calendar-controls ,
@@ -1816,27 +1686,20 @@ defineExpose({
     line-height: 1 !important;
   }
 
-  /* Slightly reduce spacing around the controls */
   .calendar-controls {
     padding: 0.5rem !important;
   }
 
-  /* Ensure the left and right columns remain vertically centered */
   .calendar-controls .row > [class*="col-"] {
     display: flex;
     align-items: center;
   }
 }
 
-/* =====================
-   FullCalendar toolbar (dark theme, element-level styling)
-   ===================== */
-/* Leave toolbar background transparent (explicitly avoid painting the whole header) */
 .calendar-component .fc .fc-toolbar {
   background: transparent !important;
 }
 
-/* Buttons: prev/next/today and view toggles */
 .calendar-component .fc .fc-button {
   background-color: var(--surface-subtle) !important;
   border-color: var(--border-subtle) !important;
@@ -1851,7 +1714,7 @@ defineExpose({
   filter: brightness(1.08);
 }
 .calendar-component .fc .fc-button:focus-visible {
-  outline: 2px solid rgba(100, 149, 237, 0.35) !important; /* soft cornflower focus */
+  outline: 2px solid rgba(100, 149, 237, 0.35) !important; 
   outline-offset: 2px !important;
 }
 .calendar-component .fc .fc-button.fc-button-active,
@@ -1866,12 +1729,10 @@ defineExpose({
   cursor: not-allowed !important;
 }
 
-/* Title text (already set to white above, keep consistent) */
 .calendar-component .fc .fc-toolbar-title {
   color: #ffffff !important;
 }
 
-/* Drag and Drop Styling */
 .calendar-component .fc-day {
   transition: background-color 0.2s ease;
 }
@@ -1888,7 +1749,6 @@ defineExpose({
   background-color: rgba(0, 191, 255, 0.05) !important;
 }
 
-/* Drop target indicator */
 .calendar-component .fc-highlight {
   background-color: rgba(0, 191, 255, 0.2) !important;
 }
