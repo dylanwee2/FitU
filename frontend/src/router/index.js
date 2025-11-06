@@ -15,7 +15,8 @@ import WorkoutPlaylists from '../views/WorkoutPlaylists.vue'
 import Vault from '../views/Vault.vue'
 
 const routes = [
-  { path: '/', name: 'Landing', component: Landing },
+  { path: '/', redirect: '/index.html' },
+  { path: '/index.html', name: 'Landing', component: Landing },
   { path: '/home', name: 'Home', component: Home },
   { path: '/signup', name: 'Signup', component: Signup },
   { path: '/login', name: 'Login', component: Login },
