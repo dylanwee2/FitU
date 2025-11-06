@@ -154,7 +154,7 @@
           <h2 class="mb-2" style="color: var(--text)">Ready to Transform Your Campus Fitness?</h2>
           <p class="u-muted mb-3">Join thousands of students getting stronger, healthier, and more energized.</p>
           <div class="d-flex gap-3 justify-content-center">
-            <router-link to="/signup" class="u-special-btn" style="padding-left: 60px; padding-right:60px;">Get Started For Free &nbsp;&nbsp;></router-link>
+            <router-link to="/signup" class="u-special-btn" style="padding-left: 60px; padding-right:60px;">Get Started For Free</router-link>
           </div>
         </section>
       </BackgroundGradientAnimation>
