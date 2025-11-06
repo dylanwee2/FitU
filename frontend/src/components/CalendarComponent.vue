@@ -21,16 +21,16 @@
         </div>
         <div class="col-6 d-flex justify-content-end">
           <div class="d-flex gap-2 align-items-center">
-            <button 
+            <button id="clearCalendar"
               v-if="hasImportedIcs" 
-              class="u-btn u-btn--danger" 
+              class="u-btn u-btn--danger mb-1" 
               @click="clearCalendar" 
               title="Clear all calendar events"
             >
           
               Clear Calendar
             </button>
-            <button v-if="showAddEvent" class="u-btn u-btn--primary" @click="openEventForm">
+            <button v-if="showAddEvent" id = 'addEvent' class="u-btn u-btn--primary mb-1" @click="openEventForm">
               Add Event
             </button>
           </div>
@@ -1655,6 +1655,24 @@ defineExpose({
     width: calc(100% - 2rem);
   }
 }
+
+/* Responsive: smaller button text for mobile */
+@media (max-width: 668px) {
+  #clearCalendar,
+  #addEvent {
+    font-size: 0.8rem !important;
+    padding: 0.4rem 0.6rem !important;
+  }
+}
+
+@media (max-width: 546px) {
+  #clearCalendar,
+  #addEvent {
+    font-size: 0.65rem !important;
+    padding: 0.4rem 0.6rem !important;
+  }
+}
+
 
 /* Responsive: shrink FullCalendar toolbar and buttons on small screens */
 @media (max-width: 720px) {
