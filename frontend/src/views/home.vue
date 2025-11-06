@@ -10,10 +10,12 @@
             </div>
             <div class="card-body">
               <CalendarComponent 
+                ref="calendarRef"
                 :show-controls="true"
                 :show-add-event="true"
                 :show-file-upload="true"
                 :show-department-field="true"
+                @workout-dropped="handleWorkoutDropped"
               />
             </div>
           </div>
@@ -25,7 +27,9 @@
               <h5 class="mb-0">My Workouts</h5>
             </div>
             <div class="card-body workout-scrollable">
-              <WorkoutPlaylistsComponent/>
+              <WorkoutPlaylistsComponent
+                @workout-scheduled="handleWorkoutScheduled"
+              />
             </div>
           </div>
         </div>
@@ -155,6 +159,8 @@ export default {
 
     const amount = ref(0)
     const note = ref('')
+    const calendarRef = ref(null)
+    
     const onAdd = async () => {
       if (!Number.isFinite(amount.value) || amount.value <= 0) return
       try {
@@ -167,6 +173,75 @@ export default {
       }
     }
 
+    // Handle workout dropped on calendar
+    const handleWorkoutDropped = async ({ workout, date, allDay }) => {
+      // Open the workout playlists component's schedule modal
+      // We need to communicate this back to the WorkoutPlaylistsComponent
+      // For now, let's use a simple approach
+      
+      const formatDate = (date) => {
+        return date.toISOString().split('T')[0]
+      }
+      
+      const formatTime = (date) => {
+        return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+      }
+      
+      // If all day, set a default time, otherwise use the dropped time
+      const dropDate = new Date(date)
+      const scheduleDate = formatDate(dropDate)
+      const scheduleTime = allDay ? '09:00' : formatTime(dropDate)
+      
+      // We need a way to trigger the schedule modal in WorkoutPlaylistsComponent
+      // For now, let's add the event directly to the calendar
+      await handleWorkoutScheduled({
+        workout,
+        event: {
+          title: `Workout: ${workout.name}`,
+          start: allDay ? scheduleDate : dropDate.toISOString(),
+          end: allDay ? null : calculateWorkoutEndTime(dropDate, workout),
+          allDay: allDay,
+          description: `${workout.description || ''}\n\nExercises: ${workout.exercises?.length || 0}`,
+          extendedProps: {
+            workoutId: workout.id,
+            workoutType: 'scheduled',
+            exercises: workout.exercises
+          }
+        }
+      })
+    }
+    
+    // Calculate end time for workout
+    const calculateWorkoutEndTime = (startDate, workout) => {
+      if (!workout.exercises) return startDate.toISOString()
+      
+      // Calculate duration (5 minutes per set, 3 sets per exercise by default)
+      const durationMinutes = workout.exercises.reduce((total, exercise) => {
+        const sets = exercise.sets || 3
+        return total + (sets * 5)
+      }, 0)
+      
+      const endDate = new Date(startDate.getTime() + (durationMinutes * 60 * 1000))
+      return endDate.toISOString()
+    }
+
+    // Handle scheduled workout from modal
+    const handleWorkoutScheduled = async ({ workout, event }) => {
+      if (calendarRef.value && calendarRef.value.addEvent) {
+        try {
+          await calendarRef.value.addEvent(event)
+          console.log('Workout scheduled successfully:', workout.name)
+          
+          // Show success message
+          // You could add a toast notification here if you have one implemented
+          
+        } catch (error) {
+          console.error('Error scheduling workout:', error)
+          alert('Failed to schedule workout. Please try again.')
+        }
+      }
+    }
+
     return { 
       calorieData,
       todayConsumed,
@@ -174,6 +249,9 @@ export default {
       amount,
       note,
       onAdd,
+      calendarRef,
+      handleWorkoutDropped,
+      handleWorkoutScheduled,
     };
   }
 };

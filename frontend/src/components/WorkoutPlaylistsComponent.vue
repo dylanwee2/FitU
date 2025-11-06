@@ -41,11 +41,25 @@
           :key="playlist.id"
           class="col-md-12 col-lg-12 col-xl-12"
         >
-          <div class="playlist-card">
+          <div 
+            class="playlist-card"
+            draggable="true"
+            @dragstart="handleDragStart($event, playlist)"
+            @dragend="handleDragEnd"
+          >
+            <!-- Hidden transfer data element -->
+            <div 
+              data-transfer 
+              :data-transfer="JSON.stringify({ type: 'workout', workout: playlist })" 
+              style="display: none;"
+            ></div>
             <!-- Playlist Header -->
             <div class="playlist-header">
               <div class="playlist-title-section">
-                <h5 class="playlist-name">{{ playlist.name }}</h5>
+                <div class="title-with-drag">
+                  <i class="fas fa-grip-vertical drag-handle" title="Drag to calendar to schedule"></i>
+                  <h5 class="playlist-name">{{ playlist.name }}</h5>
+                </div>
                 <div class="status-badges">
                   <span 
                     v-if="playlist.isPublished" 
@@ -125,10 +139,6 @@
                   <i class="fas fa-clock text-info"></i>
                   <span>{{ formatPlaylistDuration(playlist) }}</span>
                 </div>
-                <div class="stat-item">
-                  <i class="fas fa-calendar text-success"></i>
-                  <span>{{ formatWorkoutDays(playlist.workoutDays) }}</span>
-                </div>
               </div>
 
               <div class="playlist-exercises">
@@ -163,6 +173,13 @@
                   class="u-btn u-btn--primary"
                 >
                   View
+                </button>
+                <button 
+                  @click="openScheduleModal(playlist)"
+                  class="u-btn u-btn--secondary"
+                  title="Schedule this workout"
+                >
+                  Schedule
                 </button>
                 <button 
                   v-if="!playlist.isPublished"
@@ -453,6 +470,69 @@
         </div>
       </div>
     </div>
+
+    <!-- Schedule Workout Modal -->
+    <div v-if="showScheduleModal" class="modal-overlay" @click.self="closeScheduleModal">
+      <div class="modal-content" style="background-color: var(--bg);">
+        <div class="modal-header">
+          <h5 class="modal-title">Schedule Workout</h5>
+          <button @click="closeScheduleModal" class="btn-close-white btn-close">
+          </button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="workout-info mb-3">
+            <h6 class="text-primary">{{ schedulingWorkout.name }}</h6>
+            <p class="u-muted mb-1">{{ schedulingWorkout.exercises?.length || 0 }} exercises</p>
+            <p class="u-muted">Estimated duration: {{ formatWorkoutDuration(workoutScheduleData.duration) }}</p>
+          </div>
+          
+          <div class="form-group mb-3">
+            <label for="workoutDate" class="form-label text-white">Date</label>
+            <input 
+              v-model="workoutScheduleData.date"
+              type="date" 
+              id="workoutDate"
+              class="form-control"
+              required 
+            />
+          </div>
+          
+          <div class="form-group mb-3">
+            <label for="workoutStartTime" class="form-label text-white">Start Time</label>
+            <input 
+              v-model="workoutScheduleData.startTime"
+              type="time" 
+              id="workoutStartTime"
+              class="form-control"
+              required 
+            />
+          </div>
+          
+          <div class="info-box">
+            <p class="mb-1"><strong>End time will be:</strong></p>
+            <p class="text-info">{{ calculateEndTime() }}</p>
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button @click="closeScheduleModal" class="u-btn u-btn--secondary" :disabled="schedulingInProgress">Cancel</button>
+          <button 
+            @click="scheduleWorkout"
+            class="u-btn u-btn--primary"
+            :disabled="schedulingInProgress"
+          >
+            <span v-if="schedulingInProgress">
+              <i class="fas fa-spinner fa-spin me-1"></i>
+              Scheduling...
+            </span>
+            <span v-else>
+              Schedule Workout
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -486,7 +566,7 @@ const props = defineProps({
 })
 
 // Emits
-const emit = defineEmits(['playlist-selected', 'playlist-edited', 'playlist-published', 'playlist-unpublished'])
+const emit = defineEmits(['playlist-selected', 'playlist-edited', 'playlist-published', 'playlist-unpublished', 'workout-scheduled'])
 
 const router = useRouter()
 const cartStore = useWorkoutCartStore()
@@ -520,13 +600,21 @@ const showEditModal = ref(false)
 const showPublishModal = ref(false)
 const showUnpublishModal = ref(false)
 const showDeleteModal = ref(false)
+const showScheduleModal = ref(false)
 const editingPlaylist = ref({})
 const publishingPlaylist = ref({})
 const unpublishingPlaylist = ref({})
 const deletingPlaylist = ref({})
+const schedulingWorkout = ref({})
+const workoutScheduleData = ref({
+  startTime: '',
+  date: '',
+  duration: 0
+})
 const confirmPublish = ref(false)
 const publishingInProgress = ref(false)
 const unpublishingInProgress = ref(false)
+const schedulingInProgress = ref(false)
 const isAuthenticated = ref(!!auth.currentUser)
 const authUnsubscribe = ref(null)
 
@@ -964,6 +1052,133 @@ const confirmUnpublishFromVault = async () => {
     alert('Failed to remove workout from vault: ' + error.message)
   } finally {
     unpublishingInProgress.value = false
+  }
+}
+
+// Drag and Drop Methods
+const handleDragStart = (event, playlist) => {
+  const workoutData = {
+    type: 'workout',
+    workout: playlist
+  }
+  
+  event.dataTransfer.setData('text/plain', JSON.stringify(workoutData))
+  event.dataTransfer.effectAllowed = 'copy'
+  
+  // Store the workout data as an attribute on the dragged element
+  event.target.setAttribute('data-workout', JSON.stringify(playlist))
+  
+  // Add visual feedback
+  event.target.classList.add('dragging')
+}
+
+const handleDragEnd = (event) => {
+  // Reset visual feedback
+  event.target.classList.remove('dragging')
+  
+  // Remove the data attribute
+  event.target.removeAttribute('data-workout')
+}
+
+// Modal for scheduling workout
+const openScheduleModal = (workout, date = null, time = null) => {
+  schedulingWorkout.value = workout
+  
+  // Calculate workout duration in minutes
+  const durationMinutes = calculateWorkoutDuration(workout.exercises)
+  
+  // Set default values
+  const now = new Date()
+  const defaultDate = date || now.toISOString().split('T')[0]
+  const defaultTime = time || `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+  
+  workoutScheduleData.value = {
+    startTime: defaultTime,
+    date: defaultDate,
+    duration: durationMinutes
+  }
+  
+  showScheduleModal.value = true
+}
+
+const closeScheduleModal = () => {
+  showScheduleModal.value = false
+  schedulingInProgress.value = false
+  schedulingWorkout.value = {}
+  workoutScheduleData.value = {
+    startTime: '',
+    date: '',
+    duration: 0
+  }
+}
+
+const calculateEndTime = () => {
+  const { date, startTime, duration } = workoutScheduleData.value
+  
+  if (!date || !startTime || !duration) {
+    return 'Please select date and time'
+  }
+  
+  try {
+    const startDateTime = `${date}T${startTime}`
+    const startDate = new Date(startDateTime)
+    const endDate = new Date(startDate.getTime() + (duration * 60 * 1000))
+    
+    return endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  } catch (error) {
+    return 'Invalid date/time'
+  }
+}
+
+const scheduleWorkout = async () => {
+  const { date, startTime, duration } = workoutScheduleData.value
+  
+  if (!date || !startTime) {
+    alert('Please select both date and time')
+    return
+  }
+  
+  if (!schedulingWorkout.value || !schedulingWorkout.value.name) {
+    alert('Invalid workout data')
+    return
+  }
+  
+  schedulingInProgress.value = true
+  
+  try {
+    // Create start and end datetime strings
+    const startDateTime = `${date}T${startTime}`
+    const startDate = new Date(startDateTime)
+    
+    // Validate the date
+    if (isNaN(startDate.getTime())) {
+      throw new Error('Invalid date or time')
+    }
+    
+    const endDate = new Date(startDate.getTime() + (duration * 60 * 1000)) // duration in milliseconds
+    
+    // Emit event to parent component (home.vue) to add to calendar
+    emit('workout-scheduled', {
+      workout: schedulingWorkout.value,
+      event: {
+        title: `Workout: ${schedulingWorkout.value.name}`,
+        start: startDate.toISOString(),
+        end: endDate.toISOString(),
+        description: `${schedulingWorkout.value.description || ''}\n\nExercises: ${schedulingWorkout.value.exercises?.length || 0}\nDuration: ${formatWorkoutDuration(duration)}`,
+        extendedProps: {
+          workoutId: schedulingWorkout.value.id,
+          workoutType: 'scheduled',
+          exercises: schedulingWorkout.value.exercises
+        }
+      }
+    })
+    
+    closeScheduleModal()
+  } catch (error) {
+    console.error('Error scheduling workout:', error)
+    alert('Failed to schedule workout: ' + (error.message || 'Unknown error'))
+  } finally {
+    schedulingInProgress.value = false
   }
 }
 
@@ -1437,5 +1652,63 @@ onUnmounted(() => {
   .default-exercises {
     max-height: 300px;
   }
+}
+
+/* Drag and Drop Styling */
+.playlist-card[draggable="true"] {
+  cursor: grab;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.playlist-card[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+.playlist-card[draggable="true"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Drag feedback */
+.playlist-card.dragging {
+  opacity: 0.6;
+  transform: scale(0.98);
+}
+
+/* Info box in schedule modal */
+.info-box {
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.info-box .text-info {
+  color: #17a2b8 !important;
+  font-weight: 500;
+}
+
+/* Drag handle styling */
+.title-with-drag {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.drag-handle {
+  color: var(--muted);
+  font-size: 0.9rem;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+  cursor: grab;
+}
+
+.playlist-card:hover .drag-handle {
+  opacity: 1;
+}
+
+.playlist-card[draggable="true"]:active .drag-handle {
+  cursor: grabbing;
 }
 </style>
